@@ -1,0 +1,18 @@
+
+echo "Starting \e[1mROS\e[0m ..."
+
+ros_source_setup
+
+export ROS_HOSTNAME="$(hostname).local"
+
+if [[ $(hostname) != 'Gru' ]]; then 
+    ros_locate_master
+fi
+
+# Time for some manual tweaking 
+# Use a sane format for the console output that actually shows the node producing each message
+export ROSCONSOLE_FORMAT='[${severity}] <${time}> ${node} @ ${file}:${line}
+    ${message}'
+
+# Source the completions file
+source /opt/ros/lunar/share/rosbash/roszsh

@@ -1,0 +1,41 @@
+
+GREEN_TICK='\e[1;92m✓\e[0m'
+YELLOW_WARM='\e[1;33m~\e[0m'
+RED_CROSS='\e[1;31m✘\e[0m'
+
+# Try to locate a ROS master server.
+# By convention the ROS master server is at 192.168.1.1 on the network. If it doesn't answer we 
+# should assume that we are alone and should create our own master.
+_ROSCORE_SERVER_IP='192.168.1.1'
+
+# Try to ping the roscore server to see if it is available
+timeout 0.5 ping ${_ROSCORE_SERVER_IP} -c 1 > /dev/null 2>&1
+FOUND_ROSCORE_SERVER=$?;
+
+if [[ ${FOUND_ROSCORE_SERVER} == 0 ]] ; then
+    
+    # Resolve the hostname of the roscore server and store it
+    ROSCORE_SERVER_NAME=$(avahi-resolve-address ${_ROSCORE_SERVER_IP} | cut -f 2);
+    export ROS_MASTER_URI=http://${_ROSCORE_SERVER_IP}:11311;
+
+   # Server sepecific config
+   if [[ ${ROSCORE_SERVER_NAME} == "gru.local" ]]; then       
+        # We are connected to a 'known' roscore
+        echo "  ${GREEN_TICK} Connected to \e[1mROS_MASTER\e[0m on \e[1m${ROSCORE_SERVER_NAME}\e[0m (\e[1m${ROS_MASTER_URI}\e[0m)"  
+    else
+        echo "  ${YELLOW_WARN} Connected to \e[1mROS_MASTER\e[0m on \e[1m${ROSCORE_SERVER_NAME}\e[0m (\e[1m${ROS_MASTER_URI}\e[0m)"  
+   fi  
+else 
+    # If we haven't found a  roscore server we start our own roscore in the background
+    rostopic list > /dev/null 2>&1
+
+    # The exit status of 'rostopic list' tells us if it was able to connect to the master. 
+    # This is the simplest way of finding out if a roscore server is runnning short of grepping the
+    # output of ps. 
+    if [[ $? == "1" ]]; then 
+        exec roscore > /dev/null 2>&1 &!
+        echo "  ${GREEN_TICK} Starting roscore on \e[1mlocalhost\e[0m with PID \e[1m$!\e[0m"
+    else
+        echo "  ${YELLOW_WARN} It looks like roscore is already running. \e[1mNothing to start.\e[0m" 
+    fi
+fi
