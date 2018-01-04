@@ -15,6 +15,9 @@ alias la="ls -a"
 alias ll="ls -lh"
 alias lal="ls -lah" 
 
+alias exa="exa --group-directories-first --git"
+alias exal="exa -la --group-directories-first --git"
+
 ## Typo aliases
 alias cd..='cd ..'
 
