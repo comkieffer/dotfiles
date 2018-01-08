@@ -25,15 +25,15 @@ export GIT_PS1_SHOWCOLORHINTS         # Show a coloured hint about dirty state. 
 export GIT_PS1_HIDE_IF_PWD_IGNORED=1  # Do nothing if the current directory is ignored by git
 
 __make_prompt() {
-    PREVIOUS_EXIT_STATUS=$?
+    local PREVIOUS_EXIT_STATUS=$?
 
-    EXIT_STATUS_COLOUR="${GREEN}"
+    local EXIT_STATUS_COLOUR="${GREEN}"
     if [[ PREVIOUS_EXIT_STATUS -ne 0 ]]; then 
         EXIT_STATUS_COLOUR="${RED}"
     fi
     PS1='\[${EXIT_STATUS_COLOUR}[${PREVIOUS_EXIT_STATUS}]${RESET}\] '
 
-    USER_COLOUR=${BLUE}
+    local USER_COLOUR=${BLUE}
     if [[ $UID -eq 0 ]]; then
         USER_COLOUR=${RED}
     fi
@@ -42,10 +42,10 @@ __make_prompt() {
     # Add Current working directory information
     PS1+='in \[${WHITE}\]\W\[${RESET}\] '
 
-    GIT_DISPLAY=$(__git_ps1)
-    if [[ -n $GIT_DISPLAY ]]; then
-        GIT_DISPLAY="on git:${BOLD}${CYAN}${GIT_DISPLAY:1}${RESET}"
-        PS1+='\[$GIT_DISPLAY\]' 
+    local GIT_INFO=$(__git_ps1)
+    if [[ -n $GIT_INFO ]]; then
+        GIT_INFO="on git:${BOLD}${CYAN}${GIT_INFO:1}${RESET}"
+        PS1+='\[$GIT_INFO\]' 
     fi
 
     # End of first list
@@ -55,8 +55,8 @@ __make_prompt() {
     PS1+=' \[${MAGENTA}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
 
     # Make Tilix Happy:
-    # VTE_PWD_THING="$(__vte_osc7)"
-    # PS1="$PS1$VTE_PWD_THING"
+    local VTE_PWD_THING="$(__vte_osc7)"
+    PS1="$PS1\[$VTE_PWD_THING\]"
 }
 
 PROMPT_COMMAND=__make_prompt
