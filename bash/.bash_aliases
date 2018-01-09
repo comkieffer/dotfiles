@@ -31,5 +31,9 @@ alias imview="rosrun rqt_image_view rqt_image_view"
 
 # Show directory listing if the directory is not ~
 cd () {
-    builtin cd "$@" && [ "$(pwd)" != "${HOME}" ] exa -l --group-directories-first --git
+    builtin cd "$@" 
+    
+    if [[ "$(pwd)" != "${HOME}" ]]; then 
+        exa -l --group-directories-first --git
+    fi
 }
