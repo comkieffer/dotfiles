@@ -54,6 +54,10 @@ __make_prompt() {
     # Second line is dedicated to the prompt mark 
     PS1+=' \[${MAGENTA}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
 
+    # Append the last command we ran to the history now
+    history -a # Add line to history
+    history -n # Read new lines from history to catch up with other shells
+    
     # Make Tilix Happy:
     local VTE_PWD_THING="$(__vte_osc7)"
     PS1="$PS1\[$VTE_PWD_THING\]"
