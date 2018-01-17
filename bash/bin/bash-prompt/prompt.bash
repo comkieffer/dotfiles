@@ -59,8 +59,10 @@ __make_prompt() {
     history -n # Read new lines from history to catch up with other shells
     
     # Make Tilix Happy:
-    local VTE_PWD_THING="$(__vte_osc7)"
-    PS1="$PS1\[$VTE_PWD_THING\]"
+    if [[ $(type -t __vte_osc7) == "function" ]]; then 
+        local VTE_PWD_THING="$(__vte_osc7)"
+        PS1="$PS1\[$VTE_PWD_THING\]"
+    fi
 }
 
 PROMPT_COMMAND=__make_prompt
