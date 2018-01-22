@@ -14,7 +14,7 @@ WHITE="$(tput setaf 7)"
 PROMPT_MARK='❯'
 
 # Configure git repository information
-source ${HOME}/bin/bash-prompt/git-prompt.sh
+source ${HOME}/bin/bash/bash-prompt/git-prompt.sh
 
 export GIT_PS1_SHOWDIRTYSTATE=1       # Show ustaged (*) and staged (+) changes
 export GIT_PS1_SHOWSTASHSTATE=1       # Show a '$' sign next to the branch name if something is stashed

@@ -9,8 +9,8 @@ case $- in
 esac
 
 # Load some sensible defaults 
-if [ -f ~/bin/sensible-bash/sensible.bash ]; then
-   source ~/bin/sensible-bash/sensible.bash
+if [ -f ~/bin/bash/sensible-bash/sensible.bash ]; then
+   source ~/bin/bash/sensible-bash/sensible.bash
 fi
 
 if [ -d ${HOME}/bin ]; then
@@ -56,8 +56,8 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    if [ -f ${HOME}/bin/bash-prompt/prompt.bash ]; then 
-        source ${HOME}/bin/bash-prompt/prompt.bash
+    if [ -f ${HOME}/bin/bash/bash-prompt/prompt.bash ]; then 
+        source ${HOME}/bin/bash/bash-prompt/prompt.bash
     else 
         PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
     fi
@@ -84,8 +84,8 @@ export EDITOR=vim
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+if [ -f ~/bin/bash/aliases ]; then
+    . ~/bin/bash/aliases
 fi
 
 # enable programmable completion features (you don't need to enable
