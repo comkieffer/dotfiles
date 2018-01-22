@@ -107,12 +107,19 @@ else
     echo -e '\e[1;31m✘\e[0m Unable to locate package <direnv>'
 fi
 
+## ROS Stuff
+
 # Try to source a ROS environment so that we have the roscd, rosinfo, rostopic, ... commands
 if [ -f /opt/ros/lunar/setup.bash ]; then
     source /opt/ros/lunar/setup.bash
 elif [ -f /opt/ros/kinetic/setup.bash ]; then
     source /opt/ros/kinetic/setup.bash
 fi
+
+export ROS_HOSTNAME="$(hostname -s).local"
+export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${time}]: ${message}'
+export ROS_LANG_DISABLE='genlisp:geneus:gennodejs'
+
 ## Per-host settings
 if [ -f ~/bin/bash/host-settings/$(hostname -s).bash ]; then
     source ~/bin/bash/host-settings/$(hostname -s).bash
