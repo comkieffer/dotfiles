@@ -112,3 +112,7 @@ if [ -f /opt/ros/lunar/setup.bash ]; then
 elif [ -f /opt/ros/kinetic/setup.bash ]; then
     source /opt/ros/kinetic/setup.bash
 fi
+## Per-host settings
+if [ -f ~/bin/bash/host-settings/$(hostname -s).bash ]; then
+    source ~/bin/bash/host-settings/$(hostname -s).bash
+fi
