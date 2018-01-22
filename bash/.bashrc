@@ -11,6 +11,7 @@ esac
 # Load some sensible defaults 
 if [ -f ~/bin/bash/sensible-bash/sensible.bash ]; then
    source ~/bin/bash/sensible-bash/sensible.bash
+   shopt -u cdable_vars
 fi
 
 if [ -d ${HOME}/bin ]; then
