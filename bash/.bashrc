@@ -77,6 +77,8 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 
 # Duh! I'm not an Emacs-tard!
 export EDITOR=vim
+export CC=clang
+export CXX=clang++
 
 # Configure the behaviour of the shell
 shopt -s dotglob    # '*' also matches hidden files
