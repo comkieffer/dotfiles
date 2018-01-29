@@ -34,3 +34,5 @@
     
 [diff]
 	wsErrorHighlight = all # Show whitesoace changes in diffs
+[push]
+	default = simple
