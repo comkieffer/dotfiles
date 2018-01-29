@@ -19,4 +19,9 @@ else
     echo "Skipping missing ssh/ directory"
 fi
 
+# Tilix is different:
+#   Colour schemes are stored in .config/Tilix/schemes
+#   General config is stored in dconf 
+dconf load /com/gexperts/Tilix/  tilix/tilix_dconf.txt
+
 unset INSTALLATION_DIR STOW_COMMAND
