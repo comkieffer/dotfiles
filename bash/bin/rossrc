@@ -21,8 +21,8 @@ ROS_SETUP_DIRS=(
 CUR_PATH=$(pwd)
 while [[ "${CUR_PATH}" != "" ]]; do
     for ws in "${ROS_SETUP_DIRS[@]}"; do
-        if [[ -f ${ws}/setup.bash ]]; then
-            source ${ws}/setup.bash
+        if [[ -f "${CUR_PATH}/${ws}/setup.bash" ]]; then
+            source "${CUR_PATH}/${ws}/setup.bash"
             echo -e " ${GREEN}✔${RESET} Sourced workspace ${BOLD}${ws}${RESET}"
             exit 0
         fi
