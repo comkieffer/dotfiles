@@ -11,13 +11,19 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 
-alias la="ls -a"
-alias ll="ls -lh"
-alias lal="ls -lah" 
+# Only add aliases for `exa` if it exists
+if [[ $(type exa) ]]; then
+    alias exa="exa --group-directories-first --git"
+    alias exal="exa -l --group-directories-first --git"
+    alias exaal="exa -la --group-directories-first --git"
 
-alias exa="exa --group-directories-first --git"
-alias exal="exa -l --group-directories-first --git"
-alias exaal="exa -la --group-directories-first --git"
+    alias ls="exa"
+    alias la="exaal"
+    alias ll="exal"
+else
+    alias la="ls -ah"
+    alias ll="ls -lh"
+fi
 
 ## Typo aliases
 alias cd..='cd ..'

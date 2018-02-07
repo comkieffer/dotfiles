@@ -8,6 +8,13 @@ case $- in
       *) return;;
 esac
 
+
+# Load __vte_osc7 command for tilix
+# We need to do it early beacuse it overwrites `PROMPT_COMMAND`
+if [[ $TILIX_ID ]]; then
+    source /etc/profile.d/vte.sh
+fi
+
 # Load some sensible defaults 
 if [ -f ~/bin/bash/sensible-bash/sensible.bash ]; then
    source ~/bin/bash/sensible-bash/sensible.bash
@@ -17,15 +24,6 @@ fi
 if [ -d ${HOME}/bin ]; then
     PATH=${HOME}/bin/:${PATH}
 fi
-
-# Make Tilix Happy
-if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
-    source /etc/profile.d/vte.sh
-fi
-
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
@@ -80,10 +78,8 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 # Duh! I'm not an Emacs-tard!
 export EDITOR=vim
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+# Configure the behaviour of the shell
+shopt -s dotglob    # '*' also matches hidden files
 
 if [ -f ~/bin/bash/aliases ]; then
     . ~/bin/bash/aliases
