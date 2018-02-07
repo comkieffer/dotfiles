@@ -25,34 +25,38 @@ export GIT_PS1_SHOWCOLORHINTS         # Show a coloured hint about dirty state. 
 export GIT_PS1_HIDE_IF_PWD_IGNORED=1  # Do nothing if the current directory is ignored by git
 
 __make_prompt() {
-    local PREVIOUS_EXIT_STATUS=$?
+    PREVIOUS_EXIT_STATUS=$?
 
-    local EXIT_STATUS_COLOUR="${GREEN}"
-    if [[ PREVIOUS_EXIT_STATUS -ne 0 ]]; then 
-        EXIT_STATUS_COLOUR="${RED}"
+    PS1='' # We will be building it up piece by piece
+
+    if [[ ${PREVIOUS_EXIT_STATUS} -eq 0 ]]; then 
+        PS1='[\[${GREEN}✔${RESET} ${PREVIOUS_EXIT_STATUS}\]] '
+        PROMPT_MARK_COLOUR=${GREEN}
+    else
+        PS1='[\[${RED}🕱${RESET} ${PREVIOUS_EXIT_STATUS}\]] '    
+        PROMPT_MARK_COLOUR=${RED}
     fi
-    PS1='\[${EXIT_STATUS_COLOUR}[${PREVIOUS_EXIT_STATUS}]${RESET}\] '
-
-    local USER_COLOUR=${BLUE}
+    
+    USER_COLOUR=${BLUE}
     if [[ $UID -eq 0 ]]; then
         USER_COLOUR=${RED}
     fi
     PS1+='\[${RESET}${BOLD}${USER_COLOUR}\]\u\[${RESET}\] '
 
     # Add Current working directory information
-    PS1+='in \[${WHITE}\]\W\[${RESET}\] '
+    PS1+='in \[${WHITE}${BOLD}\]\W\[${RESET}\] '
 
-    local GIT_INFO=$(__git_ps1)
+    GIT_INFO=$(__git_ps1)
     if [[ -n $GIT_INFO ]]; then
         GIT_INFO="on git:${BOLD}${CYAN}${GIT_INFO:1}${RESET}"
         PS1+='\[$GIT_INFO\]' 
     fi
 
-    # End of first list
+    # End of first line
     PS1+='\n'
 
     # Second line is dedicated to the prompt mark 
-    PS1+=' \[${MAGENTA}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
+    PS1+=' \[${PROMPT_MARK_COLOUR}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
 
     # Append the last command we ran to the history now
     history -a # Add line to history
@@ -60,8 +64,7 @@ __make_prompt() {
     
     # Make Tilix Happy:
     if [[ $(type -t __vte_osc7) == "function" ]]; then 
-        local VTE_PWD_THING="$(__vte_osc7)"
-        PS1="$PS1\[$VTE_PWD_THING\]"
+        PS1="$PS1\[$(__vte_osc7)\]"
     fi
 }
 
