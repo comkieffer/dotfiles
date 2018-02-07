@@ -109,12 +109,9 @@ fi
 
 ## ROS Stuff
 
-# Try to source a ROS environment so that we have the roscd, rosinfo, rostopic, ... commands
-if [ -f /opt/ros/lunar/setup.bash ]; then
-    source /opt/ros/lunar/setup.bash
-elif [ -f /opt/ros/kinetic/setup.bash ]; then
-    source /opt/ros/kinetic/setup.bash
-fi
+# Try to source a ROS environment so that we have the roscd, rosinfo, 
+# rostopic, ... commands
+rossrc
 
 export ROS_HOSTNAME="$(hostname -s).local"
 export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${time}]: ${message}'

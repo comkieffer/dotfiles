@@ -1,0 +1,47 @@
+#!/bin/bash 
+#
+# Source the closest ROS environment. 
+#
+# The command will look through the parent directories until it finds a ROS 
+# setup directory. If none could be found it will attempt to source one of 
+# the root workspaces.
+# Finally, if none could be found it will print an error. 
+#
+
+source defcolours
+trap clear_colours EXIT
+
+ROS_SETUP_DIRS=(
+    "install"
+    "install_release"
+    "devel"
+    "devel_release"
+)
+
+CUR_PATH=$(pwd)
+while [[ "${CUR_PATH}" != "" ]]; do
+    for ws in "${ROS_SETUP_DIRS[@]}"; do
+        if [[ -f ${ws}/setup.bash ]]; then
+            source ${ws}/setup.bash
+            echo -e " ${GREEN}✔${RESET} Sourced workspace ${BOLD}${ws}${RESET}"
+            exit 0
+        fi
+    done
+
+    CUR_PATH=${CUR_PATH%/*}
+done
+
+# If we couldn't find any ros environments then we try to source the root workspace
+
+ROS_DISTROS=(melodic lunar kinetic jade indigo hydro groovy fuerte)
+for distro in "${ROS_DISTROS[@]}"; do 
+    if [[ -f /opt/ros/${distro}/setup.bash ]]; then
+        source /opt/ros/${distro}/setup.bash
+        echo -e " ${GREEN}✔${RESET} Sourced ROS workspace for ${BOLD}/opt/ros/${distro}/${RESET}"
+        exit 0
+    fi  
+done 
+
+echo -e " ${RED}✔${RESET} Unable to locate ROS workspace"
+
+unset ROS_SETUP_DIRS CUR_PATH ROS_DISTROS
