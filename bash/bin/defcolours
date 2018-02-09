@@ -27,6 +27,6 @@ MAGENTA="$(tput setaf 5)"
 CYAN="$(tput setaf 6)"
 WHITE="$(tput setaf 7)"
 
-GREEN_TICK='${GREEN}✓${RESET}'
-YELLOW_WARNING='${YELLOW}⚠${RESET}'
-RED_CROSS='${RED}✘${RESET}'
+GREEN_TICK="${GREEN}✔${RESET}"
+YELLOW_WARNING="${YELLOW}⚠${RESET}"
+RED_CROSS="${RED}✘${RESET}"

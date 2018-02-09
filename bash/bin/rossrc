@@ -20,6 +20,27 @@ ROS_SETUP_DIRS=(
     "devel_release"
 )
 
+# First off we source the ROS completions file
+ROS_DISTROS=("melodic" "lunar"  "kinetic" "jade" "indigo" "hydro" "groovy" "fuerte")
+for distro in "${ROS_DISTROS[@]}"; do 
+    if [[ -d /opt/ros/${distro} ]]; then
+        ROS_DISTRO=${distro}
+
+        if [[ -f /opt/ros/${ROS_DISTRO}/share/rosbash/rosbash ]]; then
+            source /opt/ros/${ROS_DISTRO}/share/rosbash/rosbash
+            echo -e "  ${GREEN_TICK} Loaded bash completions for ${BOLD}${ROS_DISTRO}${RESET}"
+        else 
+            echo -e "  ${RED_CROSS} Unknown ROS distribution. Unable to load completions"
+        fi
+    fi
+done
+
+if [[ ! $ROS_DISTRO ]]; then 
+    echo -e " ${RED_CROSS} Unable to locate a ROS distribution in /opt/ros"
+    exit -1
+fi
+
+# Next we try to source a ROS environment
 CUR_PATH=$(pwd)
 while [[ "${CUR_PATH}" != "" ]]; do
     for ws in "${ROS_SETUP_DIRS[@]}"; do
@@ -27,7 +48,7 @@ while [[ "${CUR_PATH}" != "" ]]; do
             source "${CUR_PATH}/${ws}/setup.bash"
             ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:${CUR_PATH}
 
-            echo -e " ${GREEN}✔${RESET} Sourced workspace ${BOLD}${ws}${RESET}"
+            echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${ws}${RESET}"
             exit 0
         fi
     done
@@ -35,15 +56,15 @@ while [[ "${CUR_PATH}" != "" ]]; do
     CUR_PATH=${CUR_PATH%/*}
 done
 
-# If we couldn't find any ros environments then we try to source the root workspace
-
+# Finally, if we couldn't find any ros environments then we try to source the root workspace
 ROS_DISTROS=(melodic lunar kinetic jade indigo hydro groovy fuerte)
-for distro in "${ROS_DISTROS[@]}"; do 
-    if [[ -f /opt/ros/${distro}/setup.bash ]]; then
-        source /opt/ros/${distro}/setup.bash
-        echo -e " ${GREEN}✔${RESET} Sourced ROS workspace for ${BOLD}/opt/ros/${distro}/${RESET}"
-        exit 0
-    fi  
-done 
+if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+    echo -e "  ${GREEN_TICK} Sourced ROS workspace for ${BOLD}/opt/ros/${ROS_DISTRO}/${RESET}"
+    exit 0
+else 
+    echo -e "  ${RED_CROSS} Unable to find ROS ${BOLD}${ROS_DISTRO}${RESET} setup file in ${BOLD}/opt/ros/${ROS_DISTRO}${RESET}"
+    exit -1
+fi  
 
 exit -1
