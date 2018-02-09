@@ -1,15 +1,6 @@
 
-RESET="$(tput sgr0)"
-BOLD="$(tput bold)"
-
-BLACK="$(tput setaf 0)"
-RED="$(tput setaf 1)"
-GREEN="$(tput setaf 2)"
-YELLOW="$(tput setaf 3)"
-BLUE="$(tput setaf 4)"
-MAGENTA="$(tput setaf 5)"
-CYAN="$(tput setaf 6)"
-WHITE="$(tput setaf 7)"
+source defcolours
+trap clear_colours EXIT
 
 PROMPT_MARK='❯'
 
@@ -30,10 +21,10 @@ __make_prompt() {
     PS1='' # We will be building it up piece by piece
 
     if [[ ${PREVIOUS_EXIT_STATUS} -eq 0 ]]; then 
-        PS1='[\[${GREEN}✔${RESET} ${PREVIOUS_EXIT_STATUS}\]] '
+        PS1='[\[${GREEN_TICK} ${PREVIOUS_EXIT_STATUS}\]] '
         PROMPT_MARK_COLOUR=${GREEN}
     else
-        PS1='[\[${RED}🕱${RESET} ${PREVIOUS_EXIT_STATUS}\]] '    
+        PS1='[\[${RED_CROSS} ${PREVIOUS_EXIT_STATUS}\]] '    
         PROMPT_MARK_COLOUR=${RED}
     fi
     
