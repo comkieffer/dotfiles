@@ -1,6 +1,18 @@
 
+#
+# Set a bunch of variables defining common colours and symbols. 
+#
+# Usage: 
+#   Add `defcolours` to your path and invoke source it with `source defcolours. To cleanup and 
+#   unset the variables once your script exits call the `clear_colours` function. This can be 
+#   automatically by trapping on the `EXIT` signal:
+#
+#       trap clear_colours EXIT
+#
+
 function clear_colours {
     unset RESET BOLD BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE
+    unset GREEN_TICK YELLOW_WARNING RED_CROSS
 }
 
 RESET="$(tput sgr0)"
@@ -14,3 +26,7 @@ BLUE="$(tput setaf 4)"
 MAGENTA="$(tput setaf 5)"
 CYAN="$(tput setaf 6)"
 WHITE="$(tput setaf 7)"
+
+GREEN_TICK='${GREEN}✓${RESET}'
+YELLOW_WARNING='${YELLOW}⚠${RESET}'
+RED_CROSS='${RED}✘${RESET}'

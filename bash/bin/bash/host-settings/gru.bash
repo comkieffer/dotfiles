@@ -14,9 +14,9 @@ if [[ "$?" != "0" ]]; then
     # Ideally we would test to see if the roscore is up but for that we would
     # have to wait a little for it to finish setup. To avoid delaying startup 
     # too much we'll just hope that it comes up.
-    echo -e " ${GREEN}✔${RESET} ${BOLD}roscore${RESET} started as PID ${BOLD}$!${RESET}"
+    echo -e " ${GREEN_TICK} ${BOLD}roscore${RESET} started as PID ${BOLD}$!${RESET}"
 else 
-    echo -e " ${GREEN}✔${RESET} ${BOLD}roscore${RESET} running"
+    echo -e " ${GREEN_TICK} ${BOLD}roscore${RESET} running"
 fi
 
 rossrc # Make sure that we have a basic ROS environment available
