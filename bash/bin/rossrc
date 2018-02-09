@@ -1,6 +1,8 @@
 #!/bin/bash 
 #
-# Source the closest ROS environment. 
+# Source the closest ROS environment and add the workspace to the ROS_PACKAGE_PATH. This last bit
+# is necessary for older ROS tools like rosdep to work (they don't seem to understand the 
+# catkin-tools) marker file yet.
 #
 # The command will look through the parent directories until it finds a ROS 
 # setup directory. If none could be found it will attempt to source one of 
@@ -23,6 +25,8 @@ while [[ "${CUR_PATH}" != "" ]]; do
     for ws in "${ROS_SETUP_DIRS[@]}"; do
         if [[ -f "${CUR_PATH}/${ws}/setup.bash" ]]; then
             source "${CUR_PATH}/${ws}/setup.bash"
+            ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:${CUR_PATH}
+
             echo -e " ${GREEN}✔${RESET} Sourced workspace ${BOLD}${ws}${RESET}"
             exit 0
         fi
@@ -42,6 +46,4 @@ for distro in "${ROS_DISTROS[@]}"; do
     fi  
 done 
 
-echo -e " ${RED}✔${RESET} Unable to locate ROS workspace"
-
-unset ROS_SETUP_DIRS CUR_PATH ROS_DISTROS
+exit -1
