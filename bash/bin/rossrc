@@ -37,7 +37,7 @@ done
 
 if [[ ! $ROS_DISTRO ]]; then 
     echo -e " ${RED_CROSS} Unable to locate a ROS distribution in /opt/ros"
-    exit -1
+    return -1
 fi
 
 # Next we try to source a ROS environment
@@ -49,7 +49,7 @@ while [[ "${CUR_PATH}" != "" ]]; do
             ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:${CUR_PATH}
 
             echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${ws}${RESET}"
-            exit 0
+            return 0
         fi
     done
 
@@ -61,10 +61,10 @@ ROS_DISTROS=(melodic lunar kinetic jade indigo hydro groovy fuerte)
 if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
     source /opt/ros/${ROS_DISTRO}/setup.bash
     echo -e "  ${GREEN_TICK} Sourced ROS workspace for ${BOLD}/opt/ros/${ROS_DISTRO}/${RESET}"
-    exit 0
+    return 0
 else 
     echo -e "  ${RED_CROSS} Unable to find ROS ${BOLD}${ROS_DISTRO}${RESET} setup file in ${BOLD}/opt/ros/${ROS_DISTRO}${RESET}"
-    exit -1
+    return -1
 fi  
 
-exit -1
+return -1

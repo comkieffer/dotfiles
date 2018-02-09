@@ -20,6 +20,6 @@ else
     echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} running"
 fi
 
-rossrc # Make sure that we have a basic ROS environment available
+source rossrc # Make sure that we have a basic ROS environment available
 
 echo -e ""

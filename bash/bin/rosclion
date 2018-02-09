@@ -6,7 +6,7 @@
 #
 # The script will also attempt to source a ros environment if ROS hasn't been loaded yet.
 
-rossrc
+source rossrc
 
 # Locate the most recent CLion install
 if [[ $(type -t clion) ]]; then 

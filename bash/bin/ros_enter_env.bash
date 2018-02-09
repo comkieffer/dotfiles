@@ -6,9 +6,7 @@ trap clear_colours EXIT
 echo "Setting up ROS environment ... "
 
 ## Get the full path to the setup.bash file
-if [[ ! rossrc ]]; then 
-    exit 1
-fi
+source rossrc
 
 ## Locate a ROS Master on the network or start one
 
