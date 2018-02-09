@@ -107,10 +107,6 @@ fi
 
 ## ROS Stuff
 
-# Try to source a ROS environment so that we have the roscd, rosinfo, 
-# rostopic, ... commands
-rossrc
-
 export ROS_HOSTNAME="$(hostname -s).local"
 export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${time}]: ${message}'
 export ROS_LANG_DISABLE='genlisp:geneus:gennodejs'
