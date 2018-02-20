@@ -75,11 +75,6 @@ fi
 # colored GCC warnings and errors
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# Duh! I'm not an Emacs-tard!
-export EDITOR=vim
-export CC=clang
-export CXX=clang++
-
 # Configure the behaviour of the shell
 shopt -s dotglob    # '*' also matches hidden files
 
@@ -105,11 +100,11 @@ else
     echo -e '\e[1;31m✘\e[0m Unable to locate package <direnv>'
 fi
 
-## ROS Stuff
+# Load our exported variables
+if [ -f ~/bin/bash/exports.bash ]; then
+    source ~/bin/bash/exports.bash
+fi
 
-export ROS_HOSTNAME="$(hostname -s).local"
-export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${time}]: ${message}'
-export ROS_LANG_DISABLE='genlisp:geneus:gennodejs'
 
 ## Per-host settings
 if [ -f ~/bin/bash/host-settings/$(hostname -s).bash ]; then
