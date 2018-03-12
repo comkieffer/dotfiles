@@ -3,6 +3,7 @@
 source defcolours
 trap clear_colours EXIT
 
+echo ""
 echo "Setting up ROS environment ... "
 
 ## Get the full path to the setup.bash file
@@ -56,4 +57,6 @@ unset _ROSCORE_SERVER_IP _FOUND_ROSCORE_SERVER
 # Time for some manual tweaking 
 export ROSCONSOLE_FORMAT='[${severity}] <${time}> ${node} @ ${file}:${line}
     ${message}'
+
+echo ""
 
