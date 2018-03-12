@@ -1,0 +1,11 @@
+{
+    "word_wrap": true,
+    "wrap_width": 100, 
+
+    // Position the text area in the middle of the buffer. 
+    "draw_centered": true,
+    
+    // Disable line width options since we wrap automatically at 100 columns    
+    "draw_indent_guides": false,
+    "rulers": []
+}

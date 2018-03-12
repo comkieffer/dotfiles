@@ -1,0 +1,40 @@
+{
+	"added_words":
+	[
+		"struct"
+	],
+	"always_show_minimap_viewport": true,
+	"bold_folder_labels": true,
+	"color_scheme": "Packages/Material Theme/schemes/Material-Theme.tmTheme",
+	"dictionary": "Packages/Language - English/en_GB.dic",
+	"draw_minimap_border": true,
+	"ensure_newline_at_eof_on_save": true,
+	"font_size": 8,
+	"highlight_line": true,
+	"ignored_packages":
+	[
+		"Markdown",
+		"Vintage"
+	],
+	"ignored_words":
+	[
+		"beacuse"
+	],
+	"indent_guide_options":
+	[
+		"draw_normal",
+		"draw_active"
+	],
+	"line_padding_bottom": 2,
+	"line_padding_top": 2,
+	"material_theme_small_tab": true,
+	"overlay_scroll_bars": "enabled",
+	"rulers":
+	[
+		100,
+		120
+	],
+	"theme": "Material-Theme.sublime-theme",
+	"translate_tabs_to_spaces": true,
+	"trim_trailing_whitespace_on_save": true
+}
