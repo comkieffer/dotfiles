@@ -11,6 +11,8 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 
+alias dl="cd ~/Downloads"
+
 # Only add aliases for `exa` if it exists
 if [[ $(type exa) ]]; then
     alias exa="exa --group-directories-first --git"
