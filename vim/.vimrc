@@ -31,3 +31,6 @@ set hlsearch       " Highlight matches
 " Shift+Tab unindents a line "
 imap <S-Tab> <Esc><<i
 nmap <S-tab> <<
+
+syntax on          " Make it pretty!
+filetype plugin on
