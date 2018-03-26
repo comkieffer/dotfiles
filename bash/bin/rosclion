@@ -50,8 +50,11 @@ fi
 if [[ -d $1 ]]; then 
     # If there is no CMakeLists file in the directory we're probably making a mistake
     if [[ ! -f "$1/CMakeLists.txt" ]]; then
-        printf "No CMakeLists.txt file found in $1. Do you really want to open CLion? [y/N]: "
-        if ! read -q; then
+        echo -e ""
+        echo -e "No CMakeLists.txt file found in $1."
+        read -r -p "Do you really want to open CLion? [y/N]: " response
+
+        if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
             exit 1
         fi
     fi
