@@ -30,8 +30,17 @@ if [[ ${_FOUND_ROSCORE_SERVER} == 0 ]] ; then
 
         # Test the master
         rostopic list > /dev/null 2>&1
-        if [[ $? == "1" ]]; then 
+        if [[ "$?" == "1" ]]; then 
             echo -e "  ${RED_CROSS} Unable to communicate with master!"
+        fi
+    else 
+        # We seem to the ROS MASTER server. We should start a roscore if we don't have one. 
+        
+        # Check to see if we have a local roscore running
+        rostopic list > /dev/null 2>&1
+        if [[ "$?" == "1" ]]; then 
+            exec roscore > /dev/null 2>&1 &!
+            echo -e "  ${GREEN_TICK} Starting roscore on ${BOLD}localhost${RESET} with PID ${BOLD}$!${RESET}"
         fi
     fi
 
@@ -48,7 +57,7 @@ else
         exec roscore > /dev/null 2>&1 &!
         echo -e "  ${GREEN_TICK} Starting roscore on ${BOLD}localhost${RESET} with PID ${BOLD}$!${RESET}"
     else
-        echo -e "  ${YELLOW_WARNING} It looks like roscore is already running. ${BOLD}Nothing to start.${RESET}" 
+        echo -e "  ${YELLOW_WARNING} roscore is already running as pid ${BOLD}$(pidof -x roscore)${RESET}. ${BOLD}Nothing to start.${RESET}" 
     fi
 fi
 

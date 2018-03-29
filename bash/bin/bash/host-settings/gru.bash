@@ -9,7 +9,7 @@ echo -e " ${BOLD}ROS${RESET} Configuration:"
 
 # Try to see if roscore is running 
 rostopic list > /dev/null 2>&1
-if [[ "$?" != "0" ]]; then 
+if [[ "$?" == "1" ]]; then 
     exec roscore > /dev/null 2>&1 &! 
     
     # Ideally we would test to see if the roscore is up but for that we would
@@ -17,7 +17,7 @@ if [[ "$?" != "0" ]]; then
     # too much we'll just hope that it comes up.
     echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} started as PID ${BOLD}$!${RESET}"
 else 
-    echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} running"
+    echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} is already running as PID ${BOLD}$(pidof -x roscore)${RESET}"
 fi
 
 source rossrc # Make sure that we have a basic ROS environment available
