@@ -63,7 +63,7 @@ if [[ -d $1 ]]; then
     ${CLION_CMD} "$1" > /dev/null 2>&1 &!
     exit 0
 else 
-    echo -e "\e[1;31mError\[0m: $1 is not a directory"
+    echo -e "\e[1;31mError\e[0m: $1 is not a directory"
     exit 1
 fi
 
