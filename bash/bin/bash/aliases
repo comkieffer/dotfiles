@@ -22,9 +22,11 @@ if [[ $(type exa) ]]; then
     alias ls="exa"
     alias la="exaal"
     alias ll="exal"
+    alias lla="exaal"
 else
     alias la="ls -ah"
     alias ll="ls -lh"
+    alias lla="ls -lah"
 fi
 
 ## Typo aliases
