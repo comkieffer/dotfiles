@@ -48,7 +48,7 @@ while [[ "${CUR_PATH}" != "" ]]; do
             source "${CUR_PATH}/${ws}/setup.bash"
             ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:${CUR_PATH}
 
-            echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${ws}${RESET}"
+            echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${CUR_PATH##*/} / ${ws}${RESET}"
             return 0
         fi
     done
