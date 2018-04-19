@@ -7,9 +7,14 @@ PATH=/srv/ros_ws/scripts/:${PATH}
 echo -e ""
 echo -e " ${BOLD}ROS${RESET} Configuration:"
 
+# Make sure that we have a basic ROS environment available
+source _rossrc_cmd 
+
 # Try to see if roscore is running 
 rostopic list > /dev/null 2>&1
-if [[ "$?" == "1" ]]; then 
+_rocore_status=$?
+
+if [[ "${_rocore_status}" != "0" ]]; then 
     exec roscore > /dev/null 2>&1 &! 
     
     # Ideally we would test to see if the roscore is up but for that we would
@@ -20,6 +25,6 @@ else
     echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} is already running as PID ${BOLD}$(pidof -x roscore)${RESET}"
 fi
 
-source _rossrc_cmd # Make sure that we have a basic ROS environment available
-
 echo -e ""
+
+unset _rocore_status
