@@ -34,5 +34,8 @@
     
 [diff]
 	wsErrorHighlight = all # Show whitesoace changes in diffs
+	tool = meld
 [push]
 	default = simple
+[merge]
+	tool = meld
