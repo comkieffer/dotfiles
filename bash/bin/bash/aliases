@@ -36,6 +36,7 @@ alias cd..='cd ..'
 alias cc="catkin config"
 alias cb="catkin build"
 alias imview="rosrun rqt_image_view rqt_image_view"
+alias rossrc="source _rossrc_cmd"
 
 # Refine commands 
 

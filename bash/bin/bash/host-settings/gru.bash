@@ -20,6 +20,6 @@ else
     echo -e "  ${GREEN_TICK} ${BOLD}roscore${RESET} is already running as PID ${BOLD}$(pidof -x roscore)${RESET}"
 fi
 
-source rossrc # Make sure that we have a basic ROS environment available
+source _rossrc_cmd # Make sure that we have a basic ROS environment available
 
 echo -e ""

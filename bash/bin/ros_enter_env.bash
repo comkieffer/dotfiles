@@ -7,7 +7,7 @@ echo ""
 echo "Setting up ROS environment ... "
 
 ## Get the full path to the setup.bash file
-source rossrc
+source _rossrc_cmd
 
 ## Locate a ROS Master on the network or start one
 

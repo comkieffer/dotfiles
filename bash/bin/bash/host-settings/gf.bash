@@ -25,7 +25,7 @@ echo -e "  - E-Mail $(git config --get user.email)"
 echo -e ""
 echo -e "${BOLD}ROS${RESET} Configuration:"
 echo -e "  ${GREEN_TICK} ROS_MASTER_URI: ${ROS_MASTER_URI}"
-source rossrc # Make sure that we have a basic ROS environment available
+source _rossrc_cmd # Make sure that we have a basic ROS environment available
 rostopic list > /dev/null 2>&1
 if [ $? != 0 ]; then
     echo -e "  ${RED_CROSS} \`${BOLD}roscore${RESET}\` is not running on ROS master"
