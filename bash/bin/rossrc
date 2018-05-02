@@ -30,7 +30,7 @@ for distro in "${ROS_DISTROS[@]}"; do
             source /opt/ros/${ROS_DISTRO}/share/rosbash/rosbash
             echo -e "  ${GREEN_TICK} Loaded bash completions for ${BOLD}${ROS_DISTRO}${RESET}"
         else 
-            echo -e "  ${RED_CROSS} Unknown ROS distribution. Unable to load completions"
+            echo -e "  ${RED_CROSS} Unable to locate completions file. Is rosbash installed ?"
         fi
     fi
 done
