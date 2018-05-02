@@ -109,8 +109,9 @@ if [ -f ~/bin/bash/exports.bash ]; then
     source ~/bin/bash/exports.bash
 fi
 
-
 ## Per-host settings
-if [ -f ~/bin/bash/host-settings/$(hostname -s).bash ]; then
-    source ~/bin/bash/host-settings/$(hostname -s).bash
+_MY_HOSTNAME=$(hostname -s | tr '[:upper:]' '[:lower:]')
+if [ -f ~/bin/bash/host-settings/${_MY_HOSTNAME}.bash ]; then
+    source ~/bin/bash/host-settings/${_MY_HOSTNAME}.bash
 fi
+unset _MY_HOSTNAME
