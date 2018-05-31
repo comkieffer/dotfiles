@@ -6,6 +6,7 @@ export EDITOR=vim
 export CC=clang
 export CXX=clang++
 
+MAKEFLAGS="-j$(nproc) -O"
 
 ## ROS Stuff
 
