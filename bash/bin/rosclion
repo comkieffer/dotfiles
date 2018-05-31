@@ -8,6 +8,10 @@
 
 source _rossrc_cmd
 
+# This is the directory in which CLion should be isntalled if it was installed by the toolbox
+CLION_DIR="${HOME}/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/"
+
+
 # Locate the most recent CLion install
 if [[ $(type -t clion) ]]; then 
     # Clion is launchable as a command
@@ -21,11 +25,10 @@ elif [[ -d ${CLION_DIR} ]]; then
     # using the '-r' flag. We then want to grab only the first line using the 
     # cut command. Finally we append the path to the actual launch script.
 
-    CLION_DIR="${HOME}/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/"
     CLION_VERSION=$(ls ${CLION_DIR} | sort -r | cut -d $'\n' -f 1)
     CLION_CMD=${CLION_DIR}/${CLION_VERSION}/bin/clion.sh
 
-    unset  CLION_DIR CLION_VERSION
+    unset CLION_VERSION
 else 
     echo "CLion not found" 
     exit 1
@@ -67,4 +70,4 @@ else
     exit 1
 fi
 
-unset CLION_CMD
+unset CLION_CMD CLION_DIR
