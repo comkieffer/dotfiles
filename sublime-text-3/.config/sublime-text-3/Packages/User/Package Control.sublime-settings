@@ -8,6 +8,7 @@
 		"CMakeEditor",
 		"GitGutter",
 		"MarkdownEditing",
+		"MarkdownLivePreview",
 		"Material Theme",
 		"Monokai Extended",
 		"OmniSharp",
