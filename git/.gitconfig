@@ -5,6 +5,7 @@
 [core]
 	fileMode = false
 	editor = vim
+	excludesfile = ~/.gitignore_global
 
 [alias]
     # list the recent commits in a oneline, coloured form with the date
