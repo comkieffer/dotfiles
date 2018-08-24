@@ -22,11 +22,25 @@ elif [[ -d ${CLION_DIR} ]]; then
     # CLion versions isntalled by the Jetbrains Toolbox are stored in CLION_DIR
     # We want to always run the latests one. Since the versions have 
     # monotonically increasing numbers we can just sort in decreasing order 
-    # using the '-r' flag. We then want to grab only the first line using the 
-    # cut command. Finally we append the path to the actual launch script.
+    # We then want to grab only the first line using the  cut command. Finally
+    # we append the path to the actual launch script.
 
-    CLION_VERSION=$(ls ${CLION_DIR} | sort -r | cut -d $'\n' -f 1)
-    CLION_CMD=${CLION_DIR}/${CLION_VERSION}/bin/clion.sh
+    # Onliner explanation:
+    # 
+    # List all the folder inside $CLION_DIR
+    #    find ${CLION_DIR} -maxdepth 1 -type d 
+    # Sorth them in decreasing order 
+    #    sort -r
+    # Grab the first line
+    #   cut -d $'\n' -f 1
+    #
+    CLION_VERSION_DIR=$(find ${CLION_DIR} -maxdepth 1 -type d | sort -r | cut -d $'\n' -f 1)
+    CLION_CMD=${CLION_VERSION_DIR}/bin/clion.sh
+
+    if [[ ! -x "$CLION_CMD" ]]; then 
+        echo -e "Error: $CLION_CMD does not seem to be an executeble file"
+        exit 2
+    fi
 
     unset CLION_VERSION
 else 
