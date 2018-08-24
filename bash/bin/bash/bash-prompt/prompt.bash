@@ -18,6 +18,10 @@ export GIT_PS1_HIDE_IF_PWD_IGNORED=1  # Do nothing if the current directory is i
 __make_prompt() {
     PREVIOUS_EXIT_STATUS=$?
 
+    # Append the last command we ran to the history now
+    history -a # Add line to history
+    history -n # Read new lines from history to catch up with other shells
+
     PS1='' # We will be building it up piece by piece
 
     if [[ ${PREVIOUS_EXIT_STATUS} -eq 0 ]]; then 
@@ -49,10 +53,6 @@ __make_prompt() {
     # Second line is dedicated to the prompt mark 
     PS1+=' \[${PROMPT_MARK_COLOUR}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
 
-    # Append the last command we ran to the history now
-    history -a # Add line to history
-    history -n # Read new lines from history to catch up with other shells
-    
     # Make Tilix Happy:
     if [[ $(type -t __vte_osc7) == "function" ]]; then 
         PS1="$PS1\[$(__vte_osc7)\]"

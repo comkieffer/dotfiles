@@ -37,10 +37,10 @@ fi
 alias cd..='cd ..'
 
 ## ROS aliases
-alias cc="catkin config"
-alias cb="catkin build"
-alias imview="rosrun rqt_image_view rqt_image_view"
-alias rossrc="source _rossrc_cmd"
+alias cc='catkin config'
+alias cb='catkin build && source $(catkin locate --devel)/setup.bash'
+alias imview='rosrun rqt_image_view rqt_image_view'
+alias rossrc='source _rossrc_cmd'
 
 # Refine commands 
 

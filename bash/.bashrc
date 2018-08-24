@@ -85,6 +85,7 @@ fi
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
 # Configure the behaviour of the shell
+# See bash/sensible-bash/sensible.bash for all the other options
 shopt -s dotglob    # '*' also matches hidden files
 
 if [ -f ~/bin/bash/aliases ]; then
