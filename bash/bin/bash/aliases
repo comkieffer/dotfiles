@@ -41,6 +41,7 @@ alias cc='catkin config'
 alias cb='catkin build && source $(catkin locate --devel)/setup.bash'
 alias imview='rosrun rqt_image_view rqt_image_view'
 alias rossrc='source _rossrc_cmd'
+alias rosgdb="rosrun --prefix 'gdb -ex run --args'"
 
 # Refine commands 
 
