@@ -21,5 +21,5 @@ fi
 
 ## ROS Stuff
 export ROS_HOSTNAME="$(hostname -s).local"
-export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${time}]: ${message}'
+export ROSCONSOLE_FORMAT='[${severity} - ${node}] [${logger}]: ${message}'
 export ROS_LANG_DISABLE='genlisp:geneus:gennodejs'
