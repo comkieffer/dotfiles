@@ -12,17 +12,16 @@ echo -e "  ${GREEN_TICK} ROS_MASTER_URI: $BOLD${ROS_MASTER_URI:-localhost}$RESET
 source _rossrc_cmd
 
 # Try to see if roscore is running 
-rostopic list > /dev/null 2>&1
-_roscore_status=$?
+# When we list the processes we should see a single roscore process
+_search_results=$(ps -e | grep roscore | wc -l)
 
-if [ $_roscore_status -ne 0 ]; then
+if [ $_search_results -ne 1 ]; then
     roscore > /dev/null &! 
 
-    rostopic list > /dev/null 2>&1
-    _roscore_status=$?
+    _search_results=$(ps -e | grep roscore | wc -l)
     _roscore_pid=$!
 
-    if [ $_roscore_status -ne 0 ]; then
+    if [ $_search_results -ne 1 ]; then
         echo -e "  ${RED_CROSS} Failed to start \`${BOLD}roscore${RESET}\`"
     else 
         echo -e "  ${GREEN_TICK} Started new \`${BOLD}roscore${RESET}\` with PID $_roscore_pid"    
