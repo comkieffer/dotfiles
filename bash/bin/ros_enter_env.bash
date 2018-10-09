@@ -63,9 +63,5 @@ fi
 
 unset _ROSCORE_SERVER_IP _FOUND_ROSCORE_SERVER
 
-# Time for some manual tweaking 
-export ROSCONSOLE_FORMAT='[${severity}] <${time}> ${node} @ ${file}:${line}
-    ${message}'
-
 echo ""
 
