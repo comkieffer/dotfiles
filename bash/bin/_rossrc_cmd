@@ -35,12 +35,12 @@ if [[ ! $ROS_DISTRO ]]; then
 fi
 
 # Next we try to source a ROS environment
-_catkin_ws=$(catkin locate --devel > /dev/null 2>&1)
+_catkin_ws=$(catkin locate --devel)
 _ws_found=$?
 
 if [ $_ws_found -eq 0 ]; then
+    source ${_catkin_ws}/setup.bash
     echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${catkin_ws}${RESET}"
-    cd $_catkin_ws
 else
     # Finally, if we couldn't find any ros environments then we try to source the root workspace
     if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
