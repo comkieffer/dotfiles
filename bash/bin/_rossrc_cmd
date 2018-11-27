@@ -13,15 +13,9 @@
 source defcolours
 trap clear_colours EXIT
 
-ROS_SETUP_DIRS=(
-    "install"
-    "install_release"
-    "devel"
-    "devel_release"
-)
+ROS_DISTROS=("melodic" "lunar"  "kinetic" "jade" "indigo" "hydro" "groovy" "fuerte")
 
 # First off we source the ROS completions file
-ROS_DISTROS=("melodic" "lunar"  "kinetic" "jade" "indigo" "hydro" "groovy" "fuerte")
 for distro in "${ROS_DISTROS[@]}"; do 
     if [[ -d /opt/ros/${distro} ]]; then
         ROS_DISTRO=${distro}
@@ -41,30 +35,20 @@ if [[ ! $ROS_DISTRO ]]; then
 fi
 
 # Next we try to source a ROS environment
-CUR_PATH=$(pwd)
-while [[ "${CUR_PATH}" != "" ]]; do
-    for ws in "${ROS_SETUP_DIRS[@]}"; do
-        if [[ -f "${CUR_PATH}/${ws}/setup.bash" ]]; then
-            source "${CUR_PATH}/${ws}/setup.bash"
-            ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:${CUR_PATH}
+_catkin_ws=$(catkin locate --devel > /dev/null 2>&1)
+_ws_found=$?
 
-            echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${CUR_PATH##*/} / ${ws}${RESET}"
-            return 0
-        fi
-    done
+if [ $_ws_found -eq 0 ]; then
+    echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${catkin_ws}${RESET}"
+    cd $_catkin_ws
+else
+    # Finally, if we couldn't find any ros environments then we try to source the root workspace
+    if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
+        source /opt/ros/${ROS_DISTRO}/setup.bash
+        echo -e "  ${GREEN_TICK} Sourced ROS workspace for ${BOLD}/opt/ros/${ROS_DISTRO}/${RESET}"
+    else 
+        echo -e "  ${RED_CROSS} Unable to find ROS ${BOLD}${ROS_DISTRO}${RESET} setup file in ${BOLD}/opt/ros/${ROS_DISTRO}${RESET}"
+    fi  
+fi
 
-    CUR_PATH=${CUR_PATH%/*}
-done
-
-# Finally, if we couldn't find any ros environments then we try to source the root workspace
-ROS_DISTROS=(melodic lunar kinetic jade indigo hydro groovy fuerte)
-if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
-    source /opt/ros/${ROS_DISTRO}/setup.bash
-    echo -e "  ${GREEN_TICK} Sourced ROS workspace for ${BOLD}/opt/ros/${ROS_DISTRO}/${RESET}"
-    return 0
-else 
-    echo -e "  ${RED_CROSS} Unable to find ROS ${BOLD}${ROS_DISTRO}${RESET} setup file in ${BOLD}/opt/ros/${ROS_DISTRO}${RESET}"
-    return -1
-fi  
-
-return -1
+unset ROS_DISTROS _catkin_ws _ws_found
