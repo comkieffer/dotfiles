@@ -19,7 +19,7 @@ function install {
 # hassle easch time we add a script to it
 mkdir -p ~/bin/
 mkdir -p ~/.config/i3
-mkdir -p ~/.config/sublime-text-3
+mkdir -p ~/.config/sublime-text-3/Packages/User
 
 # Install dotfiles and scripts ... 
 
