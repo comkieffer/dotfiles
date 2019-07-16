@@ -5,6 +5,7 @@
 	],
 	"installed_packages":
 	[
+		"ayu",
 		"CMakeEditor",
 		"GitGutter",
 		"MarkdownEditing",
@@ -14,6 +15,8 @@
 		"OmniSharp",
 		"Package Control",
 		"Restructured Text (RST) Snippets",
+		"SublimeGit",
+		"Terminus",
 		"Theme - Hero",
 		"Theme - SoDaReloaded"
 	]

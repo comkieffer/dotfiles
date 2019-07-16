@@ -7,7 +7,7 @@
 	],
 	"always_show_minimap_viewport": true,
 	"bold_folder_labels": true,
-	"color_scheme": "Packages/Material Theme/schemes/Material-Theme.tmTheme",
+	"color_scheme": "Packages/ayu/ayu-mirage.sublime-color-scheme",
 	"dictionary": "Packages/Language - English/en_GB.dic",
 	"draw_minimap_border": true,
 	"ensure_newline_at_eof_on_save": true,
@@ -36,7 +36,7 @@
 		100,
 		120
 	],
-	"theme": "Material-Theme.sublime-theme",
+	"theme": "ayu-mirage.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"trim_trailing_whitespace_on_save": true
 }
