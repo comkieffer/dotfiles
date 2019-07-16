@@ -3,8 +3,11 @@
 
 export EDITOR=vim
 
-export CC=clang
-export CXX=clang++
+# Only use clang as the default compiler if it is installed!
+if [ $(which clang > /dev/null; echo $?) -eq 0 ]; then
+    export CC=clang
+    export CXX=clang++
+fi
 
 # Enable parrallel builds with make by default
 MAKEFLAGS="-j$(nproc) -O"
