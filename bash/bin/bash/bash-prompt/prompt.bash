@@ -20,7 +20,8 @@ __make_prompt() {
 
     # Append the last command we ran to the history now
     history -a # Add line to history
-    history -n # Read new lines from history to catch up with other shells
+    history -c # clear history
+    history -r # reload history 
 
     PS1='' # We will be building it up piece by piece
 
