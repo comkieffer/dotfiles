@@ -1,4 +1,5 @@
 
+source stdlib
 
 ## Common aliases
 alias _='sudo'
@@ -18,7 +19,7 @@ alias ....="cd ../../.."
 alias dl="cd ~/Downloads"
 
 # Only add aliases for `exa` if it exists
-if [[ $(type exa) ]]; then
+if has exa; then
     alias exa="exa --group-directories-first --git"
     alias exal="exa -l --group-directories-first --git"
     alias exaal="exa -la --group-directories-first --git"
@@ -35,13 +36,6 @@ fi
 
 ## Typo aliases
 alias cd..='cd ..'
-
-## ROS aliases
-alias cc='catkin config'
-alias cb='catkin build && source $(catkin locate --devel)/setup.bash'
-alias imview='rosrun rqt_image_view rqt_image_view'
-alias rossrc='source _rossrc_cmd'
-alias rosgdb="rosrun --prefix 'gdb -ex run --args'"
 
 # Refine commands 
 

@@ -1,0 +1,13 @@
+
+# Check if the first argument exists as a command on the system
+# Useful to check if a command is installed and available on PATH
+has() {
+    hash "$@" &> /dev/null
+}
+
+# Attempt to source a file and fail siletly if the file does not exist
+try_to_source() {
+    local file="$1"
+    
+    [[ -f "$file" ]] && source "$file"
+}

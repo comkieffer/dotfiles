@@ -26,10 +26,10 @@ __make_prompt() {
     PS1='' # We will be building it up piece by piece
 
     if [[ ${PREVIOUS_EXIT_STATUS} -eq 0 ]]; then 
-        PS1='[\[${GREEN_TICK} ${PREVIOUS_EXIT_STATUS}\]] '
+        PS1='[\[${GREEN_TICK}\]] '
         PROMPT_MARK_COLOUR=${GREEN}
     else
-        PS1='[\[${RED_CROSS} ${PREVIOUS_EXIT_STATUS}\]] '    
+        PS1='[\[${RED_CROSS} - ${RED}${BOLD}${PREVIOUS_EXIT_STATUS}${RESET}\]] '    
         PROMPT_MARK_COLOUR=${RED}
     fi
     
