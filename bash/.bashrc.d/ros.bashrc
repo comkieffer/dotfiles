@@ -50,6 +50,7 @@ fi
 
 ## ROS aliases
 alias cc='catkin config'
+alias cs='source $(catkin locate)/devel/setup.bash'
 alias cb='catkin build && source $(catkin locate --devel)/setup.bash'
 alias imview='rosrun rqt_image_view rqt_image_view'
 alias rossrc='source _rossrc_cmd'
