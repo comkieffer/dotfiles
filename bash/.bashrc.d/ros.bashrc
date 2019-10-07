@@ -22,7 +22,7 @@ source_ros() {
     fi
 
     # Next we try to source a ROS environment
-    _catkin_ws=$(catkin locate --devel)
+    _catkin_ws=$(catkin locate --devel 2> /dev/null)
     _ws_found=$?
 
     if [ $_ws_found -eq 0 ]; then
