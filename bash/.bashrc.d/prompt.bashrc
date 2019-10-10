@@ -53,13 +53,8 @@ __make_prompt() {
 
     # Second line is dedicated to the prompt mark 
     PS1+=' \[${PROMPT_MARK_COLOUR}${BOLD}\]${PROMPT_MARK}\[${RESET}\] '
-
-    # Make Tilix Happy:
-    if [[ $(type -t __vte_osc7) == "function" ]]; then 
-        PS1="$PS1\[$(__vte_osc7)\]"
-    fi
 }
 
-PROMPT_COMMAND=__make_prompt
-
-
+if ! [[ "${PROMPT_COMMAND:-}" =~ __make_prompt ]]; then
+  PROMPT_COMMAND="__make_prompt${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+fi
