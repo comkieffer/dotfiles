@@ -18,7 +18,11 @@
 		"OmniSharp",
 		"Package Control",
 		"Restructured Text (RST) Snippets",
+		"sublack",
 		"SublimeGit",
+		"SublimeLinter",
+		"SublimeLinter-contrib-yamllint",
+		"SublimeLinter-xmllint",
 		"Terminus",
 		"Theme - Hero",
 		"Theme - SoDaReloaded"

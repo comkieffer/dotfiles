@@ -3,7 +3,8 @@
 	[
 		"struct",
 		"Endianness",
-		"endian"
+		"endian",
+		"joypad"
 	],
 	"always_show_minimap_viewport": true,
 	"bold_folder_labels": true,
@@ -11,6 +12,12 @@
 	"dictionary": "Packages/Language - English/en_GB.dic",
 	"draw_minimap_border": true,
 	"ensure_newline_at_eof_on_save": true,
+	"file_exclude_patterns":
+	[
+		"*.pyc",
+		"*.sublime-workspace",
+		"Package Control.cache"
+	],
 	"font_size": 8,
 	"highlight_line": true,
 	"ignored_packages":
@@ -38,5 +45,5 @@
 	],
 	"theme": "ayu-light.sublime-theme",
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_whitespace_on_save": true
+	"trim_trailing_white_space_on_save": true
 }
