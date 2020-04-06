@@ -1,7 +1,8 @@
 
 
 # Ignore IDE project files
-.idea 
+.idea
 cmake-build*
 .vscode
-
+*.sublime-project
+*.sublime-workspace
