@@ -5,9 +5,14 @@ has() {
     hash "$@" &> /dev/null
 }
 
+# Test to see if a package exists in the Ubuntu repos
+function has-package {
+    return dpkg -l "$1" &> /dev/null
+}
+
 # Attempt to source a file and fail siletly if the file does not exist
 try_to_source() {
     local file="$1"
-    
+
     [[ -f "$file" ]] && source "$file"
 }

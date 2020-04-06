@@ -1,11 +1,6 @@
 
 source stdlib
 
-function has-package {
-    # Test to see if a package exists in the Ubuntu repos
-    return dpkg -l "$1" &> /dev/null
-}
-
 if ! has fzf; then
     echo -e "  $(tput setaf 1)✘$(tput sgr0) <fzf> not installed."
 
