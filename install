@@ -1,5 +1,26 @@
 #! /usr/bin/env python3
 
+"""
+Installer for my dotfiles, provides ome porcelain around GNU ``stow`` invocations.
+
+The installer looks at the ``STOWED_PROGRAMS`` dict for configurations. A configuration is a set of
+dotfiles stored in a folder. The name of the configuration is the name of the folder.
+
+The top level keys of the configurations dict are the configurations to install. The associated
+values are nested dicts with additional information on the configuration. A configuration is only
+installed if an executable with the same name is on the ``PATH``. The name can be overridden by
+passing the ``executable`` property in the confiuration.
+
+Stow tends to be over-eager when linking things and it may be nessary to manually create directories
+before invoking ``stow``. The ``create_dirs`` key of the configuration is a list of directories to
+create before invoking ``stow``.
+
+USAGE:
+./install all
+./install vim bash
+
+"""
+
 import os
 import sys
 import subprocess
@@ -16,7 +37,11 @@ STOWED_PROGRAMS = {
     },
     "kitty": {
         "create_dirs": ["~/.config/kitty",],
-    }
+    },
+    "regolith": {
+        "executable": "regolith-look",
+        "create_dirs": ["~/.config/regolith",],
+    },
 }
 
 g_targets_processed = []
@@ -88,7 +113,7 @@ if __name__ == "__main__":
         if target in STOWED_PROGRAMS:
             executable_name = STOWED_PROGRAMS[target].get("executable", target)
             if not is_installed(executable_name):
-                print(f"- skipping <{target}>, <{executable_name}> is not in $PATH ".ljust(60, '.'), end='')
+                print(f"- Skipping <{target}>, <{executable_name}> is not in $PATH ".ljust(60, '.'), end='')
                 print(" \033[31mFAIL\033[0m")
                 continue
 
