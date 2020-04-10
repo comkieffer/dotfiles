@@ -29,7 +29,9 @@ import argparse
 from os.path import expanduser
 
 STOWED_PROGRAMS = {
-    "bash": {},
+    "bash": {
+        "create_dirs": ["~/.config/share",],
+    },
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",

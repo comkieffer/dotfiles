@@ -3,8 +3,6 @@
 # Install the Fire Code font using the package manager if possible. Otherwise fall back to a manual
 # installation.
 
-source stdlib
-
 if has-package fonts-firacode; then
     sudo apt-get -yqq install fonts-firacode
 else
