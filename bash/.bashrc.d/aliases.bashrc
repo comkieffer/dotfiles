@@ -6,10 +6,6 @@ alias more='less'
 
 alias md="mkdir -pv"  # Create parent directories automatically
 
-# `cp` as a command sucks: no incremental copies, no progress.
-# Use `rsync` instead.
-alias cp="rsync -ah --info=progress2 --quiet"
-
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
