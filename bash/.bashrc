@@ -53,8 +53,13 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Source all of the bashrc fragments 
-for fragment in ~/.bashrc.d/*.bashrc; do 
+# source all the profile fragments
+for fragment in ~/.profilerc.d/*.profilerc; do
+    [[ -f "$fragment" ]] && source "$fragment"
+done
+
+# Source all of the bashrc fragments
+for fragment in ~/.bashrc.d/*.bashrc; do
     [[ -f "$fragment" ]] && source "$fragment"
 done
 
