@@ -1,6 +1,4 @@
 
-source stdlib
-
 if ! has fzf; then
     echo -e "  $(tput setaf 1)✘$(tput sgr0) <fzf> not installed."
 

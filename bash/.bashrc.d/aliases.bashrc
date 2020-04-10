@@ -1,6 +1,4 @@
 
-source stdlib
-
 ## Common aliases
 alias _='sudo'
 alias please='sudo'

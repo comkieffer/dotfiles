@@ -1,11 +1,10 @@
 
-source defcolours
 trap clear_colours EXIT
 
 PROMPT_MARK='❯'
 
 # Configure git repository information
-source ${HOME}/bin/bash/bash-prompt/git-prompt.sh
+source ${bash_stdlib_dir}/git-prompt.sh
 
 export GIT_PS1_SHOWDIRTYSTATE=1       # Show ustaged (*) and staged (+) changes
 export GIT_PS1_SHOWSTASHSTATE=1       # Show a '$' sign next to the branch name if something is stashed

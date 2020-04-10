@@ -1,6 +1,4 @@
 
-source stdlib
-
 # Setup direnv, a tool that loads .envrc files when entering directories
 if ! has direnv; then
     if [ "$(lsb_release --id --short)" = "Ubuntu" ]; then

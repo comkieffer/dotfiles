@@ -1,6 +1,4 @@
 
-source stdlib
-
 # Export variables used for system-wide configuration
 
 export EDITOR=vim
