@@ -5,6 +5,6 @@
 # the files are located in the bash-doc package.
 
 # include .bashrc if it exists
-if [ -f "$HOME/.bashrc" ]; then
+if [ -r "$HOME/.bashrc" ]; then
     . "$HOME/.bashrc"
 fi

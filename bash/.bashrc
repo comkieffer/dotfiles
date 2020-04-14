@@ -60,7 +60,7 @@ done
 
 # Source all of the bashrc fragments
 for fragment in ~/.bashrc.d/*.bashrc; do
-    [[ -f "$fragment" ]] && source "$fragment"
+    [[ -r "$fragment" ]] && source "$fragment"
 done
 
 ## Apply per-host settings

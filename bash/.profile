@@ -10,5 +10,5 @@
 # Source all of the profilerc fragments
 for fragment in ~/.profilerc.d/*.profilerc; do
     echo "Processing profile fragment $fragment"
-    [[ -f "$fragment" ]] && source "$fragment"
+    [[ -r "$fragment" ]] && source "$fragment"
 done
