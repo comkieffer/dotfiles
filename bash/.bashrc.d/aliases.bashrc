@@ -12,6 +12,8 @@ alias ....="cd ../../.."
 
 alias dl="cd ~/Downloads"
 
+alias path="echo $PATH | tr ':' '\n' | sort | nl"
+
 # Only add aliases for `exa` if it exists
 if has exa; then
     alias exa="exa --group-directories-first --git"
