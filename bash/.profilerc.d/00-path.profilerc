@@ -1,0 +1,11 @@
+
+path_fragments=(
+    "${HOME}/bin"
+    "${HOME}/.local/bin"
+)
+
+for fragment in "${path_fragments[@]}"; do
+    [ -d "$fragment" ] && PATH="${fragment}":$PATH
+done
+
+unset path_fragments
