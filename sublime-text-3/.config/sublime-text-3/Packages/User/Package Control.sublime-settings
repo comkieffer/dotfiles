@@ -21,6 +21,7 @@
 		"SublimeGit",
 		"SublimeLinter",
 		"SublimeLinter-contrib-yamllint",
+		"SublimeLinter-flake8",
 		"SublimeLinter-xmllint",
 		"Terminus",
 		"Theme - Hero",
