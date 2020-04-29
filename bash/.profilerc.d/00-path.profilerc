@@ -4,6 +4,10 @@ path_fragments=(
     "${HOME}/.local/bin"
 )
 
+if [ $0 == '/bin/bash' ]; then
+    path_fragments+=("${HOME}/.local/share/bash")
+fi
+
 for fragment in "${path_fragments[@]}"; do
     [ -d "$fragment" ] && PATH="${fragment}":$PATH
 done
