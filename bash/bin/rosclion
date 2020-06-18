@@ -1,7 +1,7 @@
-#!/bin/bash 
+#!/bin/bash
 #
-# Launch CLion. This script is useful because when launcher from a shell CLion picks up the 
-# environment of the shell. This makes it possible to use custom ROS enviroment without creating a 
+# Launch CLion. This script is useful because when launcher from a shell CLion picks up the
+# environment of the shell. This makes it possible to use custom ROS enviroment without creating a
 # launcher for each one.
 #
 # The script will also attempt to source a ros environment if ROS hasn't been loaded yet.
@@ -11,25 +11,24 @@ source _rossrc_cmd
 # This is the directory in which CLion should be isntalled if it was installed by the toolbox
 CLION_DIR="${HOME}/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/"
 
-
 # Locate the most recent CLion install
-if [[ $(type -t clion) ]]; then 
+if [[ $(type -t clion) ]]; then
     # Clion is launchable as a command
     CLION_CMD="clion"
 
-elif [[ -d ${CLION_DIR} ]]; then 
-    # This invocation deserves some explaining: 
+elif [[ -d ${CLION_DIR} ]]; then
+    # This invocation deserves some explaining:
     # CLion versions isntalled by the Jetbrains Toolbox are stored in CLION_DIR
-    # We want to always run the latests one. Since the versions have 
-    # monotonically increasing numbers we can just sort in decreasing order 
+    # We want to always run the latests one. Since the versions have
+    # monotonically increasing numbers we can just sort in decreasing order
     # We then want to grab only the first line using the  cut command. Finally
     # we append the path to the actual launch script.
 
     # Onliner explanation:
-    # 
+    #
     # List all the folder inside $CLION_DIR
-    #    find ${CLION_DIR} -maxdepth 1 -type d 
-    # Sorth them in decreasing order 
+    #    find ${CLION_DIR} -maxdepth 1 -type d
+    # Sorth them in decreasing order
     #    sort -r
     # Grab the first line
     #   cut -d $'\n' -f 1
@@ -37,19 +36,19 @@ elif [[ -d ${CLION_DIR} ]]; then
     CLION_VERSION_DIR=$(find ${CLION_DIR} -maxdepth 1 -type d | sort -r | cut -d $'\n' -f 1)
     CLION_CMD=${CLION_VERSION_DIR}/bin/clion.sh
 
-    if [[ ! -x "$CLION_CMD" ]]; then 
+    if [[ ! -x "$CLION_CMD" ]]; then
         echo -e "Error: $CLION_CMD does not seem to be an executeble file"
         exit 2
     fi
 
     unset CLION_VERSION
-else 
-    echo "CLion not found" 
+else
+    echo "CLion not found"
     exit 1
 fi
 
 # No args, treat cwd as project directory
-if [[ ! "$1" ]]; then 
+if [[ ! "$1" ]]; then
     # If there is no CMakeLists file in the directory we're probably making a mistake
     if [[ ! -f CMakeLists.txt ]]; then
         printf "No CMakeLists.txt file found in this directory. Do you really want to open CLion? [y/N]: "
@@ -64,7 +63,7 @@ if [[ ! "$1" ]]; then
 fi
 
 # Arg #1 is project dir
-if [[ -d $1 ]]; then 
+if [[ -d $1 ]]; then
     # If there is no CMakeLists file in the directory we're probably making a mistake
     if [[ ! -f "$1/CMakeLists.txt" ]]; then
         echo -e ""
@@ -79,7 +78,7 @@ if [[ -d $1 ]]; then
     echo "Opening CLion in $1 ... "
     ${CLION_CMD} "$1" > /dev/null 2>&1 &!
     exit 0
-else 
+else
     echo -e "\e[1;31mError\e[0m: $1 is not a directory"
     exit 1
 fi

@@ -40,7 +40,7 @@ _ws_found=$?
 
 if [ $_ws_found -eq 0 ]; then
     source ${_catkin_ws}/setup.bash
-    echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${catkin_ws}${RESET}"
+    echo -e "  ${GREEN_TICK} Sourced workspace ${BOLD}${_catkin_ws}${RESET}"
 else
     # Finally, if we couldn't find any ros environments then we try to source the root workspace
     if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
