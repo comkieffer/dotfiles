@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Check if the first argument exists as a command on the system
 # Useful to check if a command is installed and available on PATH
@@ -11,8 +12,25 @@ function has-package {
 }
 
 # Attempt to source a file and fail siletly if the file does not exist
-try_to_source() {
+function try_to_source {
     local file="$1"
 
     [[ -f "$file" ]] && source "$file"
+}
+
+# Pretty print a PATH-like variable.
+#
+# A PATH-like variable is a ':' separated list of strings.
+# The function will print them, one value per line.
+#
+# Args:
+#   path_var (optional): The PATH-like variable to print. If not specified, the default is PATH
+
+function print_path {
+    path_var=$PATH
+    if [ $# -ge 1 ]; then
+        path_var=$1
+    fi
+
+    echo "$path_var" | tr ':' '\n' | sort | nl
 }
