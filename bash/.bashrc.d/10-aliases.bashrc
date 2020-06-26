@@ -33,15 +33,22 @@ fi
 ## Typo aliases
 alias cd..='cd ..'
 
-# Refine commands 
+# Refine commands
 
-# Show directory listing if the directory is not ~ and the command was 
+fd() {
+  local dir
+  dir=$(find ${1:-.} -path '*/\.*' -prune \
+                  -o -type d -print 2> /dev/null | fzf +m) &&
+  cd "$dir"
+}
+
+# Show directory listing if the directory is not ~ and the command was
 # susccessful. We don't really want to show the directory contents if we were
 # unable to move.
 cd () {
-    builtin cd "$@" 
-    
-    if [[ $! && "$(pwd)" != "${HOME}" ]]; then 
+    builtin cd "$@"
+
+    if [[ $! && "$(pwd)" != "${HOME}" ]]; then
         exa -l --group-directories-first --git
     fi
 }
