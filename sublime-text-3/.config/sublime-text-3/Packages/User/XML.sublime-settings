@@ -3,9 +3,9 @@
 	[
 		"launch",
 		"world",
-		"urdf"
+		"urdf",
+		"xacro",
+		"gazebo"
 	],
-
-    // The number of spaces a tab is considered equal to
-    "tab_size": 2
+	"tab_size": 2
 }
