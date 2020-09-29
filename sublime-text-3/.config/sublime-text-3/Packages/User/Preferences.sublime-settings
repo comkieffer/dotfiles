@@ -7,21 +7,48 @@
 		"joypad",
 		"namespaces",
 		"revolute",
-		"primsmatic"
+		"primsmatic",
+		"plugin"
 	],
 	"always_show_minimap_viewport": true,
 	"bold_folder_labels": true,
-	"color_scheme": "Packages/ayu/ayu-light.sublime-color-scheme",
+	"color_scheme": "Packages/GitHub Theme/schemes/GitHub Dark.sublime-color-scheme",
 	"dictionary": "Packages/Language - English/en_GB.dic",
 	"draw_minimap_border": true,
 	"ensure_newline_at_eof_on_save": true,
+	"extra_file_exclude_patterns":
+	[
+		"*.pyc",
+		"*.sublime-workspace",
+		"Package Control.cache"
+	],
+	"extra_folder_exclude_patterns":
+	[
+		".svn",
+		".git",
+		".hg",
+		"CVS"
+	],
 	"file_exclude_patterns":
 	[
 		"*.pyc",
 		"*.sublime-workspace",
 		"Package Control.cache"
 	],
-	"font_size": 8,
+	"folder_exclude_patterns":
+	[
+		".svn",
+		".git",
+		".hg",
+		"CVS",
+	],
+	"font_face": "Fira Code",
+	"font_options":
+	[
+		"gray_antialias",
+		"subpixel_antialias"
+	],
+	"font_size": 9,
 	"highlight_line": true,
 	"ignored_packages":
 	[
@@ -39,6 +66,7 @@
 	],
 	"line_padding_bottom": 2,
 	"line_padding_top": 2,
+	"margin": 20,
 	"material_theme_small_tab": true,
 	"overlay_scroll_bars": "enabled",
 	"rulers":
@@ -46,7 +74,9 @@
 		100,
 		120
 	],
-	"theme": "ayu-light.sublime-theme",
+	"show_sidebar_disclosure": "false",
+	"show_tab_navigation": "false",
+	"theme": "Adaptive.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"trim_trailing_white_space_on_save": true
 }
