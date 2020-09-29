@@ -9,6 +9,7 @@ if [ $0 == '/bin/bash' ]; then
 fi
 
 for fragment in "${path_fragments[@]}"; do
+    # Ensure that we only add existing directories to the PATH
     [ -d "$fragment" ] && PATH="${fragment}":$PATH
 done
 
