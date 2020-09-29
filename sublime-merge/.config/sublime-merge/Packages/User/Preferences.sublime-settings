@@ -1,0 +1,10 @@
+{
+	"font_face": "Source Code Pro",
+	"font_size": 9,
+	"translate_tabs_to_spaces": true,
+	"side_bar_layout": "commit_graph_as_column",
+	"added_words":
+	[
+		"quaternions"
+	],
+}

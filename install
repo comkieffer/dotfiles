@@ -29,19 +29,23 @@ from os.path import expanduser
 
 STOWED_PROGRAMS = {
     "bash": {
-        "create_dirs": ["~/.config/share",],
+        "create_dirs": ["~/.config/share", ],
     },
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",
-        "create_dirs": ["~/.config/sublime-text-3/Packages/User",],
+        "create_dirs": ["~/.config/sublime-text-3/Packages/User", ],
+    },
+    "sublime-merge": {
+        "executable": "smerge",
+        "create_dirs": ["~/.config/sublime-merge/Packages/User", ],
     },
     "kitty": {
-        "create_dirs": ["~/.config",],
+        "create_dirs": ["~/.config", ],
     },
     "regolith": {
         "executable": "regolith-look",
-        "create_dirs": ["~/.config/regolith",],
+        "create_dirs": ["~/.config/regolith", ],
     },
 }
 
