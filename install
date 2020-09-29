@@ -21,11 +21,10 @@ USAGE:
 
 """
 
-import os
-import sys
-import subprocess
 import argparse
-
+import os
+import subprocess
+import sys
 from os.path import expanduser
 
 STOWED_PROGRAMS = {
@@ -38,7 +37,7 @@ STOWED_PROGRAMS = {
         "create_dirs": ["~/.config/sublime-text-3/Packages/User",],
     },
     "kitty": {
-        "create_dirs": ["~/.config/kitty",],
+        "create_dirs": ["~/.config",],
     },
     "regolith": {
         "executable": "regolith-look",
@@ -69,7 +68,7 @@ def stow(target, config, force=False):
         if "create_dirs" in config:
             for directory in config["create_dirs"]:
                 try:
-                    os.makedirs(directory)
+                    os.makedirs(expanduser(directory))
                 except FileExistsError:
                     pass
 
