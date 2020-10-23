@@ -8,22 +8,36 @@ apt.ppa(
     sudo=True,
 )
 
-# TODO: install i3bar applets 
+# TODO: install i3bar applets
 apt.packages(
     name="Install Package / Regolith Linux / Install Package",
     packages="regolith-desktop",
     latest=True, sudo=True, update=True,
 )
 
-# TODO: check if this is still required, VPN has isssues on Ubuntu 18.04, maybe fixed in 20.04 ?
-# See: https://github.com/regolith-linux/regolith-desktop/issues/64
 apt.packages(
-    name="Install Package / Regolith Linux / VPN Support",
-    packages="network-manager-openconnect-gnome",
+    name="Install Package / Regolith Linux / Install Blocklets",
+    packages=[
+        "i3xrocks-battery", "i3xrocks-media-player", "i3xrocks-nm-vpn",
+        "i3xrocks-time",  "i3xrocks-volume", "i3xrocks-wifi",
+    ],
     latest=True, sudo=True,
 )
 
-# Gnome bundles a night-light/f.lux clone so we shouldn't download this in the general case. 
+# TODO: check if this is still required, VPN has isssues on Ubuntu 18.04, maybe fixed in 20.04 ?
+# See: https://github.com/regolith-linux/regolith-desktop/issues/64
+#
+# Current state: Cannot start VPn from network interface in gnome settings.
+#   Maybe installing network-manager-openvpn is requried?
+apt.packages(
+    name="Install Package / Regolith Linux / VPN Support",
+    packages=[
+        "network-manager-openvpn",  "network-manager-openvpn-gnome",
+    ],
+    latest=True, sudo=True,
+)
+
+# Gnome bundles a night-light/f.lux clone so we shouldn't download this in the general case.
 # When we're using regolith/i3 though, then we really want it.
 # TODO: add redshift to i3 conf (exec)
 apt.packages(

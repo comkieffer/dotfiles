@@ -1,6 +1,6 @@
 from pyinfra.operations import apt
 
-USE_SUDO_PASSWORD=True
+USE_SUDO_PASSWORD = True
 
 apt.packages(
     name="Install Packages / Bedrock",
@@ -10,7 +10,13 @@ apt.packages(
 
 apt.packages(
     name="Install Packages / Common",
-    packages=["build-essential", "git", "htop", "direnv", "font-firacode"],
+    packages=["build-essential", "git", "htop", "direnv", "font-firacode", "vim"],
+    latest=True, sudo=True,
+)
+
+apt.packages(
+    name="Install Packages / Compatibility",
+    packages=["ttf-mscorefonts-installer"],
     latest=True, sudo=True,
 )
 
@@ -39,7 +45,7 @@ apt.packages(
 
 #
 # Install FMan
-# 
+#
 
 apt.key(
     name="Install Packages / FMan / Add GPG Key",
@@ -61,7 +67,7 @@ apt.packages(
 )
 
 #
-# Install Etcher 
+# Install Etcher
 #
 
 apt.key(
@@ -85,7 +91,7 @@ apt.packages(
 
 #
 # Install Spotify
-# 
+#
 
 apt.key(
     name="Install Packages / Spotify / Add GPG Key",
