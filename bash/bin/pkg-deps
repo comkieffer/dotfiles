@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+import textwrap
+
+
+def dependencies_of(pkg_name: str):
+    ret = subprocess.run(
+        ['apt-cache', 'depends', pkg_name],
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    if ret.returncode != 0 and "E: No packages found" in ret.stderr:
+        return {}
+
+    ret.check_returncode()
+
+    packages = []
+    # Lines are of the form
+    #   Depends: pkg_name
+    # So we just split on ':' and grab the second half of the line
+    for line in ret.stdout.split('\n'):
+        if 'Depends:' in line:
+            packages.append(line.split(':')[1].strip())
+
+    return set(packages)
+
+def recursive_dependencies_of(pkg_name: str, current_depslist: set = set()):
+    pkg_deps = dependencies_of(pkg_name)
+
+    for dep in pkg_deps:
+        if not dep in current_depslist:
+            current_depslist |= {dep}
+            current_depslist |= recursive_dependencies_of(dep, current_depslist)
+    return current_depslist
+
+if __name__ == "__main__":
+    if not(1 < len(sys.argv) <= 3):
+        print("USAGE:")
+        print("   list_dependencies [-r|--recursive] PKG ...")
+        sys.exit(1)
+
+    recursive = False
+    if '-r' in sys.argv or '--recursive' in sys.argv:
+        recursive = True
+
+    pkg_names = [arg for arg in sys.argv[1:] if not arg.startswith('-')]
+    print(f"searching for dependencies of {' '.join(pkg_names)}. This may take several minutes to complete.", file=sys.stderr)
+
+    try:
+        dependencies = set()
+        for pkg_name in pkg_names:
+            if recursive:
+                dependencies |= recursive_dependencies_of(pkg_name)
+            else:
+                dependencies |= dependencies_of(pkg_name)
+
+        print("\n".join(sorted(dependencies)))
+    except subprocess.CalledProcessError as err:
+        print(f"Command {' '.join(err.cmd)} failed with return code {err.returncode}.")
+        print(f"STDOUT:\n {err.stdout}\n")
+        print(f"STDERR:\n {err.stderr}\n")
+    sys.exit(0)
