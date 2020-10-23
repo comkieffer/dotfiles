@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# System clean  - Free up space on your computer
+
+echo "#"
+echo "# Cleaning apt cache ..."
+echo "#"
+
+sudo apt clean
+sudo apt autoremove
+
+echo "#"
+echo "# Cleaning snap cache ..."
+echo "#"
+
+LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
+while read snapname revision; do
+    sudo snap remove "$snapname" --revision="$revision"
+done
