@@ -31,6 +31,9 @@ STOWED_PROGRAMS = {
     "bash": {
         "create_dirs": ["~/.config/share", ],
     },
+    "emacs": {
+        "executable": "emacs"
+    },
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",
