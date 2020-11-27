@@ -8,6 +8,3 @@ if has clang ; then
     export CC=clang
     export CXX=clang++
 fi
-
-# Enable parrallel builds with make by default
-MAKEFLAGS="-j$(nproc) -O"
