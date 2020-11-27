@@ -34,6 +34,12 @@ STOWED_PROGRAMS = {
     "emacs": {
         "executable": "emacs"
     },
+    "git": {
+        "executable": "git"
+    },
+    "gdb": {
+        "executable": "gdb"
+    },
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",

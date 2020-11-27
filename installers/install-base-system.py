@@ -1,4 +1,4 @@
-from pyinfra.operations import apt
+from pyinfra.operations import apt, git
 
 USE_SUDO_PASSWORD = True
 
@@ -10,7 +10,7 @@ apt.packages(
 
 apt.packages(
     name="Install Packages / Common",
-    packages=["build-essential", "git", "htop", "direnv", "font-firacode", "vim"],
+    packages=["build-essential", "git", "htop", "direnv", "fonts-firacode", "vim", "jq", "stow"],
     latest=True, sudo=True,
 )
 
@@ -107,7 +107,7 @@ apt.key(
 
 apt.repo(
     name="Install Packages / Spotify / Add Repo",
-    src="deb http://repository.spotify.com stable non-fre",
+    src="deb http://repository.spotify.com stable non-free",
     filename="spotify",
     sudo=True,
 )
@@ -127,3 +127,9 @@ git.repo(
     src='https://github.com/junegunn/fzf.git',
     dest='~/.local/bin/fzf',
 )
+
+if __name__ == "__main__": 
+    print("Do no invoke this script directly. Invoke it instead with pyinfra: ")
+    print("")
+    print(f"  $ pyinfra @local {__file__}")
+    print()

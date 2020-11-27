@@ -10,7 +10,7 @@
 [alias]
     # list the recent commits in a oneline, coloured form with the date
     ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
-    
+
     # list recent commits and the files they touched
     ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
 
@@ -23,20 +23,22 @@
     # Quick look at history with branches and stuff
     lsd = log --graph --boundary '--format=%C(yellow)%h%Creset%C(bold cyan)%d%Creset %s %C(dim normal)(%ar)%Creset' --all
 
-    # Short commands    
+    # Short commands
     cp = cherry-pick
     st = status -s
     ci = commit
     cm = cm = !git add -A && git commit -m
     co = checkout
     cob = checkout -b
-    br = branch 
-    
-    
+    br = branch
+
+
 [diff]
 	wsErrorHighlight = all # Show whitesoace changes in diffs
 	tool = meld
+
 [push]
 	default = simple
+
 [merge]
 	tool = meld

@@ -1,3 +1,7 @@
 
 # You're note getting my shh keys !
 ssh/
+
+# Ignore pyinfra logfiles
+pyinfra-*
+

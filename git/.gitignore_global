@@ -1,5 +1,3 @@
-
-
 # Ignore IDE project files
 .idea
 cmake-build*
