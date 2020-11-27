@@ -1,3 +1,11 @@
+"""
+Install all the packages for the base system.
+
+Do not urun this file directly. It won't work. Instead run:
+
+$ pyinfra @local __file__
+"""
+
 from pyinfra.operations import apt, git
 
 USE_SUDO_PASSWORD = True
@@ -10,9 +18,16 @@ apt.packages(
 
 apt.packages(
     name="Install Packages / Common",
-    packages=["build-essential", "git", "fzf", "htop", "direnv", "fonts-firacode", "vim", "jq", "stow"],
+    packages=["fzf", "htop", "direnv", "fonts-firacode", "vim", "stow"],
     latest=True, sudo=True,
 )
+
+apt.packages(
+    name="Install Packages / Dev Tools",
+    packages=["build-essential", "git", "jq", "meld"],
+    latest=True, sudo=True,
+)
+
 
 apt.packages(
     name="Install Packages / Compatibility",
@@ -117,10 +132,3 @@ apt.packages(
     packages=["spotify-client"],
     sudo=True, update=True,
 )
-
-
-if __name__ == "__main__":
-    print("Do no invoke this script directly. Invoke it instead with pyinfra: ")
-    print("")
-    print(f"  $ pyinfra @local {__file__}")
-    print()
