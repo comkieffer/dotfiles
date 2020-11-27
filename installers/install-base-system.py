@@ -10,7 +10,7 @@ apt.packages(
 
 apt.packages(
     name="Install Packages / Common",
-    packages=["build-essential", "git", "htop", "direnv", "fonts-firacode", "vim", "jq", "stow"],
+    packages=["build-essential", "git", "fzf", "htop", "direnv", "fonts-firacode", "vim", "jq", "stow"],
     latest=True, sudo=True,
 )
 
@@ -118,17 +118,8 @@ apt.packages(
     sudo=True, update=True,
 )
 
-#
-# Install fzf
-#
 
-git.repo(
-    name='Install Tools / Fzf / Clone Repository',
-    src='https://github.com/junegunn/fzf.git',
-    dest='~/.local/bin/fzf',
-)
-
-if __name__ == "__main__": 
+if __name__ == "__main__":
     print("Do no invoke this script directly. Invoke it instead with pyinfra: ")
     print("")
     print(f"  $ pyinfra @local {__file__}")
