@@ -6,6 +6,8 @@ Do not urun this file directly. It won't work. Instead run:
 $ pyinfra @local __file__
 """
 
+# TODO: docker + dive
+
 from pyinfra.operations import apt, git
 
 USE_SUDO_PASSWORD = True
@@ -18,16 +20,33 @@ apt.packages(
 
 apt.packages(
     name="Install Packages / Common",
-    packages=["fzf", "htop", "direnv", "fonts-firacode", "vim", "stow"],
+    packages=["fzf", "htop", "direnv", "fonts-firacode", "vim", "emacs", "stow", "firefox", "chromium-browser", "pandoc", "python-is-python3"],
     latest=True, sudo=True,
 )
 
 apt.packages(
     name="Install Packages / Dev Tools",
-    packages=["build-essential", "git", "jq", "meld"],
+    packages=["build-essential", "git", "jq", "meld", "python3-pip"],
     latest=True, sudo=True,
 )
 
+apt.packages(
+    name="Install Packages / Creative Tools",
+    packages=["freecad", "blender", "gimp"],
+    latest=True, sudo=True,
+)
+
+pip3.packages(
+    name="Install Packages / Dev Tools - Pip3",
+    packages=["jupyter"],
+    latest=True,
+)
+
+apt.packages(
+    name="Install Packages / Research Tools",
+    packages=["zotero"],
+    latest=True, sudo=True,
+)
 
 apt.packages(
     name="Install Packages / Compatibility",

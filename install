@@ -35,7 +35,8 @@ STOWED_PROGRAMS = {
         "executable": "emacs"
     },
     "git": {
-        "executable": "git"
+        "executable": "git",
+        "create_dirs": ["~/.config", ],
     },
     "gdb": {
         "executable": "gdb"
