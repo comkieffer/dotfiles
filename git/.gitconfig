@@ -1,11 +1,10 @@
 [user]
-	email = thibaud.chupin@gmail.com
+	email = thibaud.chupin@spaceapplications.com
 	name = Thibaud Chupin
 
 [core]
 	fileMode = false
 	editor = vim
-	excludesfile = ~/.gitignore_global
 
 [alias]
     # list the recent commits in a oneline, coloured form with the date
@@ -15,23 +14,28 @@
     ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
 
     # Find a file path within the directory
-    find = f = "!git ls-files | grep -i"
-
-    # Update local copy with rebase and remove local branches tracking branches that no longer exist
-    up = !git pull --rebase --prune $@ && git submodule update --init --recursive
+    find = "!git ls-files | grep -i"
 
     # Quick look at history with branches and stuff
     lsd = log --graph --boundary '--format=%C(yellow)%h%Creset%C(bold cyan)%d%Creset %s %C(dim normal)(%ar)%Creset' --all
+
+    # List git branches sorted by last modified and ashow useful metadata
+    # Example:
+    #   master      Merge branch so-and-so          (3 weeks ago)  <Thibaud Chupin>
+    #   my-feature  Implement feature this-and-that (3 weeks ago)  <Thibaud Chupin>
+    brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
+
+    # Pick the parent commit for an interactive rebase.
+    frbi = "!f() { git rebase -i $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; }; f"
+
 
     # Short commands
     cp = cherry-pick
     st = status -s
     ci = commit
-    cm = cm = !git add -A && git commit -m
     co = checkout
     cob = checkout -b
     br = branch
-
 
 [diff]
 	wsErrorHighlight = all # Show whitesoace changes in diffs
