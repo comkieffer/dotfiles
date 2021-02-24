@@ -8,6 +8,10 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/OwnCloud/Apps/OrgMode/")
 
+;; Set the default destination for newly created notes (e.g. notes created with
+;; org-capture)
+(setq org-default-notes-file (expand-file-name "inbox.org" org-directory))
+
 ;; Locate all .org files in the OrgMode folders and use them for the agenda
 (setq org-agenda-files
       (directory-files-recursively org-directory "\.org$"))
@@ -112,10 +116,20 @@
 ;; ** Todo Template
 ;;
 ;; Add a new tasks under the Tasks heading of the Tasks file.
-;;
+
+
 (setq org-capture-templates
-      '(("t" "Todo" entry (file+headline (expand-file-name "inbox.org" org-directory) "Unsorted")
-         "* TODO %?\n %i\n ")))
+      `(("t" "Todo" entry
+         (file+headline org-default-notes-file "Unsorted")
+         "* TODO %?\n %i\n ")
+        ("m" "Meeting" entry
+         (file+headline org-default-notes-file "Unsorted")
+         (file ,(expand-file-name "templates/meeting.org.tpl" org-directory))
+         :empty-lines 1)
+        ("g" "Goals this week" entry
+         (file ,(expand-file-name "2021-week-in-review.org" org-directory))
+         (file ,(expand-file-name "templates/week-in-review.org.tpl" org-directory))
+         :empty-lines 1)))
 
 ;;
 ;; Org-Mode agenda configuration
