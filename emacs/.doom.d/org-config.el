@@ -4,14 +4,13 @@
 ;; Org-Mode Configuration
 ;;
 
-
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Owncloud/Apps/OrgMode/")
+(setq org-directory "~/OwnCloud/Apps/OrgMode/")
 
 ;; Locate all .org files in the OrgMode folders and use them for the agenda
 (setq org-agenda-files
-      (directory-files-recursively "~/OwnCloud/Apps/OrgMode/" "\.org$"))
+      (directory-files-recursively org-directory "\.org$"))
 
 ;; In Org Clock reports, use a european time format (DD/MM/YYYY) instead of US
 (setq org-time-stamp-custom-formats '("<%d/%m/%y %a>" . "<%d/%m/%y %a %H:%M>"))
@@ -115,7 +114,7 @@
 ;; Add a new tasks under the Tasks heading of the Tasks file.
 ;;
 (setq org-capture-templates
-      '(("t" "Todo" entry (file+headline "~/Documents/OwnCloud/Documents/OrgMode/todo.org" "Tasks")
+      '(("t" "Todo" entry (file+headline (expand-file-name "inbox.org" org-directory) "Unsorted")
          "* TODO %?\n %i\n ")))
 
 ;;
