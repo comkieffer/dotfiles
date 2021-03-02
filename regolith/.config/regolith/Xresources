@@ -1,0 +1,25 @@
+
+! Overrides for Regolith settings!
+!
+! To deploy them use `regolith-look refresh`
+
+! Enable System Tray
+i3-wm.bar.trayoutput: primary
+
+! Give workspaces nice names
+! The icons come from font-awesome and may differ from the symbols shown in the text editor
+! Look them up here: https://fontawesome.com/icons?d=gallery
+! 
+i3-wm.workspace.01.name: 1: 
+i3-wm.workspace.02.name: 2: 
+i3-wm.workspace.03.name: 3: 
+i3-wm.workspace.04.name: 4: 
+i3-wm.workspace.09.name: 9: 
+i3-wm.workspace.10.name: 0: 
+
+! Fix fontsize for Gnome-Terminal
+gnome.terminal.font: Source Code Pro 10
+
+! Tell regolith to not touch the wallpaper when updating a look.
+! The only way to change a wallpaper is the gnome settings.
+gnome.wallpaper:
