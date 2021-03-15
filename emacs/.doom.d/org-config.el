@@ -50,19 +50,23 @@
 ;;
 ;; Some tasks may be CANCELLED or labelled as HOLD if priorities change.
 (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)" "HOLD(h)" "CANCELLED(c)")
-              (sequence "|" "MEETING" "PHONE"))))
+      (quote ((sequence "TODAY(o)" "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)")
+              (sequence "|" "SOMEDAY(h)" "CANCELLED(c)")
+              (sequence "Action(a)" "|" "Resolved(r)")
+              (sequence "|" "MEETING"))))
 
 ;; Configure the font used for each state
 (setq org-todo-keyword-faces
-      (quote (("TODO" :foreground "orange red" :weight bold)
+      (quote (("TODAY" :foreground "magenta" :weight bold)
+              ("TODO" :foreground "orange red" :weight bold)
               ("STARTED" :foreground "royal blue" :weight bold)
-              ("DONE" :foreground "sea green" :weight bold)
               ("WAITING" :foreground "tomato" :weight bold)
-              ("HOLD" :foreground "magenta" :weight bold)
+              ("DONE" :foreground "sea green" :weight bold)
+              ("SOMEDAY" :foreground "dark gray" :weight bold)
               ("CANCELLED" :foreground "light steel blue" :weight bold)
-              ("PHONE" :foreground "maroon" :weight bold)
-              ("MEETING" :foreground "maroon" :weight bold))))
+              ("Action" :foreground "orange red" :weight bold)
+              ("Resolved" :foreground "sea green" :weight bold)
+              ("MEETING" :foreground "sea green" :weight bold))))
 
 ;; Change a task state into any other by pressing the apprpriate key from the
 ;; fast-todo selection key menu. Press C-c C-t KEY to open the menu and the KEY
