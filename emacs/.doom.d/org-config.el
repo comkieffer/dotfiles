@@ -156,17 +156,28 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          ;; This means tasks that are not done and not held/waiting
          ((tags "PRIORITY=\"A\"&DEADLINE<=\"<+7d>\""
                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'nottodo '("TODO" "STARTED")))
-                 (org-agenda-overriding-header "High Priority Active Tasks:")
+                 (org-agenda-overriding-header "Important - Expiring Soon\n")
                  (org-agenda-sorting-strategy '(priority-down todo-state-down deadline-down))))
           ;; The next block shows the week agenda.
           (agenda ""
                   ((org-agenda-span 1)
                    (org-agenda-start-day "+0d")
                    (org-deadline-warning-days 0))
-                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done)))
+                  (org-agenda-skip-function
+                   '(or
+                     (org-agenda-skip-entry-if 'todo 'done)
+                     (org-agenda-skip-entry-if 'todo '("Action")))))
+          ;; Expired tasks
+          (tags "DEADLINE<\"<+0d>\""
+                ((org-agenda-overriding-header "Tasks Expired\n")
+                 (org-agenda-sorting-strategy '(deadline-down todo-state-down))
+                 (org-agenda-skip-function
+                  '(org-agenda-skip-entry-if 'todo 'done 'todo '("Action")))))
+          (todo "Action"
+                ((org-agenda-overriding-header "Pending Meeting Actions\n")))
           ;; Show blocked tasks
           (todo "HOLD|WAITING"
-                ((org-agenda-overriding-header "Held and Waiting Tasks")
+                ((org-agenda-overriding-header "Held and Waiting Tasks\n")
                  (org-agenda-sorting-strategy '(priority-down todo-state-down deadline-down))))
           ;; Finally we display the global todo list
           (alltodo ""
