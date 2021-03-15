@@ -26,7 +26,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 ;; (setq doom-theme 'doom-one)
-(setq doom-them 'doom-one-light)
+(setq doom-theme 'doom-one-light)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -56,5 +56,11 @@
 (setq evil-want-fine-undo t  ;; By default, all changes in insert mode are one
                              ;; big blob. Be more granular
       auto-save-default t)   ;; Enable autosave
+
+;; Start the week on Monday
+(setq-default calendar-week-start-day 1)
+
+;; Require a newline at the end of the file
+(setq require-final-newline t)
 
 (load! "org-config.el")
