@@ -4,6 +4,8 @@
 ;; Org-Mode Configuration
 ;;
 
+(use-package! org-super-agenda :config (org-super-agenda-mode))
+
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/OwnCloud/Apps/OrgMode/")
@@ -150,38 +152,34 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       subtree-end
     nil)))
 
+;; Note: org-super-agenda usage
+;;
+;; Each group selector creates a group in the agenda containingthe items it
+;; matches and consumes those items. Any items it dodn;t match are passed to the
+;; next group selector.
+;; The :discard selector consumes items without creating an agenda group.
 (setq org-agenda-custom-commands
-      '(("c" "Today's overview"
-         ;; Create a first block containing actionable high priority tasks
-         ;; This means tasks that are not done and not held/waiting
-         ((tags "PRIORITY=\"A\"&DEADLINE<=\"<+7d>\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'nottodo '("TODO" "STARTED")))
-                 (org-agenda-overriding-header "Important - Expiring Soon\n")
-                 (org-agenda-sorting-strategy '(priority-down todo-state-down deadline-down))))
-          ;; The next block shows the week agenda.
-          (agenda ""
-                  ((org-agenda-span 1)
-                   (org-agenda-start-day "+0d")
-                   (org-deadline-warning-days 0))
-                  (org-agenda-skip-function
-                   '(or
-                     (org-agenda-skip-entry-if 'todo 'done)
-                     (org-agenda-skip-entry-if 'todo '("Action")))))
-          ;; Expired tasks
-          (tags "DEADLINE<\"<+0d>\""
-                ((org-agenda-overriding-header "Tasks Expired\n")
-                 (org-agenda-sorting-strategy '(deadline-down todo-state-down))
-                 (org-agenda-skip-function
-                  '(org-agenda-skip-entry-if 'todo 'done 'todo '("Action")))))
-          (todo "Action"
-                ((org-agenda-overriding-header "Pending Meeting Actions\n")))
-          ;; Show blocked tasks
-          (todo "HOLD|WAITING"
-                ((org-agenda-overriding-header "Held and Waiting Tasks\n")
-                 (org-agenda-sorting-strategy '(priority-down todo-state-down deadline-down))))
-          ;; Finally we display the global todo list
-          (alltodo ""
-                   ((org-agenda-skip-function
-                     '(or (tch-org-skip-subtree-if-priority ?A)
-                          (org-agenda-skip-if nil '(scheduled deadline))))
-                    (org-agenda-overriding-header "Normal Priority Tasks:")))))))
+      '(("t" "Today View"
+         ((agenda ""
+                 ((org-agenda-span 1)
+                  (org-agenda-start-day "+0d")
+                  (org-deadline-warning-days 0)
+                  (org-super-agenda-groups
+                   '(
+                     (:name "Pending Meeting Action" :todo "Action" :order 100)
+                     (:name "Today" :time-grid t :order 20)
+                     (:name "Important Tasks" :priority "A" :order 10)
+                     (:name "Due Today" :deadline today :order 30)
+                     (:name "Overdue" :deadline past :order 40)
+                     (:name "Everything else" :order 50)
+                     ))
+                  ))
+         ))
+        ("c" "Clocked Today"
+         ((todo ""
+                ((org-super-agenda-groups
+                  '((:name "Done today" :and (:regexp "State \"DONE\""
+                                              :log t))
+                    (:name "Clocked today" :log t))))
+                  )))
+          ))
