@@ -6,6 +6,10 @@
 
 (use-package! org-super-agenda :config (org-super-agenda-mode))
 
+;;
+;; Set up files and folders
+;;
+
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/OwnCloud/Apps/OrgMode/")
@@ -18,11 +22,18 @@
 (setq org-agenda-files
       (directory-files-recursively org-directory "\.org$"))
 
+;;
+;; Customise Appearance
+;;
+
 ;; In Org Clock reports, use a european time format (DD/MM/YYYY) instead of US
 (setq org-time-stamp-custom-formats '("<%d/%m/%y %a>" . "<%d/%m/%y %a %H:%M>"))
 
 ;; use pretty things for the clocktable
 (setq org-pretty-entities t)
+
+;; Show actually italicsed text instead of /text/.
+(setq org-hide-emphasis-markers t)
 
 ;; Insert an empty line after new headings but not after plain list items
 (setq org-blank-before-new-entry
@@ -53,7 +64,7 @@
 ;; Some tasks may be CANCELLED or labelled as HOLD if priorities change.
 (setq org-todo-keywords
       (quote ((sequence "TODAY(o)" "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(d)")
-              (sequence "|" "SOMEDAY(h)" "CANCELLED(c)")
+              (sequence "SOMEDAY(h)" "|" "CANCELLED(c)")
               (sequence "Action(a)" "|" "Resolved(r)")
               (sequence "|" "MEETING"))))
 
@@ -166,15 +177,31 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                   (org-deadline-warning-days 0)
                   (org-super-agenda-groups
                    '(
-                     (:name "Pending Meeting Action" :todo "Action" :order 100)
+                     (:name "Pending Meeting Actions (For Me)"
+                      :and (:todo "Action" :tag "@tch") :order 100)
+                     (:discard (:todo "Action"))
                      (:name "Today" :time-grid t :order 20)
                      (:name "Important Tasks" :priority "A" :order 10)
                      (:name "Due Today" :deadline today :order 30)
+                     (:name "Someday" :todo "SOMEDAY" :order 45)
                      (:name "Overdue" :deadline past :order 40)
                      (:name "Everything else" :order 50)
                      ))
                   ))
-         ))
+          ))
+        ("r" "Review of Actions"
+         ((todo "Action"
+                 ((org-agenda-span 1)
+                  (org-agenda-start-day "+0d")
+                  (org-deadline-warning-days 0)
+                  (org-super-agenda-groups
+                    '(
+                      (:name "Overdue Actions" :deadline past :order 100)
+                      (:name "Pending Actions" :anything t)
+                      )
+                    )
+                   ))
+          ))
         ("c" "Clocked Today"
          ((todo ""
                 ((org-super-agenda-groups
