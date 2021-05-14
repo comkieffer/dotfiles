@@ -1,0 +1,121 @@
+#!/bin/bash
+
+VPN_CONNECTION_NAME="SpaceApps"
+VPN_PASSWORD_FILE="$HOME/OwnCloud/Documents/Keys/SpaceApps-VPN/Linux/ovpn-passwd-file"
+
+
+
+#
+# Utility Functions
+#
+
+is_running() {
+    if [ "$#" -ne 1 ]; then
+        echo "Expected only one argument: PRGM_NAME"
+        return 0
+    fi
+
+    prgm_name=$1
+    if pidof $prgm_name > /dev/null; then
+        return 1 # program is running
+    else
+        return 0 # program is stopped
+    fi
+}
+
+start_if_not_running() {
+    if [ "$#" -ne 1 ]; then
+        echo "Expected only one argument: PRGM_NAME"
+        return
+    fi
+
+    prgm_name=$1
+    if is_running $prgm_name ; then
+        echo "Starting $prgm_name ..."
+        $prgm_name &>/dev/null & disown
+    fi
+}
+
+# Enable the connection named "SpaceApp" (the name of the VPN connection as defined in the
+# network settings page) using the specified password file.
+#
+# The password file is a key-value store with an __ini-like__ syntax:
+#
+#   vpn.secrets.password:PASSWORD
+#   vpn.secrets.cert-pass:PASSWORD
+#
+connect_vpn() {
+    cmd_output=$(nmcli con up "$VPN_CONNECTION_NAME" passwd-file "$VPN_PASSWORD_FILE" 2>&1)
+    cmd_result=$?
+
+    if [ $cmd_result -ne 0 ]; then
+        echo $cmd_output
+        rofi -e "Unable to connect VPN. Error was:\n${cmd_output}"
+    fi
+}
+
+disconnect_vpn() {
+    cmd_output=$(nmcli con down "$VPN_CONNECTION_NAME" 2>&1)
+    cmd_result=$?
+
+    if [ $cmd_result -ne 0 ]; then
+        echo $cmd_output
+        rofi -e "Unable to disconnect VPN. Error was:\n${cmd_output}"
+    fi
+}
+
+#
+# Main Body
+#
+
+action_start_work="Start Work"
+action_connect_vpn="Connect VPN"
+action_disconnect_vpn="Disconnect VPN"
+action_join_meeting="Join Meeting"
+action_view_appointments="Appointments Today"
+action_distribute_windows="Distribute Windows"
+
+action_list="${action_start_work}\n${action_connect_vpn}\n${action_disconnect_vpn}\n${action_join_meeting}\n${action_view_appointments}\n${action_distribute_windows}"
+
+action_chosen=$(echo -e $action_list | rofi -dmenu -i -p "Select Action")
+
+case $action_chosen in
+    $action_start_work)
+        start_if_not_running "mattermost-desktop"
+        start_if_not_running "thunderbird"
+        start_if_not_running "obsidian"
+        start_if_not_running "emacs-gtk"
+
+        connect_vpn
+        ;;
+
+    $action_connect_vpn)
+        connect_vpn
+        ;;
+
+    $action_disconnect_vpn)
+        disconnect_vpn
+        ;;
+
+    $action_join_meeting)
+        meeting_url=$(rofi -dmenu -p "Meeting URL: " -theme-str 'listview { enabled: false; }')
+        echo "Captured meetig url: $meeting_url"
+        chromium-browser -app=$meeting_url &>/dev/null & disown
+        ;;
+
+    $action_view_appointments)
+        # calcurse-caldav > /dev/null
+        rofi -e "$(calcurse -a)"
+        ;;
+
+    $action_distribute_windows)
+        i3-msg '[workspace=1] move workspace to output DP-1-1'
+        i3-msg '[workspace=1] layout tabbed'
+
+        i3-msg '[workspace=4] move workspace to output DP-1-1'
+        i3-msg '[workspace=4] layout tabbed'
+
+        i3-msg '[workspace=2] move workspace to output DP-1-2'
+        i3-msg '[workspace=2] layout splitv'
+
+esac
