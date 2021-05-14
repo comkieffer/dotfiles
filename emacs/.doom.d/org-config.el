@@ -139,14 +139,25 @@
       `(("t" "Todo" entry
          (file+headline org-default-notes-file "Unsorted")
          "* TODO %?\n %i\n ")
-        ("m" "Meeting" entry
+        ("m" "Full Meeting" entry
          (file+headline org-default-notes-file "Unsorted")
          (file ,(expand-file-name "templates/meeting.org.tpl" org-directory))
-         :empty-lines 1)
+         :empty-lines 1
+         :jump-to-captured t)
+        ("M" "Simple Meeting (No Agenda)" entry
+         (file+headline org-default-notes-file "Unsorted")
+         (file ,(expand-file-name "templates/simple-meeting.org.tpl" org-directory))
+         :empty-lines 1
+         :jump-to-captured t)
         ("g" "Goals this week" entry
          (file ,(expand-file-name "2021-week-in-review.org" org-directory))
          (file ,(expand-file-name "templates/week-in-review.org.tpl" org-directory))
-         :empty-lines 1)))
+         :empty-lines 1)
+        ("c" "Candidate" entry
+         (file+headline org-default-notes-file "Unsorted")
+         (file ,(expand-file-name "templates/hr-candidate.org.tpl" org-directory))
+         :jump-to-captured t)
+        ))
 
 ;;
 ;; Org-Mode agenda configuration
