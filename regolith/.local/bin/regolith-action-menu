@@ -64,6 +64,11 @@ disconnect_vpn() {
     fi
 }
 
+open_browser() {
+    echo "Opening $1"
+    chromium-browser -app=$1 &>/dev/null & disown
+}
+
 #
 # Main Body
 #
@@ -74,6 +79,15 @@ action_disconnect_vpn="Disconnect VPN"
 action_join_meeting="Join Meeting"
 action_view_appointments="Appointments Today"
 action_distribute_windows="Distribute Windows"
+
+whereby_fsdiv_room_1_tag="FsDiv Whereby (Room 1)"
+whereby_fsdiv_room_1_url="https://whereby.com/sas-fsdiv"
+whereby_fsdiv_room_2_tag="FsDiv Whereby (Room 2)"
+whereby_fsdiv_room_2_url="https://whereby.com/sas-fsdiv"
+whereby_fsdiv_room_3_tag="FsDiv Whereby (Room 3)"
+whereby_fsdiv_room_3_url="https://whereby.com/sas-fsdiv"
+jitsi_room_1_tag="Jitsi - Working With Thibaud"
+jitsi_room_1_url="https://jitsi.spaceapplications.com/WorkingWithThibaud"
 
 action_list="${action_start_work}\n${action_connect_vpn}\n${action_disconnect_vpn}\n${action_join_meeting}\n${action_view_appointments}\n${action_distribute_windows}"
 
@@ -98,9 +112,35 @@ case $action_chosen in
         ;;
 
     $action_join_meeting)
-        meeting_url=$(rofi -dmenu -p "Meeting URL: " -theme-str 'listview { enabled: false; }')
-        echo "Captured meetig url: $meeting_url"
-        chromium-browser -app=$meeting_url &>/dev/null & disown
+        meeting_room_list="${whereby_fsdiv_room_1_tag}\n${whereby_fsdiv_room_2_tag}\n${whereby_fsdiv_room_3_tag}\n${jitsi_room_1_tag}\nOther"
+
+        meeting_url=$(echo -e $meeting_room_list | rofi -dmenu -p "Meeting URL: ")
+        case $meeting_url in
+            $whereby_fsdiv_room_1_tag)
+                open_browser $whereby_fsdiv_room_1_url
+                ;;
+
+            $whereby_fsdiv_room_2_tag)
+                open_browser $whereby_fsdiv_room_2_url
+                ;;
+
+            $whereby_fsdiv_room_3_tag)
+                open_browser $whereby_fsdiv_room_3_url
+                ;;
+
+            $jitsi_room_1_tag)
+                open_browser $jitsi_room_1_url
+                ;;
+
+            *)
+                if [[ "$meeting_url" != "" ]]; then
+                    echo "Captured meetig url: $meeting_url"
+                    open_browser $meeting_url
+                else
+                    echo "No URL captured (url=${meeting_url})"
+                fi
+
+        esac
         ;;
 
     $action_view_appointments)
