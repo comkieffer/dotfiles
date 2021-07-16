@@ -9,7 +9,6 @@
 		"ayu",
 		"CMakeEditor",
 		"DocBlockr_Python",
-		"GitHub Theme",
 		"isort",
 		"Jedi - Python autocompletion",
 		"MarkdownEditing",
@@ -26,7 +25,5 @@
 		"SublimeLinter-xmllint",
 		"Table Editor",
 		"Terminus",
-		"Theme - Hero",
-		"Theme - SoDaReloaded"
-	]
+	],
 }
