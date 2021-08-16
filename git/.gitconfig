@@ -1,6 +1,10 @@
 [user]
-	email = thibaud.chupin@spaceapplications.com
+	email = thibaud.chupin@gmail.com
 	name = Thibaud Chupin
+
+# Override email for "work" projects
+[includeIf "gitdir:~/Projects-Work/"]
+path = ~/.config/git/config-work
 
 [core]
 	fileMode = false
