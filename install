@@ -41,6 +41,10 @@ STOWED_PROGRAMS = {
     "gdb": {
         "executable": "gdb"
     },
+    "jrnl": {
+        "executable": "jrnl",
+         "create_dirs": ["~/.config", ],
+    },
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",
@@ -51,6 +55,7 @@ STOWED_PROGRAMS = {
         "create_dirs": ["~/.config/sublime-merge/Packages/User", ],
     },
     "kitty": {
+        "executable": "kitty",
         "create_dirs": ["~/.config", ],
     },
     "regolith": {
