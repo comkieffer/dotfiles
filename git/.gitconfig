@@ -9,6 +9,7 @@ path = ~/.config/git/config-work
 [core]
 	fileMode = false
 	editor = vim
+    autocrlf = input
 
 [alias]
     # list the recent commits in a oneline, coloured form with the date
