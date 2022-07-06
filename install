@@ -22,6 +22,7 @@ USAGE:
 """
 
 import argparse
+from operator import is_
 import os
 import subprocess
 import sys
@@ -128,6 +129,10 @@ if __name__ == "__main__":
 
     if "all" in args.targets:
         args.targets = [*STOWED_PROGRAMS.keys()]
+
+    if not is_installed("stow"):
+        print("Error: `stow` is not installed. Install `stow` to continue.")
+        sys.exit(1)
 
     for target in args.targets:
         if target in STOWED_PROGRAMS:
