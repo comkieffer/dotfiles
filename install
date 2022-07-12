@@ -32,9 +32,6 @@ STOWED_PROGRAMS = {
     "bash": {
         "create_dirs": ["~/.config/share", ],
     },
-    "emacs": {
-        "executable": "emacs"
-    },
     "git": {
         "executable": "git",
         "create_dirs": ["~/.config", ],
