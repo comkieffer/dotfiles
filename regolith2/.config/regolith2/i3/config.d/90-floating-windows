@@ -1,0 +1,24 @@
+
+for_window [class="^Regolith-control-center"] floating enable
+from_Window[class="^Gnome-control-center"]    floating enable
+
+# Float Matlab settings dialogs
+for_window [class="^MATLAB" title="^Preferences"] floating enable
+for_window [class="^MATLAB" title="Simulink Library Browser"] floating enable
+for_window [class="^MATLAB" title="^Configuration Parameters"] floating enable
+for_window [class="^MATLAB" title="Quick Start"] floating enable
+for_window [class="^MATLAB" title="Start Page"] floating enable
+for_window [class="^MATLAB" title="^Code Generation Report"] floating enable
+
+# Only float Remmina server browser, not actual rdp windows.
+for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
+
+# Float gconfig windows (kconfig gui)
+for_window [title="^Gconf"] floating enable
+
+# For Jetbrains tools
+for_window [class="^jetbrains-" title="^splash$"] floating enable
+for_window [class="^jetbrains-" title="^Welcome"] floating enable
+
+for_window [class="^Steam" title="^Steam - News"] floating enable
+for_window [class= "Gnome-control-center"] floating enable

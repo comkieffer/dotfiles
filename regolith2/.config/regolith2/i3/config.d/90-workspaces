@@ -1,0 +1,4 @@
+
+assign [class="^spotify$"] $ws10
+assign [class="^Mattermost$"] $ws2
+assign [class="^obsidian$"] $ws9

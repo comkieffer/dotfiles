@@ -52,13 +52,9 @@ STOWED_PROGRAMS = {
         "executable": "smerge",
         "create_dirs": ["~/.config/sublime-merge/Packages/User", ],
     },
-    "kitty": {
-        "executable": "kitty",
-        "create_dirs": ["~/.config", ],
-    },
-    "regolith": {
+    "regolith2": {
         "executable": "regolith-look",
-        "create_dirs": ["~/.config/regolith", ],
+        "create_dirs": ["~/.config/regolith2", ],
     },
 }
 
