@@ -32,6 +32,11 @@ STOWED_PROGRAMS = {
     "bash": {
         "create_dirs": ["~/.config/share", ],
     },
+    "fish": {
+        "create_dirs": [
+            "~/.config/share",
+        ],
+    },
     "git": {
         "executable": "git",
         "create_dirs": ["~/.config", ],
