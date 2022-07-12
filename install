@@ -75,36 +75,35 @@ def is_installed(executable):
     return not bool(ret.returncode)
 
 
-def stow(target, config, force=False):
+def stow(target, config):
     global g_targets_processed
     if target in g_targets_processed:
         print(f"    <{target}> already processed, skipping.")
         return True
 
-    executable_name = config.get("executable", target)
-    if is_installed(executable_name):
-        g_targets_processed.append(target)
+    g_targets_processed.append(target)
 
-        if "create_dirs" in config:
-            for directory in config["create_dirs"]:
-                try:
-                    os.makedirs(expanduser(directory))
-                except FileExistsError:
-                    pass
+    if "create_dirs" in config:
+        if not isinstance(config["create_dirs"], Iterable):
+            config["create_dirs"] = [config["create_dirs"]]
 
-        # Note: Universal newlines tells python to use the default system encoding for the
-        # stdout/stderr messages
-        command = ["stow", "--target", expanduser('~'), "--restow", target]
-        ret = subprocess.run(
-            command,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
-        return not bool(ret.returncode), " ".join(command), ret.stdout
+        for directory in config["create_dirs"]:
+            try:
+                os.makedirs(expanduser(directory))
+            except FileExistsError:
+                pass
 
-    else:
-        return True
+    # Note: Universal newlines tells python to use the default system encoding for the
+    # stdout/stderr messages
+    command = ["stow", "--target", expanduser("~"), "--restow", target]
+    ret = subprocess.run(
+        command,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    return not bool(ret.returncode), " ".join(command), ret.stdout
 
 
 if __name__ == "__main__":
@@ -137,15 +136,15 @@ if __name__ == "__main__":
     for target in args.targets:
         if target in STOWED_PROGRAMS:
             executable_name = STOWED_PROGRAMS[target].get("executable", target)
-            if not is_installed(executable_name):
-                print(f"- Skipping <{target}>, <{executable_name}> is not in $PATH ".ljust(60, '.'), end='')
-                print(" \033[31mFAIL\033[0m")
+            if not args.force and not is_installed(executable_name):
+                print(
+                    f"- Skipping <{target}>, <{executable_name}> is not in $PATH ".ljust(60, ".")
+                    + " \033[31mFAIL\033[0m"
+                )
                 continue
 
             print(f"- Installing configurations for {target} ".ljust(60, '.'), end="")
-            ok, command, errmsg = stow(
-                target, STOWED_PROGRAMS[target], force=args.force
-            )
+            ok, command, errmsg = stow(target, STOWED_PROGRAMS[target])
             if not ok:
                 print(" \033[31mFAIL\033[0m")
                 print(f"Error executing: {command}")
