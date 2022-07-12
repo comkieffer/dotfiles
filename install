@@ -43,6 +43,7 @@ STOWED_PROGRAMS = {
         "executable": "jrnl",
          "create_dirs": ["~/.config", ],
     },
+    "matlab": {},
     "vim": {},
     "sublime-text-3": {
         "executable": "subl",
