@@ -5,23 +5,15 @@ colors:
   title: none
 default_hour: 9
 default_minute: 0
-
-# Configure vim to open in `INSERT` mode
-editor: 'vim -c startinsert'
-
-# Use the ACtion template as default
-template: /home/tch/.config/jrnl/templates/action.txt
-
+display_format: boxed
+editor: vim -c startinsert
 encrypt: false
-
-# Should tags be highlighted (true|false)
 highlight: true
-
 indent_character: '|'
 journals:
-  default: /home/tch/Documents/Notes/jrnl
-
+  default: /home/tch/Documents/journal.txt
 linewrap: 79
 tagsymbols: '@'
-timeformat: '%Y-%m-%d %H:%M'
-version: v2.8.3
+template: /home/tch/.config/jrnl/templates/today.txt
+timeformat: '%a %d %b %h:%M'
+version: v2.8.4
