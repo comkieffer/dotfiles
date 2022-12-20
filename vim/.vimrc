@@ -28,6 +28,10 @@ set list listchars=tab:→\ ,trail:· " Show trailing tabs and spaces
 set incsearch      " Search as characters are entered 
 set hlsearch       " Highlight matches
 
+" Whitespace handling
+" Strip trailing whitespace on lines
+autocmd BufWritePre * :%s/\s\+$//e
+
 " Shift+Tab unindents a line "
 imap <S-Tab> <Esc><<i
 nmap <S-tab> <<
