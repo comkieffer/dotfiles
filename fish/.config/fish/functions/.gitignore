@@ -1,0 +1,6 @@
+# Ignore tools installed by `fisher`. These can be downloaded again with
+# `fisher update`
+
+# fzf.fish
+_fzf_*.fish
+fzf_configure_bindings.fish
