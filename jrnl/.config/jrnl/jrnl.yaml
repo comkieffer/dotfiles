@@ -6,7 +6,7 @@ colors:
 default_hour: 9
 default_minute: 0
 display_format: boxed
-editor: vim -c startinsert
+editor: vim -c ":set syntax=markdown"
 encrypt: false
 highlight: true
 indent_character: '|'

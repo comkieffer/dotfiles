@@ -8,10 +8,6 @@ if type -q starship
     starship init fish | source
 end
 
-## Common Abbreviations
-# Make history ignore calls to `jrnl` (command is prepended with a space)
-abbr --add jrnl " jrnl"
-
 if status is-interactive
     # Commands to run in interactive sessions can go here
 end
