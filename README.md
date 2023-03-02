@@ -23,6 +23,11 @@ $ ~/local/bin/pyinfra @local installers/install-base-system.py
 
 ## Tool Setup
 
+### Dotfiles / Dot
+
+The `dot` command is an alias around the `dotfiles` git repository which stores
+changes to the home directory. Use it as you would normally use git.
+
 ### Fish
 
 Fish is configured to use [fisher](https://github.com/jorgebucaran/fisher) for package management. Run `fisher update` to update the installed plugins.
