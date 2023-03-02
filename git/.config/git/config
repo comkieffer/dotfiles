@@ -2,8 +2,8 @@
 	email = thibaud.chupin@gmail.com
 	name = Thibaud Chupin
 
-# Override email for "work" projects
-[includeIf "gitdir:~/Projects-Work/"]
+# Override settings for _work_ projects
+[include]
 path = ~/.config/git/config-work
 
 [core]
@@ -19,7 +19,7 @@ path = ~/.config/git/config-work
     ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
 
     # Find a file path within the directory
-    find = "!git ls-files | grep -i"
+    find = "!git ls-files | grep -in"
 
     # Quick look at history with branches and stuff
     lsd = log --graph --boundary '--format=%C(yellow)%h%Creset%C(bold cyan)%d%Creset %s %C(dim normal)(%ar)%Creset' --all
@@ -31,9 +31,24 @@ path = ~/.config/git/config-work
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
     # Pick the parent commit for an interactive rebase.
-    frbi = "!f() { git rebase --autosquash -i $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; }; f"
+    frbi = "\
+        !f() { \
+            if [[ $(git diff --stat) != '' ]]; then \
+                echo 'Working directory is dirty. Stash the changes before continuing ...' \
+                return \
+            fi \
+            git rebase --autosquash -i \
+                $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
+        }; f"
+
+    # Remove merged branches
+    # Will only remove branches that are merged into master on the local end
+    # Won't remove branches that have bee merged on gitlab
+    # For that we should parse the log
+    cleanup = "!git branch --merged master | grep  -v '\\*\\|master\\|production' | xargs -n 1 -r git branch -d"
 
     # Checkout a merge request from the command line
+    # Usage: git mr origin 35
     mr = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
 
     # Short commands
