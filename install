@@ -35,7 +35,14 @@ STOWED_PROGRAMS = {
             "~/.local/share",
         ],
     },
-    "fish": {},
+    "fish": {
+        # We use `fisher` to install plugins, this will put the installed functions in
+        # `functions`. This is also where we put our own functions. If we do not create
+        # the directory, all of the plugin-installed functions will appear in our diff.
+        "create_dirs": [
+            "~/.config/fish/functions/",
+        ],
+    },
     "git": {},
     "gdb": {},
     "jrnl": {},
