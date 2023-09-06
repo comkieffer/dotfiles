@@ -31,15 +31,11 @@ path = ~/.config/git/config-work
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
     # Pick the parent commit for an interactive rebase.
-    frbi = "\
-        !f() { \
-            if [[ $(git diff --stat) != '' ]]; then \
-                echo 'Working directory is dirty. Stash the changes before continuing ...' \
-                return \
-            fi \
-            git rebase --autosquash -i \
-                $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
-        }; f"
+    frbi = "!f() \
+      { \
+        git rebase --autosquash --autostash -i \
+          $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
+      }; f"
 
     # Remove merged branches
     # Will only remove branches that are merged into master on the local end
