@@ -2,19 +2,24 @@
 for_window [class="^Regolith-control-center"] floating enable
 for_window [class="^Gnome-control-center"] floating enable
 
+for_window [title="^Preferences"] floating enable
+
 # Float Matlab settings dialogs
 # Might actually be easier to use a whitelist of non-floating windows than to
 # add them all to this list.
-for_window [class="^MATLAB" title="^Preferences"] floating enable
-for_window [class="^MATLAB" title="^Simulink Library Browser"] floating enable
-for_window [class="^MATLAB" title="^Configuration Parameters"] floating enable
+#
+# Matlab - Core Windows to float
 for_window [class="^MATLAB" title="^Quick Start"] floating enable
 for_window [class="^MATLAB" title="^Start Page"] floating enable
-for_window [class="^MATLAB" title="^Code Generation Report"] floating enable
-for_window [class="^MATLAB" title="^Mask Editor"] floating enable
-for_window [class="^MATLAB" title="^S-Function Builder" ] floating enable
 for_window [class="^MATLAB" title="^Set-Path"] floating enable
 
+# Matlab - Simulink Windows to float
+for_window [class="^MATLAB" title="^Simulink Library Browser"] floating enable
+for_window [class="^MATLAB" title="^Configuration Parameters"] floating enable
+for_window [class="^MATLAB" title="^.* Advisor \-"] floating enable
+for_window [class="^MATLAB" title="^Mask Editor"] floating enable
+for_window [class="^MATLAB" title="^S-Function Builder" ] floating enable
+for_window [class="^MATLAB" title="^Scope" ] floating enable
 
 # Only float Remmina server browser, not actual rdp windows.
 for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
@@ -29,3 +34,6 @@ for_window [class="^jetbrains-" title="^Welcome"] floating enable
 for_window [class="^Steam" title="^Steam - News"] floating enable
 for_window [class="Anki" title="^Add"] floating enable
 for_window [class= "Solaar"] floating enable
+for_window [class="Kazam"] floating enable
+
+for_window [class= "Ln_manager"] floating enable
