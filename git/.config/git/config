@@ -61,3 +61,9 @@ path = ~/.config/git/config-work
 
 [merge]
 	tool = meld
+
+[rebase]
+  # Automatically force-update any branches that point to commits that are being
+  # rebased.
+	updateRefs = true
+
