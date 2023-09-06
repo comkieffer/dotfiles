@@ -37,11 +37,8 @@ path = ~/.config/git/config-work
           $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
       }; f"
 
-    # Remove merged branches
-    # Will only remove branches that are merged into master on the local end
-    # Won't remove branches that have bee merged on gitlab
-    # For that we should parse the log
-    cleanup = "!git branch --merged master | grep  -v '\\*\\|master\\|production' | xargs -n 1 -r git branch -d"
+    # Pick the branch to switch to
+    sw = !git switch $(git branch -a --format '%(refname:short)' | sed 's~origin/~~' | sort | uniq | fzf)
 
     # Checkout a merge request from the command line
     # Usage: git mr origin 35
