@@ -67,3 +67,6 @@ path = ~/.config/git/config-work
   # rebased.
 	updateRefs = true
 
+
+[init]
+	defaultBranch = master
