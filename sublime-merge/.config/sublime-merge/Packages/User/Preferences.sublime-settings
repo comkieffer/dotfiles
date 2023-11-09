@@ -11,4 +11,5 @@
 	"commit_graph_ordering": "author_date",
 	"display_author_date": true,
 	"time_format": "24h",
+	"expand_merge_commits_by_default": true,
 }
