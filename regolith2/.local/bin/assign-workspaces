@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+#
+# ASSIGN WORKSPACES
+#
+# This script tries to move workspaces (AKA virtual desktops) to the _right_ monitor.
+# For example, I like having chat on the smaller monitor and code on the bigger one.
+# Since chat is always on workspace 2, that workspace should be on 'eDP-1', the laptop
+# monitor.
+#
+from __future__ import annotations
+
+import re
+import sys
+import subprocess
+from dataclasses import dataclass
+from pprint import pprint
+
+from i3ipc import Connection, WorkspaceReply
+
+# TODO
+#   The goal is to map workspaces to outputs - we need different configurations for
+#   different setups and a way to pick the one to use.
+#
+#   We should list our connected outputs and move them to the right outputs
+#   OR can we rewrite the i3-config to move outputs around ?
+#
+#   We also want to rename workspaces so that we can more easily identify the work being
+#   done. Workspaces with IDEs, VsCode or Matlab windows should parse the window titles
+#   to extract the current working directory
+#
+#
+# workspace <workspace> output <output1> [output2]…
+# rename workspace <old_name> to <new_name>
+
+# List the connected monitors with 
+# $ xrandr --listmonitors
+
+# Map the list of connected displays (sorted alpahabetically) to the name of a
+# configuration. This name is used to decide on which output each workspace should be
+# moved to
+KNOWN_CONFIGURATIONS = {
+    ("eDP-1",): "Home",
+    ("DP-2-3", "eDP-1",): "Home-Office",
+    ("DP-2-2", "DP-2-3", "eDP-1"): "Work",
+}
+
+workspace_to_output = {
+    0: {"Home": "eDP-1", "Home-Office": "eDP-1", "Work": "DP-2-2"},  # Spotify
+    1: {"Home": "eDP-1", "Home-Office": "DP-2-2", "Work": "DP-2-3"},  # Firefox
+    2: {"Home": "eDP-1", "Home-Office": "eDP-1", "Work": "DP-2-2"},  # Mattermost
+    3: {"Home": "eDP-1", "Home-Office": "eDP-1",  "Work": "eDP-1"},
+    4: {"Home": "eDP-1", "Home-Office": "eDP-1",  "Work": "eDP-1"},  # Sublime Merge
+    5: {"Home": "eDP-1", "Home-Office": "DP-2-2", "Work": "DP-2-3"},
+    6: {"Home": "eDP-1", "Home-Office": "DP-2-2", "Work": "DP-2-3"},
+    7: {"Home": "eDP-1", "Home-Office": "DP-2-2", "Work": "DP-2-3"},
+    8: {"Home": "eDP-1", "Home-Office": "DP-2-2", "Work": "DP-2-3"},
+    9: {"Home": "eDP-1", "Home-Office": "eDP-1", "Work": "DP-2-2"},  # Obsidian
+}
+
+
+@dataclass
+class MonitorInfo:
+    input_idx: int
+    connected: str
+    primary: str
+    input_name: str
+    x_res: str
+    y_res: str
+    width_mm: int
+    height_mm: int
+
+    @classmethod
+    def from_str(cls, monitor_spec: str) -> MonitorInfo:
+        monitor_re = re.compile(
+            r"(?P<input_idx>\d): (?P<connected>[+])?(?P<primary>[*])?(?P<input_name>\S+) "
+            r"(?P<x_res>\d+)/(?P<width_mm>\d+)x(?P<y_res>\d+)/(?P<height_mm>\d+)"
+        )
+
+        match = re.match(monitor_re, monitor_spec)
+        return MonitorInfo(**match.groupdict())
+
+    def __str__(self) -> str:
+        properties = []
+        if self.connected:
+            properties.append("connected")
+        if self.primary:
+            properties.append("primary")
+
+        info_str = f"{self.input_idx}: {self.input_name:6} {self.x_res}x{self.y_res} ({self.width_mm}x{self.height_mm} mm)"
+        if len(properties) > 0:
+            info_str += f" ({', '.join(properties)})"
+        return info_str
+
+
+def get_monitors() -> list[MonitorInfo]:
+    ret = subprocess.run(["xrandr", "--listmonitors"], text=True, capture_output=True)
+    ret.check_returncode()
+
+    # Process the input line by line,
+    #   Skip the first line which is just a header
+    monitors = []
+    for line in ret.stdout.split("\n")[1:]:
+        line = line.strip()
+        if len(line) == 0:
+            continue
+
+        monitors.append(MonitorInfo.from_str(line))
+
+    return sorted(monitors, key=lambda x: x.input_name)
+
+def get_workspaces() -> List[WorkspaceReply]:
+    return sorted(Connection().get_workspaces(), key=lambda w: w.num)
+
+
+def apply_configuration(config_name, workspaces: List[WorkspaceReply]):
+    i3 = Connection()
+
+    for workspace in workspaces:
+        workspace_config = workspace_to_output[workspace.num]
+        target_output = workspace_config[config_name]
+
+        cmd = f"[workspace={workspace.num}] move workspace to output {target_output}"
+        print(cmd)
+        i3.command(cmd)
+
+
+def list_monitors() -> None:
+    for m in get_monitors():
+        print(m)
+
+
+# Look at the connected displays to figure out the name of the configuration we should
+# be using. This will tell us on which output we need to put each window.
+def detect_configuration() -> str | None:
+    monitors = tuple(m.input_name for m in get_monitors())
+    if monitors in KNOWN_CONFIGURATIONS:
+        return KNOWN_CONFIGURATIONS[monitors]
+    else:
+        print(f"Unknown configuration: {', '.join([m for m in monitors])}")
+
+
+# def rename_workspaces():
+#     i3 = Connection()
+#     tree = i3.get_tree()
+#     for ws in tree.workspaces():
+#         ws_number = ws.name.split(":")[0].strip()
+#         for container in ws.nodes:
+#             # We are not interested in _containers_ (things which contain windows, we
+#             # just want to see the actual windows).
+#             if container.window is None:
+#                 continue
+
+#             scope = None
+#             if "Visual Studio Code" in container.name:
+#                 scope = container.name.split("-")[0].strip().title()
+
+#             print(f"{container.name} ? {scope}")
+
+#             if scope is not None:
+#                 new_name = f"{ws.name.split('|')[0].strip()} | {scope}"
+#                 command = f"[workspace={ws_number}] rename workspace to '{new_name}'"
+
+#                 print("------------")
+#                 print(f"  {ws.name} -> {new_name}")
+#                 print(command)
+#                 print("------------")
+#                 replies = i3.command(command)
+#                 for reply in replies:
+#                     print(f"  Ret: {reply.success} - {reply.error}")
+
+
+def main():
+    if len(sys.argv) == 1:
+        print("Detected monitors:")
+        list_monitors()
+
+    elif len(sys.argv) == 2 and sys.argv[1] == "apply":
+        config_name = detect_configuration()
+        if config_name is None:
+            print("Error: Current monitor list does not match any known configuration.")
+            print("  Known configurations are: ")
+            config_name_len = max(len(c) for c in KNOWN_CONFIGURATIONS.values())
+            for monitors, name in KNOWN_CONFIGURATIONS.items():
+                print(f"    - {name:{config_name_len}}: {', '.join(monitors)}")
+
+            sys.exit(1)
+
+        print(f"Applying configuration '{config_name}'")
+        apply_configuration(config_name, get_workspaces())
+
+    else:
+        print("Invalid format")
+
+    # i3 = Connection()
+    # tree = i3.get_tree()
+    # for workspace in tree.workspaces():
+    #     print(workspace.name)
+    #     for window in workspace.nodes:
+    #         print(f"  {window.name} ({window.window_class})")
+    #         # pprint(window.__dict__)
+
+
+if __name__ == "__main__":
+    main()
