@@ -1,0 +1,141 @@
+#! /usr/bin/env python3
+
+import subprocess
+import sys
+import time
+from typing import Sequence
+
+import click
+
+# Teams meeting: https://www.microsoft.com/fr-be/microsoft-teams/join-a-meeting?rtc=1
+
+MEETING_ROOMS = {
+    "Tag-Up": "https://meet.jit.si/hri-lab_town-square",
+    "Thibaud's Lair": "https://whereby.com/thibauds-lair",
+}
+
+START_WORK_RPOGRAMS = (
+    "mattermost-desktop",
+    "obsidian",
+    "spotify",
+    "firefox-bin",
+)
+
+
+def start_if_not_running(binary_name: str) -> None:
+    ret = subprocess.run(["pidof", binary_name], shell=True, text=True)
+    if ret.returncode != 0:
+        print(f"Starting {binary_name} ...")
+        subprocess.run(f"{binary_name} > /dev/null 2>&1 &", shell=True)
+
+
+def action_start_work() -> None:
+    for program in START_WORK_RPOGRAMS:
+        start_if_not_running(program)
+
+    # Sleep a bit so that all the programs finish launching
+    time.sleep(3)
+
+    print("Remapping displays ...")
+    subprocess.run(["assign-workspaces", "apply"])
+
+
+def action_join_meeting() -> None:
+    room = rofi(MEETING_ROOMS.keys(), "Meeting URL: ")
+
+    if room in MEETING_ROOMS:
+        url = MEETING_ROOMS[room]
+    else:
+        # If we're not connecting to a knwon meeting room, try using the room name as
+        # the url.
+        url = room
+
+    subprocess.run(
+        f"chromium-browser -app={url} > /dev/null 2>&1 &",
+        shell=True,
+        text=True,
+        check=True,
+    )
+
+
+def count_monitors() -> int:
+    ret = subprocess.run(
+        ["xrandr", "--listactivemonitors"],
+        text=True,
+        capture_output=True,
+    )
+
+    # The output of xranrd looks like:
+    #
+    # Monitors: 1
+    #  0: +*eDP-1 3840/366x2400/229+0+0  eDP-1
+    #
+    # We want to grab the first line and split off the number.
+
+    lines = ret.stdout.split("\n")
+    if ret.returncode != 0 or len(lines) < 1:
+        return 0
+
+    monitor_count = int(lines[0].split(":")[1])
+    return monitor_count
+
+
+def fix_edp1_dpi() -> None:
+    print("Setting correct DPI for eDP-1 ... ")
+    subprocess.run(
+        ["xrandr", "--dpi", "eDP-1"], text=True, capture_output=True, check=True
+    )
+    subprocess.run(["i3-msg", "restart"], check=True)
+
+
+def action_distribute_windows() -> None:
+    monitors = count_monitors()
+    print(f"Detected {monitors} connected monitors ...")
+    if monitors == 1:
+        fix_edp1_dpi()
+
+
+def rofi(action_list: Sequence[str], prompt: str) -> str:
+    actions = "\n".join(action_list)
+
+    # -i  Case insensitive action matching
+    ret = subprocess.run(
+        f"echo -n '{actions}' | rofi -dmenu -i -p '{prompt}'",
+        shell=True,
+        text=True,
+        capture_output=True,
+    )
+
+    if ret.returncode != 0:
+        print(ret.stderr)
+        sys.exit(1)
+
+    return ret.stdout.strip()
+
+
+ACTIONS = {
+    "Start Work": action_start_work,
+    "Join Meeting": action_join_meeting,
+    "Distribute Windows": action_distribute_windows,
+}
+
+
+@click.command()
+def main() -> None:
+    selected_action = rofi(ACTIONS.keys(), "Select Action")
+
+    if selected_action not in ACTIONS:
+        print(f"'{selected_action}' is not a supported action.")
+        sys.exit(2)
+
+    ACTIONS[selected_action]()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+
+    click.echo("Exiting gracefully ...")
+    sys.exit(0)
