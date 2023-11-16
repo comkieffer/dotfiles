@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import os
+import time
+import xml.etree.ElementTree as ET
+
+from dataclasses import dataclass, field
+from ipaddress import (
+    IPv4Address,
+    IPv6Address,
+    IPv4Network,
+    IPv6Network,
+    ip_address,
+    ip_network,
+)
+from subprocess import run, CalledProcessError
+
+import click
+
+# TODO: detect root permission and run -sT instead
+# Show results in a table and show open ports/services
+
+DEFAULT_NETWORK = "192.168.1.0/24"
+NMAP_OPTS = ["-T4", "--top-ports=25"]
+
+try:
+    from rich.live import Live
+
+    print("loaded rich")
+    HAS_RICH_SUPPORT = True
+except ModuleNotFoundError as e:
+    HAS_RICH_SUPPORT = False
+    print(1)
+    print(e)
+
+
+IpAddress_t = IPv4Address | IPv6Address
+IpNetwork_t = IPv4Network | IPv6Network
+
+
+class IpNetworkParam(click.ParamType):
+    name = "IP Network"
+
+    def convert(self, value, param, ctx):
+        try:
+            return ip_network(value)
+        except ValueError as ex:
+            self.fail(str(ex), param, ctx)
+
+
+@dataclass(frozen=True)
+class NetPort:
+    number: int
+    protocol: str
+
+
+@dataclass()
+class NetHost:
+    hostname: str = None
+    ipv4_address: IPv4Address = None
+    ipv6_address: IPv6Address = None
+    mac_address: str = None
+    open_ports: list[NetPort] = field(default_factory=list)
+
+    @classmethod
+    def from_xml(cls, node: ET.Element) -> NetHost:
+        assert node.find("status").attrib["state"] == "up"
+        # ET.dump(node)
+
+        this_host = NetHost()
+
+        for n in node.iter("address"):
+            match n.attrib["addrtype"], n.attrib["addr"]:
+                case ["ipv4", addr]:
+                    this_host.ipv4_address = ip_address(addr)
+                case ["ipv6", addr]:
+                    this_host.ipv6_address = ip_address(addr)
+                case ["mac", addr]:
+                    this_host.mac_address = addr
+
+        if host := node.find("hostname"):
+            this_host.hostname = host.attrib["name"]
+
+        for p in node.iter("port"):
+            if p.find("state").attrib["state"] != "closed":
+                this_host.open_ports.append(
+                    NetPort(
+                        number=p.attrib["portid"],
+                        protocol=p.attrib["protocol"],
+                    )
+                )
+
+        return this_host
+
+    def __str__(self):
+        addresses = [self.ipv4_address, self.ipv6_address]
+        address_str = ", ".join([str(a) for a in addresses if a is not None])
+        host_part = f"({self.hostname})" if self.hostname else ""
+        ports_part = ", ".join([f"{p.number} ({p.protocol})" for p in self.open_ports])
+        if len(ports_part) > 0:
+            ports_part = f" [{ports_part}]"
+        return f"{address_str} {host_part}{ports_part}"
+
+    def __hash__(self):
+        return hash(
+            (self.ipv4_address, self.ipv6_address, self.mac_address, self.hostname)
+        )
+
+
+def make_nmap_cmdline(subnet: IpNetwork_t) -> list[str]:
+    if os.getuid() == 0:
+        # We are root so we can use a TCP scan
+        return ["nmap", "-oX", "-", "-sS", str(subnet), *NMAP_OPTS]
+
+    return ["nmap", "-oX", "-", "-sn", str(subnet), *NMAP_OPTS]
+
+
+def run_scan(cmd: list[str]) -> set[NetHost]:
+    try:
+        ret = run(cmd, capture_output=True, check=True, text=True)
+    except CalledProcessError as e:
+        click.echo(f"Call to nmap failed.")
+        click.echo(f"$ {e.cmd} -> {e.returncode}")
+        click.echo(e.stderr)
+
+    doc_root = ET.fromstring(ret.stdout)
+    hosts = set(NetHost.from_xml(x) for x in doc_root.findall("host"))
+    return hosts
+
+
+def display_basic_scan_results(nmap_cmd: list[str]) -> None:
+    known_hosts = set()
+    while True:
+        found_hosts = run_scan(nmap_cmd)
+        new_hosts = sorted(
+            found_hosts - known_hosts,
+            key=lambda x: str(x.ipv4_address) + str(x.ipv6_address),
+        )
+
+        print(f"Found {len(new_hosts)} new hosts ...")
+        for host in new_hosts:
+            print(f"- {host}")
+
+        known_hosts |= found_hosts
+
+
+def display_rich_scan_results(nmap_cmd: list[str]) -> None:
+    from rich.live import Live
+    from rich.table import Table
+    from rich.console import Console
+
+    known_hosts = set()
+
+    table = Table("IPv4 Address", "IPv6 Address", "Host Name", "Services")
+
+    with Live(console=Console()) as live_table:
+        scan_count = 1
+        while True:
+            tic = time.perf_counter()
+            found_hosts = run_scan(nmap_cmd)
+            toc = time.perf_counter()
+
+            new_hosts = sorted(
+                found_hosts - known_hosts,
+                key=lambda x: str(x.ipv4_address) + str(x.ipv6_address),
+            )
+
+            for host in new_hosts:
+                table.add_row(
+                    str(host.ipv4_address or ""),
+                    str(host.ipv6_address or ""),
+                    host.hostname,
+                    # ", ".join([f"{p.number} ({p.protocol})" for p in host.open_ports]),
+                    str(host),
+                )
+
+            table.caption = f"Scan {scan_count} completed in {toc - tic:.1f} s, {len(new_hosts)} new hosts"
+            live_table.update(table)
+
+            scan_count += 1
+            known_hosts |= found_hosts
+
+
+@click.command()
+@click.argument("subnet", type=IpNetworkParam(), default=DEFAULT_NETWORK)
+def main(subnet):
+    nmap_cmd = make_nmap_cmdline(subnet)
+    print(f"Scan command: {' '.join(nmap_cmd)}")
+
+    HAS_RICH_SUPPORT = True
+
+    if HAS_RICH_SUPPORT and os.isatty(0):
+        display_rich_scan_results(nmap_cmd)
+    else:
+        display_basic_scan_results(nmap_cmd)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
