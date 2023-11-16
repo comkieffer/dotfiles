@@ -3,12 +3,13 @@ bindsym Shift+Print exec "/usr/bin/flameshot gui"
 
 # Press $mod+o followed by either f, t, Escape or Return to launch firefox,
 # thunderbird or return to the default mode, respectively.
-set $tibo_mode_launcher Thibaud Commands: [a] Action Menu [g] Goto Repo [h] Make Hero Window
+set $tibo_mode_launcher Thibaud Commands: [a] Action Menu [d] Distribute Windows [g] Goto Repo [h] Make Hero Window
 bindsym $mod+m mode "$tibo_mode_launcher"
 
 mode "$tibo_mode_launcher" {
-    bindsym g exec gl-tool goto; mode "default"
     bindsym a exec regolith-action-menu; mode "default"
+    bindsym a exec assign-workspaces; mode "default"
+    bindsym g exec gl-tool goto; mode "default"
     bindsym h exec make-hero-window; mode "default"
 
     bindsym Escape mode "default"
