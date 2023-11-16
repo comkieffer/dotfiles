@@ -14,6 +14,7 @@ from subprocess import run
 from pprint import pprint
 
 from i3ipc import Connection
+from i3ipc.con import Con
 
 MARGIN_X_PCT = 0.2
 MARGIN_Y_PCT = 0.1
@@ -61,16 +62,16 @@ def select_window() -> int:
     return int(match.group(1))
 
 
-def get_focused_window(i3: Connection) -> int:
+def get_window_by_id(i3, window_id) -> Con:
+    return i3.get_tree().find_by_window(window_id)
+
+
+def get_focused_window(i3: Connection) -> Con:
     window = i3.get_tree().find_focused()
-    return window.ipc_data["window"]
+    return window
 
 
-def get_workspace_for_window(i3: Connection, window_id: int) -> dict:
-    target_window = i3.get_tree().find_by_window(window_id)
-    assert target_window is not None
-
-    parent_workspace = target_window.workspace()
+def get_workspace_for_window(i3: Connection, window: Con) -> dict:
     assert parent_workspace is not None
 
     return parent_workspace
@@ -95,15 +96,15 @@ def compute_hero_window_rect(workspace: tuple[int, int]) -> tuple[Point_t, Point
     return (window_top_left, window_size)
 
 
-def make_hero_window(i3, window_id, window_pos, window_size) -> None:
+def make_hero_window(window, window_pos, window_size) -> None:
     command = (
-        f"[id={window_id}] floating enable; "
-        f"[id={window_id}] resize set {window_size[0]} {window_size[1]}; "
-        f"[id={window_id}] move position {window_pos[0]} px {window_pos[1]} px"
+        f"floating enable; "
+        f"resize set {window_size[0]} {window_size[1]}; "
+        f"move position {window_pos[0]} px {window_pos[1]} px"
     )
     print(f"i3-msg -t '{command}'")
 
-    i3.command(command)
+    window.command(command)
 
 
 def main() -> None:
@@ -112,14 +113,14 @@ def main() -> None:
     args = parse_args()
     if sys.stdout.isatty() or args.interactive:
         print("Please click on the window to hero-ise")
-        target_window_id = select_window()
+        target_window = get_window_by_id(i3, select_window())
     else:
-        target_window_id = get_focused_window(i3)
+        target_window = get_focused_window(i3)
         print("Running from a non-interactive terminal. Hero-ising focused window")
 
-    workspace = get_workspace_for_window(i3, target_window_id)
+    workspace = target_window.workspace()
     hero_pos, hero_size = compute_hero_window_rect(workspace)
-    make_hero_window(i3, target_window_id, hero_pos, hero_size)
+    make_hero_window(target_window, hero_pos, hero_size)
 
     sys.exit(0)
 
