@@ -41,6 +41,7 @@ STOWED_PROGRAMS = {
         # the directory, all of the plugin-installed functions will appear in our diff.
         "create_dirs": [
             "~/.config/fish/functions/",
+            "~/.local/bin",
         ],
     },
     "git": {},
