@@ -76,11 +76,12 @@ class NetHost:
                 case ["mac", addr]:
                     this_host.mac_address = addr
 
-        if host := node.find("hostname"):
+        for host in node.iter("hostname"):
             this_host.hostname = host.attrib["name"]
+            break
 
         for p in node.iter("port"):
-            if p.find("state").attrib["state"] != "closed":
+            if p.find("state").attrib["state"] == "open":
                 this_host.open_ports.append(
                     NetPort(
                         number=p.attrib["portid"],
