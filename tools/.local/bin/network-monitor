@@ -22,7 +22,7 @@ import click
 # Show results in a table and show open ports/services
 
 DEFAULT_NETWORK = "192.168.1.0/24"
-NMAP_OPTS = ["-T4", "--top-ports=25"]
+NMAP_OPTS = ["-T4"]
 
 try:
     from rich.live import Live
@@ -108,11 +108,26 @@ class NetHost:
         )
 
 
-def make_nmap_cmdline(subnet: IpNetwork_t) -> list[str]:
+def make_nmap_cmdline(subnet: IpNetwork_t, top_ports: int) -> list[str]:
     if os.getuid() == 0:
         # We are root so we can use a TCP scan
-        return ["nmap", "-oX", "-", "-sS", str(subnet), *NMAP_OPTS]
+        print("Running as root, using TCP scan ...")
+        return [
+            "nmap",
+            "-oX",
+            "-",
+            "-sS",
+            str(subnet),
+            f"--top-ports={top_ports}",
+            *NMAP_OPTS,
+        ]
 
+    print(
+        (
+            "Running as non-root, using ping scan. "
+            "Run as root for more accurate results ..."
+        )
+    )
     return ["nmap", "-oX", "-", "-sn", str(subnet), *NMAP_OPTS]
 
 
@@ -184,8 +199,13 @@ def display_rich_scan_results(nmap_cmd: list[str]) -> None:
 
 @click.command()
 @click.argument("subnet", type=IpNetworkParam(), default=DEFAULT_NETWORK)
-def main(subnet):
-    nmap_cmd = make_nmap_cmdline(subnet)
+@click.option(
+    "--top-ports",
+    default=25,
+    help="Scan <number> most common ports (only for TCP scans).",
+)
+def main(subnet, top_ports):
+    nmap_cmd = make_nmap_cmdline(subnet, top_ports)
     print(f"Scan command: {' '.join(nmap_cmd)}")
 
     HAS_RICH_SUPPORT = True
