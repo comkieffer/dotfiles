@@ -27,12 +27,9 @@ NMAP_OPTS = ["-T4"]
 try:
     from rich.live import Live
 
-    print("loaded rich")
     HAS_RICH_SUPPORT = True
 except ModuleNotFoundError as e:
     HAS_RICH_SUPPORT = False
-    print(1)
-    print(e)
 
 
 IpAddress_t = IPv4Address | IPv6Address
@@ -161,6 +158,7 @@ def display_basic_scan_results(nmap_cmd: list[str]) -> None:
 
 
 def display_rich_scan_results(nmap_cmd: list[str]) -> None:
+    from rich.align import Align
     from rich.live import Live
     from rich.table import Table
     from rich.console import Console
@@ -168,6 +166,7 @@ def display_rich_scan_results(nmap_cmd: list[str]) -> None:
     known_hosts = set()
 
     table = Table("IPv4 Address", "IPv6 Address", "Host Name", "Services")
+    table_centered = Align.center(table)
 
     with Live(console=Console()) as live_table:
         scan_count = 1
@@ -182,16 +181,16 @@ def display_rich_scan_results(nmap_cmd: list[str]) -> None:
             )
 
             for host in new_hosts:
+                live_table.console.print(host)
                 table.add_row(
                     str(host.ipv4_address or ""),
                     str(host.ipv6_address or ""),
                     host.hostname,
-                    # ", ".join([f"{p.number} ({p.protocol})" for p in host.open_ports]),
-                    str(host),
+                    ", ".join([f"{p.number} ({p.protocol})" for p in host.open_ports]),
                 )
 
             table.caption = f"Scan {scan_count} completed in {toc - tic:.1f} s, {len(new_hosts)} new hosts"
-            live_table.update(table)
+            live_table.update(table_centered)
 
             scan_count += 1
             known_hosts |= found_hosts
