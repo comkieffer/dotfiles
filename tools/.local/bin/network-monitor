@@ -55,9 +55,9 @@ class NetPort:
 @dataclass()
 class NetHost:
     hostname: str = None
-    ipv4_address: IPv4Address = None
-    ipv6_address: IPv6Address = None
-    mac_address: str = None
+    ipv4: IPv4Address = None
+    ipv6: IPv6Address = None
+    mac: str = None
     open_ports: list[NetPort] = field(default_factory=list)
 
     @classmethod
@@ -70,11 +70,11 @@ class NetHost:
         for n in node.iter("address"):
             match n.attrib["addrtype"], n.attrib["addr"]:
                 case ["ipv4", addr]:
-                    this_host.ipv4_address = ip_address(addr)
+                    this_host.ipv4 = ip_address(addr)
                 case ["ipv6", addr]:
-                    this_host.ipv6_address = ip_address(addr)
+                    this_host.ipv6 = ip_address(addr)
                 case ["mac", addr]:
-                    this_host.mac_address = addr
+                    this_host.mac = addr
 
         for host in node.iter("hostname"):
             this_host.hostname = host.attrib["name"]
@@ -92,7 +92,7 @@ class NetHost:
         return this_host
 
     def __str__(self):
-        addresses = [self.ipv4_address, self.ipv6_address]
+        addresses = [self.ipv4, self.ipv6]
         address_str = ", ".join([str(a) for a in addresses if a is not None])
         host_part = f"({self.hostname})" if self.hostname else ""
         ports_part = ", ".join([f"{p.number} ({p.protocol})" for p in self.open_ports])
@@ -101,9 +101,7 @@ class NetHost:
         return f"{address_str} {host_part}{ports_part}"
 
     def __hash__(self):
-        return hash(
-            (self.ipv4_address, self.ipv6_address, self.mac_address, self.hostname)
-        )
+        return hash((self.ipv4, self.ipv6, self.mac, self.hostname))
 
 
 def make_nmap_cmdline(
@@ -146,7 +144,7 @@ def display_basic_scan_results(nmap_cmd: list[str]) -> None:
         found_hosts = run_scan(nmap_cmd)
         new_hosts = sorted(
             found_hosts - known_hosts,
-            key=lambda x: str(x.ipv4_address) + str(x.ipv6_address),
+            key=lambda x: str(x.ipv4) + str(x.ipv6),
         )
 
         print(f"Found {len(new_hosts)} new hosts ...")
@@ -156,7 +154,7 @@ def display_basic_scan_results(nmap_cmd: list[str]) -> None:
         known_hosts |= found_hosts
 
 
-def display_rich_scan_results(nmap_cmd: list[str]) -> None:
+def display_rich_scan_results(nmap_cmd: list[str], *, sort_by=None) -> None:
     from rich.align import Align
     from rich.live import Live
     from rich.table import Table
@@ -164,42 +162,63 @@ def display_rich_scan_results(nmap_cmd: list[str]) -> None:
 
     known_hosts = set()
 
-    table = Table("IPv4 Address", "IPv6 Address", "Host Name", "Services")
-    table_centered = Align.center(table)
+    def make_table():
+        table = Table("IPv4", "IPv6", "Host Name", "Services")
+        return Align.center(table), table
+
+    container, table = make_table()
 
     with Live(console=Console()) as live_table:
-        scan_count = 1
+        scan_count = 0
         while True:
             tic = time.perf_counter()
             found_hosts = run_scan(nmap_cmd)
+            scan_count += 1
             toc = time.perf_counter()
 
-            new_hosts = sorted(
-                found_hosts - known_hosts,
-                key=lambda x: str(x.ipv4_address) + str(x.ipv6_address),
-            )
+            new_hosts = found_hosts - known_hosts
+            caption = f"Scan {scan_count} completed in {toc - tic:.1f} s, {len(new_hosts)} new hosts"
 
-            for host in new_hosts:
-                live_table.console.print(host)
+            # If we have no new hosts, we only need to update the caption
+            if len(new_hosts) == 0:
+                table.caption = caption
+                live_table.update(container)
+                continue
+
+            # Otherwise, we need to rebuild the table with our new column data
+            container, table = make_table()
+            table.caption = caption
+
+            rows = [(row, "dim") for row in known_hosts]
+            rows.extend([(row, "") for row in new_hosts])
+
+            if sort_by != "latest":
+                rows.sort(key=lambda x: getattr(x[0], sort_by) or "")
+
+            for host, style in rows:
                 table.add_row(
-                    str(host.ipv4_address or ""),
-                    str(host.ipv6_address or ""),
+                    str(host.ipv4 or ""),
+                    str(host.ipv6 or ""),
                     host.hostname,
                     ", ".join([f"{p.number} ({p.protocol})" for p in host.open_ports]),
+                    style=style,
                 )
 
-            table.caption = f"Scan {scan_count} completed in {toc - tic:.1f} s, {len(new_hosts)} new hosts"
-            live_table.update(table_centered)
-
-            scan_count += 1
             known_hosts |= found_hosts
 
 
 @click.command()
 @click.argument("subnet", type=IpNetworkParam(), default=DEFAULT_NETWORK)
 @click.option(
+    "-s",
+    "--sort-by",
+    default="latest",
+    type=click.Choice(("latest", "ipv4", "ipv6", "hostname"), case_sensitive=False),
+    help="Sort the results",
+)
+@click.option(
     "--top-ports",
-    default=25,
+    default=None,
     help="Scan <number> most common ports (only for TCP scans).",
 )
 @click.option(
@@ -214,7 +233,7 @@ def main(subnet, sort_by: str, top_ports: int | None, no_resolve_dns: bool):
     print(f"Scan command: {' '.join(nmap_cmd)}")
 
     if HAS_RICH_SUPPORT and os.isatty(0):
-        display_rich_scan_results(nmap_cmd)
+        display_rich_scan_results(nmap_cmd, sort_by=sort_by)
     else:
         display_basic_scan_results(nmap_cmd)
 
