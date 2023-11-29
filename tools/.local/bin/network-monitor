@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 import xml.etree.ElementTree as ET
 
@@ -18,11 +19,10 @@ from subprocess import run, CalledProcessError
 
 import click
 
-# TODO: detect root permission and run -sT instead
-# Show results in a table and show open ports/services
+# TODO: be smarter about what scans should run (being root is not the only criteria)
+# TODO: remove ports column when running in -sn mode
 
 DEFAULT_NETWORK = "192.168.1.0/24"
-NMAP_OPTS = ["-T4"]
 
 try:
     from rich.live import Live
@@ -106,27 +106,24 @@ class NetHost:
         )
 
 
-def make_nmap_cmdline(subnet: IpNetwork_t, top_ports: int) -> list[str]:
-    if os.getuid() == 0:
-        # We are root so we can use a TCP scan
-        print("Running as root, using TCP scan ...")
-        return [
-            "nmap",
-            "-oX",
-            "-",
-            "-sS",
-            str(subnet),
-            f"--top-ports={top_ports}",
-            *NMAP_OPTS,
-        ]
+def make_nmap_cmdline(
+    subnet: IpNetwork_t, top_ports: int | None, no_resolve_dns: bool = False
+) -> list[str]:
+    defaults = ["nmap", "-oX", "-", "-T4"]
 
-    print(
-        (
-            "Running as non-root, using ping scan. "
-            "Run as root for more accurate results ..."
-        )
-    )
-    return ["nmap", "-oX", "-", "-sn", str(subnet), *NMAP_OPTS]
+    scan_type = ["-sn"]
+    if top_ports is not None:
+        if os.getuid() != 0:
+            click.echo("Error: The selected scan type required root permissions")
+            sys.exit(1)
+
+        scan_type = ["-sS", "--top-ports", str(top_ports)]
+
+    dns_opts = []
+    if no_resolve_dns:
+        dns_opts.append("-n")
+
+    return [*defaults, *dns_opts, *scan_type, str(subnet)]
 
 
 def run_scan(cmd: list[str]) -> set[NetHost]:
@@ -136,6 +133,7 @@ def run_scan(cmd: list[str]) -> set[NetHost]:
         click.echo(f"Call to nmap failed.")
         click.echo(f"$ {e.cmd} -> {e.returncode}")
         click.echo(e.stderr)
+        sys.exit(1)
 
     doc_root = ET.fromstring(ret.stdout)
     hosts = set(NetHost.from_xml(x) for x in doc_root.findall("host"))
@@ -204,11 +202,16 @@ def display_rich_scan_results(nmap_cmd: list[str]) -> None:
     default=25,
     help="Scan <number> most common ports (only for TCP scans).",
 )
-def main(subnet, top_ports):
-    nmap_cmd = make_nmap_cmdline(subnet, top_ports)
+@click.option(
+    "-n",
+    "--no-resolve-dns",
+    default=False,
+    is_flag=True,
+    help="Never do reverse DNS lookups for hosts",
+)
+def main(subnet, sort_by: str, top_ports: int | None, no_resolve_dns: bool):
+    nmap_cmd = make_nmap_cmdline(subnet, top_ports, no_resolve_dns)
     print(f"Scan command: {' '.join(nmap_cmd)}")
-
-    HAS_RICH_SUPPORT = True
 
     if HAS_RICH_SUPPORT and os.isatty(0):
         display_rich_scan_results(nmap_cmd)
