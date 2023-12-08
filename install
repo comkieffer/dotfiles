@@ -9,9 +9,9 @@ dotfiles stored in a folder. The name of the configuration is the name of the fo
 The top level keys of the configurations dict are the configurations to install. The associated
 values are nested dicts with additional information on the configuration. A configuration is only
 installed if an executable with the same name is on the ``PATH``. The name can be overridden by
-passing the ``executable`` property in the confiuration.
+passing the ``executable`` property in the configuration.
 
-Stow tends to be over-eager when linking things and it may be nessary to manually create directories
+Stow tends to be over-eager when linking things and it may be necessary to manually create directories
 before invoking ``stow``. The ``create_dirs`` key of the configuration is a list of directories to
 create before invoking ``stow``.
 
@@ -40,6 +40,7 @@ STOWED_PROGRAMS = {
         # `functions`. This is also where we put our own functions. If we do not create
         # the directory, all of the plugin-installed functions will appear in our diff.
         "create_dirs": [
+            "~/.config/fish/completions/",
             "~/.config/fish/functions/",
             "~/.local/bin",
         ],
@@ -156,6 +157,6 @@ if __name__ == "__main__":
             else:
                 print(" \033[32mOK\033[0m")
         else:
-            print(f"\033[31mERROR\033[0m: unknow target <{target}>.")
+            print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
 
     sys.exit(0)
