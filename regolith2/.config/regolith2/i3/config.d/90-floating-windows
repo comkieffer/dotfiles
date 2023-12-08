@@ -31,9 +31,11 @@ for_window [title="^Gconf"] floating enable
 for_window [class="^jetbrains-" title="^splash$"] floating enable
 for_window [class="^jetbrains-" title="^Welcome"] floating enable
 
-for_window [class="^Steam" title="^Steam - News"] floating enable
 for_window [class="Anki" title="^Add"] floating enable
-for_window [class= "Solaar"] floating enable
 for_window [class="Kazam"] floating enable
+for_window [class="Popsicle"] floating enable
+for_window [class= "Solaar"] floating enable
+for_window [class="^Steam" title="^Steam - News"] floating enable
+
 
 for_window [class= "Ln_manager"] floating enable
