@@ -33,4 +33,4 @@ if status is-interactive
     end
 end
 
-alias dotfiles "git --git-dir=$HOME/Projects-Personal/homedir --work-tree=$HOME"
+alias dotfiles "git --git-dir=$HOME/dev/personal/homedir --work-tree=$HOME"
