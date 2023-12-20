@@ -3,6 +3,12 @@
 fish_add_path ~/.local/bin/
 
 
+# If wget is present, save the HSTS file in .cache instead of home
+if type -q wget ;
+	mkdir -p "$HOME/.cache/wget"
+	alias wget 'wget --hsts-file "$HOME/.cache/wget/wget-hsts"'
+end
+
 if status is-interactive
     # Commands to run in interactive sessions can go here
     alias ip "ip --color=auto"
