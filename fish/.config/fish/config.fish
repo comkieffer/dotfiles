@@ -15,7 +15,11 @@ if status is-interactive
 
     # Use `exa` insted of `ls` if it is installed.
     if type -q exa
-        alias ls="exa --icons --group"
+        alias ls "exa --icons --group"
+
+	if ! type -q tree
+		alias tree "exa --tree"
+	end
     else
         # Make ls more pretty by deafult
         #
