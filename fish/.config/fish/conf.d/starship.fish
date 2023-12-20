@@ -1,10 +1,8 @@
-# Starfish is the framework used to generate the prompt
-# Install it from https://starship.rs/
+# Required `starship` package install with
+#   sh (curl -sS https://starship.rs/install.sh | psub) --bin-dir $HOME/.local/bin
 #
-# Or run
-#   curl -sS https://starship.rs/install.sh | sh
+# Provides the `starship` command to decorate the prompt
 
-
-if type -q starship
+if type -q starship;
     starship init fish | source
 end

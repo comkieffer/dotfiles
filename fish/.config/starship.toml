@@ -1,0 +1,54 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# See presets:
+#
+# Plain Text Symbol
+#	https://starship.rs/presets/plain-text.html
+# 
+
+[[battery.display]]
+threshold=25
+
+[git_commit]
+only_detached = false
+tag_symbol = " tag "
+
+[git_status]
+staged = "+count "
+modified = "!$count "
+untracked = "?$count"
+
+[c]
+symbol = "C "
+
+[cmake]
+symbol = "cmake "
+
+[directory]
+read_only = " ro"
+
+[docker_context]
+symbol = "docker "
+
+[golang]
+symbol = "go "
+
+[memory_usage]
+symbol = "memory "
+
+[meson]
+symbol = "meson "
+
+[python]
+symbol = "py "
+
+[rust]
+symbol = "rs "
+
+[sudo]
+disabled = false
+# symbol = "sudo "
+
+[time]
+disabled = false
