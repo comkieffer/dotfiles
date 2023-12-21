@@ -1,0 +1,46 @@
+
+! Overrides for Regolith settings!
+!
+! To deploy them use `regolith-look refresh`
+! If the changes fail to load, ensure that `~/.config/regolith2/Xresources` is
+! symlinked to this file.
+!
+! See reglotih-look-default root resources for an overviiew of keys
+! https://github.com/regolith-linux/regolith-look-default/blob/286e055f0710cbd5cab8732200bc3441771be99f/usr/share/regolith-look/default/root
+
+! Regolith-look configuration
+! This field is auto-updated when running `regolith-look set ...`
+regolith.look.path: /usr/share/regolith-look/ayu-mirage
+
+! Give workspaces nice names
+! Each regolith theme can use a different font, This is described in
+! /usr/share/regolith-look/THEME-NAME/root in the `gtk.font_name` option.
+!
+! The icons here come from https://www.nerdfonts.com/cheat-sheet
+! (The ayu theme uses nerd fonts).
+!
+! Note: workspace icons are only updated when a workspace is created.
+!
+! To see the icons in the browser, add `Hack Nerd Font` to the list of editor
+! fonts.
+
+wm.workspace.01.name: 1: 1 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.02.name: 2: 2 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.03.name: 3: 3 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.04.name: 4: 4 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.05.name: 5: 5 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.06.name: 6: 6 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.07.name: 7: 7 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.08.name: 8: 8 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.09.name: 9: 9 <span font_desc="Hack Nerd Font"></span><span> </span>
+wm.workspace.10.name: 0: 0 <span font_desc="Hack Nerd Font"></span><span> </span>
+
+! Fix fontsize for Gnome-Terminal
+gnome.terminal.font: Ubuntu Mono 11
+
+! Tell regolith to not override the desktop set by gnome
+! gnome.wallpaper:
+
+! i3xblocks Configuration
+i3xrocks.value.font: Ubuntu 10
+
