@@ -8,7 +8,7 @@ if status is-interactive
     alias ip "ip --color=auto"
 
     # Use `exa` insted of `ls` if it is installed.
-    if type exa
+    if type -q exa
         alias ls="exa --icons --group"
     else
         # Make ls more pretty by deafult
