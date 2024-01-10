@@ -62,8 +62,11 @@ STOWED_PROGRAMS = {
             "~/.config/sublime-merge/Packages/User",
         ],
     },
-    "regolith2": {
+    "regolith": {
         "executable": "regolith-look",
+        "create_dirs": [
+            "~/.config/regolith3",
+        ],
     },
 }
 

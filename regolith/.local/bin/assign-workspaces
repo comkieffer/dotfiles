@@ -32,7 +32,7 @@ from i3ipc import Connection, WorkspaceReply
 # workspace <workspace> output <output1> [output2]…
 # rename workspace <old_name> to <new_name>
 
-# List the connected monitors with 
+# List the connected monitors with
 # $ xrandr --listmonitors
 
 # Map the list of connected displays (sorted alpahabetically) to the name of a
