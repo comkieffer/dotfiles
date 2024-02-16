@@ -10,6 +10,7 @@ path = ~/.config/git/config-work
 	fileMode = false
 	editor = vim
     autocrlf = input
+	pager = perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less
 
 [alias]
     # list the recent commits in a oneline, coloured form with the date
@@ -53,7 +54,7 @@ path = ~/.config/git/config-work
     br = branch
 
 [diff]
-	wsErrorHighlight = all # Show whitesoace changes in diffs
+	wsErrorHighlight = all # Show whitespace changes in diffs
 	tool = meld
 
 [push]
@@ -70,3 +71,6 @@ path = ~/.config/git/config-work
 
 [init]
 	defaultBranch = master
+
+[core "interactive"]
+	difffilter = perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less
