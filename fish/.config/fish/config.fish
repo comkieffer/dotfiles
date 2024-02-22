@@ -5,21 +5,25 @@ fish_add_path ~/.local/bin/
 
 # If wget is present, save the HSTS file in .cache instead of home
 if type -q wget ;
-	mkdir -p "$HOME/.cache/wget"
-	alias wget 'wget --hsts-file "$HOME/.cache/wget/wget-hsts"'
+    mkdir -p "$HOME/.cache/wget"
+    alias wget 'wget --hsts-file "$HOME/.cache/wget/wget-hsts"'
 end
 
 if status is-interactive
     # Commands to run in interactive sessions can go here
     alias ip "ip --color=auto"
 
+    # Make rm and mv print out what they're doing
+    alias mv 'mv --verbose'
+    alias rm 'rm --verbose'
+
     # Use `exa` insted of `ls` if it is installed.
     if type -q exa
         alias ls "exa --icons --group"
 
-	if ! type -q tree
-		alias tree "exa --tree"
-	end
+        if ! type -q tree
+            alias tree "exa --tree"
+        end
     else
         # Make ls more pretty by deafult
         #
