@@ -38,6 +38,21 @@ path = ~/.config/git/config-work
           $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
       }; f"
 
+    # Perform interactive rebase up to the merge base with master
+    apply-fixup = "!f() \
+      { \
+        echo \"Ensuring origin/master ref is up to date ...\"; \
+        git fetch --prune origin; \
+        \
+        merge_base=$(git merge-base --fork-point origin/master HEAD | cut -c 1-7); \
+        if [ -z \"${merge_base}\" ]; then \
+          echo \"Unable to locate merge base for the current branch.\"; \
+          exit 1; \
+        fi; \
+        \
+        git rebase --autosquash --autostash --interactive $merge_base; \
+      }; f"
+
     # Pick the branch to switch to
     sw = !git switch $(git branch -a --format '%(refname:short)' | sed 's~origin/~~' | sort | uniq | fzf)
 
