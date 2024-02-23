@@ -1,0 +1,46 @@
+---
+repos:
+  - repo: meta
+    hooks:
+      # - id: check-hooks-apply
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      # Exclude the bash folder since nothing in there passes shellcheck and,
+      # in any case, I don't actually use it at the moment. 
+      - id: shellcheck
+        exclude: ^bash\/.*$
+        args: [-x]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args:
+          - --config-data
+          - '{
+                extends: default,
+                indentation: {spaces: 2, indent-sequences: false}
+            }'
+
+  - repo: https://github.com/ansible/ansible-lint.git
+    rev: v24.2.0
+    hooks:
+      - id: ansible-lint
+        additional_dependencies:
+          - ansible
+        files: ^ansible\/.*\.(yaml|yml)$
+        args: ['--show-relpath', '--project-dir', 'ansible', '-x', 'name[play]']
