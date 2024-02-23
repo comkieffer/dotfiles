@@ -1,0 +1,26 @@
+---
+- name: Install Spotify
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Spotify | add apt key
+      ansible.builtin.get_url:
+        url: https://download.spotify.com/debian/pubkey_6224F9941A8AA6D1.gpg
+        dest: /etc/apt/keyrings/spotify.asc
+        mode: ugo+r
+
+    - name: Spotify | apt source
+      ansible.builtin.apt_repository:
+        # yamllint disable-line rule:line-length
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/spotify.asc] http://repository.spotify.com stable non-free"
+        filename: spotify
+        state: present
+
+    - name: Spotify | apt update
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Spotify | apt install
+      ansible.builtin.apt:
+        pkg: spotify-client

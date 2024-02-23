@@ -43,4 +43,10 @@ repos:
         additional_dependencies:
           - ansible
         files: ^ansible\/.*\.(yaml|yml)$
-        args: ['--show-relpath', '--project-dir', 'ansible', '-x', 'name[play]']
+        args: [
+          '--show-relpath',
+          '--project-dir', 'ansible',
+          '-x', 'name[play]',
+          '-x', 'fqcn[action-core]',
+          '-x', 'name[template]',
+        ]

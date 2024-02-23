@@ -1,0 +1,42 @@
+---
+- name: Install core system tool
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Core | install core tools
+      ansible.builtin.apt:
+        pkg:
+          - fish
+          - htop
+          - inkscape
+          - pandoc
+
+    - name: Core | install development tools
+      ansible.builtin.apt:
+        pkg:
+          - build-essential
+          - cmake
+          - cmake-qt-gui  # Provides cmake-gui
+          - clang
+          - clang-format
+          - clang-tidy
+          - cppcheck
+          - git
+          - git-absorb  # Automatically create fixup commits
+          - lcov
+          - meld
+          - nmap
+
+    - name: Core | install shell helpers
+      ansible.builtin.apt:
+        pkg:
+          - atuin  # Better shell history
+          - bat  # `cat` with syntax highlighting
+          - dtrx
+          - exa
+          - fd-find  # `find` replacement
+          - fzf
+          - jq
+          - ripgrep  # `make` replacement
+          - trash-cli  # Provides `trash-put`
+          - wifi-qr  # Scan QR codes to connect to wifi

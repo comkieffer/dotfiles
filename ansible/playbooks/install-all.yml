@@ -1,0 +1,9 @@
+---
+
+# Install core system components
+- import_playbook: install-core-tools.yml
+- import_playbook: install-python.yml
+
+# Install nice-to-haves
+- import_playbook: install-spotify.yml
+- import_playbook: install-idasen-desk-control.yml

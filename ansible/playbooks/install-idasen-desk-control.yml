@@ -1,0 +1,9 @@
+---
+- name: Install Idasen Desk Control
+  hosts: localhost
+  tasks:
+    - name: Idasen | pipx install
+      community.general.pipx:
+        executable: pipx
+        name: idasen
+        state: present
