@@ -3,6 +3,6 @@
 # Configure _sane_ date formats
 dialect = "uk"
 
-# Set to compact to remove UI fluff from the search window 
+# Set to compact to remove UI fluff from the search window
 # (_e.g._ version, hotkeys, match count, ...)
 # style = compact

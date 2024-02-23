@@ -20,7 +20,7 @@ repos:
     rev: v0.9.0.6
     hooks:
       # Exclude the bash folder since nothing in there passes shellcheck and,
-      # in any case, I don't actually use it at the moment. 
+      # in any case, I don't actually use it at the moment.
       - id: shellcheck
         exclude: ^bash\/.*$
         args: [-x]

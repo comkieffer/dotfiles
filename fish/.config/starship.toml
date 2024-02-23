@@ -5,7 +5,7 @@
 #
 # Plain Text Symbol
 #	https://starship.rs/presets/plain-text.html
-# 
+#
 
 [[battery.display]]
 threshold=25

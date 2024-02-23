@@ -4,4 +4,3 @@ ssh/
 
 # Ignore pyinfra logfiles
 pyinfra-*
-

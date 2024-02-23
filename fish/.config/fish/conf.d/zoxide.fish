@@ -1,7 +1,7 @@
 # Required `zoxide` package install with
 #   apt install zoxide
 #
-# Alternatively, use the install script from the repository to download the 
+# Alternatively, use the install script from the repository to download the
 # binary directly
 #
 #  curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
