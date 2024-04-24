@@ -7,5 +7,5 @@ function ipa --wraps='ip --color=auto --brief address' --description 'alias ipa 
     set -p argv "dev"
   end
 
-  ip --color=auto --brief --resolve address show $argv;
+  ip --color=auto --brief address show $argv;
 end
