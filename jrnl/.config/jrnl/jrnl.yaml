@@ -11,9 +11,9 @@ encrypt: false
 highlight: true
 indent_character: '|'
 journals:
-  default: /home/tch/Documents/journal.txt
+  default: ~/Documents/Journal/
 linewrap: 79
 tagsymbols: '@'
 template: /home/tch/.config/jrnl/templates/today.md
 timeformat: '%Y-%m-%d %H:%M'
-version: v2.8.4
+version: v4.1
