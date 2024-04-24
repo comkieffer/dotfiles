@@ -103,9 +103,8 @@ def stow(target, config):
     command = ["stow", "--target", expanduser("~"), "--restow", target]
     ret = subprocess.run(
         command,
-        universal_newlines=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        text=True,
+        capture_output=True
     )
 
     return not bool(ret.returncode), " ".join(command), ret.stdout
