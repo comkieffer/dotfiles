@@ -14,6 +14,6 @@ journals:
   default: ~/Documents/Journal/
 linewrap: 79
 tagsymbols: '@#'
-template: /home/tch/.config/jrnl/templates/today.md
+template: today.md
 timeformat: '%Y-%m-%d %H:%M'
 version: v4.1

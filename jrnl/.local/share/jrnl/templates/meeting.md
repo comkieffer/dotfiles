@@ -1,11 +1,10 @@
-Meeting
+Meeting Name
 
 @meeting
 
 ## Attendees
 
-- Thibaud Chupin (ESA)
-- Thomas Krueger (ESA)
+- Thibaud Chupin (AAC)
 -
 
 ## Agenda
@@ -14,4 +13,5 @@ Meeting
 
 ## Minutes / Salient Points
 
--
+- I:AAC
+- T:AAC
