@@ -22,7 +22,6 @@ sudo ansible-playbook \
 ## ToDo
 
 - [ ] Add installer for sublime merge
-- [ ] Add installer for Vs Code
 - [ ] Add installer for regolith
 - [ ] Add installer for just
 - [ ] Add installer for docker

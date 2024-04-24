@@ -40,3 +40,16 @@
           - ripgrep  # `make` replacement
           - trash-cli  # Provides `trash-put`
           - wifi-qr  # Scan QR codes to connect to wifi
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Core | install vscode
+      # Only download the package manually if it isn't already installed.
+      # On first run, it sets up the sources.list and we can then update it
+      # with the usual apt update.
+      when: '"code" not in ansible_facts.packages'
+      ansible.builtin.apt:
+        # yamllint disable-line rule:line-length
+        deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
