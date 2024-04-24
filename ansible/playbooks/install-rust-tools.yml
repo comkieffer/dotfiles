@@ -1,0 +1,15 @@
+---
+- name: Install Rust Tools
+  hosts: localhost
+  tasks:
+    - name: Rust Tools | install zoxide
+      import_tasks: tasks/install-github-release-package.yml
+      vars:
+        github_user: ajeetdsouza
+        github_repo: zoxide
+
+    - name: Rust Tools | install starship
+      import_tasks: tasks/install-github-release-binary.yml
+      vars:
+        github_user: starship
+        github_repo: starship

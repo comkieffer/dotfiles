@@ -25,6 +25,5 @@ sudo ansible-playbook \
 - [ ] Add installer for regolith
 - [ ] Add installer for just
 - [ ] Add installer for docker
-- [ ] Add installer for rust tools (cargo, zoxide, exa, ... )
 
 See `apt-mark showmanual` for the list of installed packages.
