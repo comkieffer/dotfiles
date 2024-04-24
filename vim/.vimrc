@@ -10,10 +10,12 @@ set nobackup
 set noswapfile
 
 " Make tabstops 4 spaces wide
+" Use :retab to convert tabs to spaces
 set expandtab      " TABs are SPACEs
 set tabstop=4      " Number of visual spaces per TAB
-set softtabstop=4  " Actual number of spaces inserted 
+set softtabstop=4  " Actual number of spaces inserted
 set shiftwidth=4
+set smarttab       " Tabs go to the next tabstop
 
 " Enable autoindent - indentation is preserved when pressing ENTER
 set autoindent
@@ -25,7 +27,7 @@ set cursorline     " Highlight the current line
 set list listchars=tab:→\ ,trail:· " Show trailing tabs and spaces
 
 " Search settings
-set incsearch      " Search as characters are entered 
+set incsearch      " Search as characters are entered
 set hlsearch       " Highlight matches
 
 " Whitespace handling
@@ -38,3 +40,8 @@ nmap <S-tab> <<
 
 syntax on          " Make it pretty!
 filetype plugin on
+
+" Filetype specific config
+" Makefile: use _real_ tabs
+autocmd FileType make
+	\ set tabstop=8 shiftwidth=8 softtabstop=0 noexpandtab
