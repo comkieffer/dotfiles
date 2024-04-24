@@ -9,3 +9,4 @@
 # Install nice-to-haves
 - import_playbook: install-spotify.yml
 - import_playbook: install-idasen-desk-control.yml
+- import_playbook: install-timewarrior.yaml
