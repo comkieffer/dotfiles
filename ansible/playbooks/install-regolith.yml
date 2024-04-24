@@ -1,0 +1,57 @@
+---
+- name: Install Regolith Desktop
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Regolith Desktop | add apt key
+      ansible.builtin.get_url:
+        url: https://regolith-desktop.org/regolith.key
+        dest: /etc/apt/keyrings/regolith-archive-keyring.asc
+        mode: ugo+r
+
+    - name: Regolith Desktop | apt source
+      ansible.builtin.apt_repository:
+        # yamllint disable-line rule:line-length
+        repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/regolith-archive-keyring.asc] https://regolith-desktop.org/release-current-ubuntu-{{ ansible_distribution_release
+          }}-amd64 mantic main
+        filename: regolith.list
+        state: present
+
+    - name: Regolith Desktop | apt update
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Regolith Desktop | install desktop
+      ansible.builtin.apt:
+        # Use `regolith-session-sway` on wayland
+        pkg:
+          - regolith-desktop
+          - regolith-session-flashback
+          - rofi
+
+    # Use `apt search --names-only '^i3xrocks'
+    - name: Regolith Desktop | install i3xrocks
+      ansible.builtin.apt:
+        pkg:
+          - i3xrocks-battery
+          - i3xrocks-bluetooth
+          - i3xrocks-cpu-usage
+          - i3xrocks-media-player
+          - i3xrocks-memory
+          - i3xrocks-net-traffic
+          - i3xrocks-nm-vpn
+          - i3xrocks-time
+          - i3xrocks-wifi
+
+    - name: Regolith Desktop | add dunst-notifications
+      ansible.builtin.apt:
+        pkg:
+          - dunst
+
+    - name: Regolith Desktop | remove regolith-rofication
+      ansible.builtin.apt:
+        pkg:
+          - regolith-rofication
+        state: absent
+        purge: true
