@@ -53,3 +53,9 @@
       ansible.builtin.apt:
         # yamllint disable-line rule:line-length
         deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+
+    - name: Core | install obsidian
+      import_tasks: tasks/install-github-release-package.yml
+      vars:
+        github_user: obsidianmd
+        github_repo: obsidian-releases
