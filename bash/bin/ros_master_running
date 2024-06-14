@@ -10,5 +10,5 @@ try:
     ros_master_proxy.getSystemState("/script/ros_master_test")
     sys.exit(0)
 except socket.error as e:
-    # If the master is unavaialble we get a scoket error. 
+    # If the master is unavaialble we get a scoket error.
     sys.exit(1)

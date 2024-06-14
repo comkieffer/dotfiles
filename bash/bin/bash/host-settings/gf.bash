@@ -35,7 +35,7 @@ fi
 
 echo -e ""
 echo -e "${BOLD}FPGA-QLA${RESET} Configuration:"
-qlaok 
+qlaok
 
 
 echo -e ""

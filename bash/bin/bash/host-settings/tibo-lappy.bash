@@ -2,7 +2,7 @@
 avahi-resolve-host-name gru.local > /dev/null
 _MASTER_FOUND=$?
 
-if [ "${_MASTER_FOUND}" == "0" ]; then 
+if [ "${_MASTER_FOUND}" == "0" ]; then
     export ROS_MASTER_URI="http://gru.local:11311"
     export ROS_HOSTNAME="tibo-lappy.local"
 
@@ -19,6 +19,6 @@ if [ "${_MASTER_FOUND}" == "0" ]; then
     fi
 
     echo -e ""
-fi 
+fi
 
 unset _MASTER_FOUND

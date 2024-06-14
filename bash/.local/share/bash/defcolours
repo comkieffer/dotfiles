@@ -1,10 +1,10 @@
 
 #
-# Set a bunch of variables defining common colours and symbols. 
+# Set a bunch of variables defining common colours and symbols.
 #
-# Usage: 
-#   Add `defcolours` to your path and invoke source it with `source defcolours. To cleanup and 
-#   unset the variables once your script exits call the `clear_colours` function. This can be 
+# Usage:
+#   Add `defcolours` to your path and invoke source it with `source defcolours. To cleanup and
+#   unset the variables once your script exits call the `clear_colours` function. This can be
 #   automatically by trapping on the `EXIT` signal:
 #
 #       trap clear_colours EXIT

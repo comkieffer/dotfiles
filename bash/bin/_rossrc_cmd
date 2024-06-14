@@ -1,13 +1,13 @@
-#!/bin/bash 
+#!/bin/bash
 #
 # Source the closest ROS environment and add the workspace to the ROS_PACKAGE_PATH. This last bit
-# is necessary for older ROS tools like rosdep to work (they don't seem to understand the 
+# is necessary for older ROS tools like rosdep to work (they don't seem to understand the
 # catkin-tools) marker file yet.
 #
-# The command will look through the parent directories until it finds a ROS 
-# setup directory. If none could be found it will attempt to source one of 
+# The command will look through the parent directories until it finds a ROS
+# setup directory. If none could be found it will attempt to source one of
 # the root workspaces.
-# Finally, if none could be found it will print an error. 
+# Finally, if none could be found it will print an error.
 #
 
 source defcolours
@@ -16,20 +16,20 @@ trap clear_colours EXIT
 ROS_DISTROS=("melodic" "lunar"  "kinetic" "jade" "indigo" "hydro" "groovy" "fuerte")
 
 # First off we source the ROS completions file
-for distro in "${ROS_DISTROS[@]}"; do 
+for distro in "${ROS_DISTROS[@]}"; do
     if [[ -d /opt/ros/${distro} ]]; then
         ROS_DISTRO=${distro}
 
         if [[ -f /opt/ros/${ROS_DISTRO}/share/rosbash/rosbash ]]; then
             source /opt/ros/${ROS_DISTRO}/share/rosbash/rosbash
             echo -e "  ${GREEN_TICK} Loaded bash completions for ${BOLD}${ROS_DISTRO}${RESET}"
-        else 
+        else
             echo -e "  ${RED_CROSS} Unable to locate completions file. Is rosbash installed ?"
         fi
     fi
 done
 
-if [[ ! $ROS_DISTRO ]]; then 
+if [[ ! $ROS_DISTRO ]]; then
     echo -e " ${RED_CROSS} Unable to locate a ROS distribution in /opt/ros"
     return -1
 fi
@@ -46,9 +46,9 @@ else
     if [[ -f /opt/ros/${ROS_DISTRO}/setup.bash ]]; then
         source /opt/ros/${ROS_DISTRO}/setup.bash
         echo -e "  ${GREEN_TICK} Sourced ROS workspace for ${BOLD}/opt/ros/${ROS_DISTRO}/${RESET}"
-    else 
+    else
         echo -e "  ${RED_CROSS} Unable to find ROS ${BOLD}${ROS_DISTRO}${RESET} setup file in ${BOLD}/opt/ros/${ROS_DISTRO}${RESET}"
-    fi  
+    fi
 fi
 
 unset ROS_DISTROS _catkin_ws _ws_found
