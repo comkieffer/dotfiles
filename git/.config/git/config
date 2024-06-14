@@ -32,9 +32,10 @@ path = ~/.config/git/config-work
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
     # Pick the parent commit for an interactive rebase.
+    # Note: --update-refs is only available in git > 2.38
     frbi = "!f() \
       { \
-        git rebase --autosquash --autostash -i \
+        git rebase --autosquash --autostash --update-refs --interactive \
           $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
       }; f"
 
