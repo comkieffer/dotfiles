@@ -71,12 +71,6 @@ def get_focused_window(i3: Connection) -> Con:
     return window
 
 
-def get_workspace_for_window(i3: Connection, window: Con) -> dict:
-    assert parent_workspace is not None
-
-    return parent_workspace
-
-
 def compute_hero_window_rect(workspace: tuple[int, int]) -> tuple[Point_t, Point_t]:
     workspace_rect = workspace.ipc_data["rect"]
 
