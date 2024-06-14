@@ -42,10 +42,8 @@ path = ~/.config/git/config-work
     # Perform interactive rebase up to the merge base with master
     apply-fixup = "!f() \
       { \
-        echo \"Ensuring origin/master ref is up to date ...\"; \
-        git fetch --prune origin; \
-        \
-        merge_base=$(git merge-base --fork-point origin/master HEAD | cut -c 1-7); \
+        master_branch=$(git branch -l | grep -e master -e main | sed 's/*//') \
+        merge_base=$(git merge-base --fork-point $master_branch HEAD | cut -c 1-7); \
         if [ -z \"${merge_base}\" ]; then \
           echo \"Unable to locate merge base for the current branch.\"; \
           exit 1; \
