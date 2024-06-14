@@ -54,7 +54,7 @@ def collect_projects() -> list[Path]:
 
 def write_project_cache(projects: list[Path]) -> None:
     click.echo(f"Writing local projects cache to {CACHE_FILE} ...")
-    CACHE_FILE.parent.mkdir(exist_ok=True)
+    CACHE_FILE.parent.mkdir(exist_ok=True, parents=True)
     with CACHE_FILE.open("w+") as f:
         for project in projects:
             f.write(str(project) + "\n")
@@ -68,11 +68,10 @@ def main() -> None:
 @main.command()
 def refresh() -> None:
     """Refresh the list of known projects"""
-    if refresh:
-        click.echo("Updating local projects cache ...")
-        projects = collect_projects()
-        write_project_cache(projects)
-        sys.exit(0)
+    click.echo("Updating local projects cache ...")
+    projects = collect_projects()
+    write_project_cache(projects)
+    sys.exit(0)
 
 
 @main.command()

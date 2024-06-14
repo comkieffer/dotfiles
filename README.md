@@ -41,6 +41,9 @@ Fish is configured to use [fisher](https://github.com/jorgebucaran/fisher) for p
 - `Ctrl` + `Alt` + `P` (`P` for Processes) - Search processes
 - `Ctrl` + `Alt` + `V` (`F` for Variables) - Search environment variables
 
+#### cdo / cdp
+
+Run `cdp-cache-refresh refresh` to refresh the projects cache.
 
 ## Manual Configuration
 
