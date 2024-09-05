@@ -35,18 +35,3 @@ repos:
                 extends: default,
                 indentation: {spaces: 2, indent-sequences: false}
             }'
-
-  - repo: https://github.com/ansible/ansible-lint.git
-    rev: v24.2.0
-    hooks:
-      - id: ansible-lint
-        additional_dependencies:
-          - ansible
-        files: ^ansible\/.*\.(yaml|yml)$
-        args: [
-          '--show-relpath',
-          '--project-dir', 'ansible',
-          '-x', 'name[play]',
-          '-x', 'fqcn[action-core]',
-          '-x', 'name[template]',
-        ]
