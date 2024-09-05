@@ -32,7 +32,15 @@ changes to the home directory. Use it as you would normally use git.
 
 Fish is configured to use [fisher](https://github.com/jorgebucaran/fisher) for package management. Run `fisher update` to update the installed plugins.
 
-#### fzf.fish
+#### edc/bass
+
+Run `bash` scripts that change the environment and propagate the results to `fish`. It uses a pythoon script to compare the environment before and after the script was run and applies the changes to the `fish` environment.
+
+A simpler version is to run `bash -c script; exec fish`.
+
+#### patrickf1/fzf.fish@v9.7
+
+Fzf.fish is pinned to version `v9.7` because Ubuntu 22.04 only has fish 3.3 and subsequent releases require 3.4.
 
 - `Ctrl` + `Alt` + `F` (`F` for File) - Search directory
 - `Ctrl` + `Alt` + `L` (`L` for Log) - Search git log
@@ -40,6 +48,14 @@ Fish is configured to use [fisher](https://github.com/jorgebucaran/fisher) for p
 - `Ctrl` + `Alt` + `H` (`H` for History) - Search history
 - `Ctrl` + `Alt` + `P` (`P` for Processes) - Search processes
 - `Ctrl` + `Alt` + `V` (`F` for Variables) - Search environment variables
+
+#### oakninja/makemefish
+
+Makefile browser. Uses `fzf` to show rules in the makefile.
+
+#### gazorby/fish-abbreviation-tips
+
+Show a warning when a command is used instead of an alias/abbreviation in fish.
 
 #### cdo / cdp
 
