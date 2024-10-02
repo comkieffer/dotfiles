@@ -107,7 +107,7 @@ def stow(target, config):
         capture_output=True
     )
 
-    return not bool(ret.returncode), " ".join(command), ret.stdout
+    return not bool(ret.returncode), " ".join(command), ret.stdout + ret.stderr
 
 
 if __name__ == "__main__":
