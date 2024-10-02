@@ -4,7 +4,7 @@ fish_add_path ~/.local/bin/
 
 
 # If wget is present, save the HSTS file in .cache instead of home
-if type -q wget ;
+if type -q wget
     mkdir -p "$HOME/.cache/wget"
     alias wget 'wget --hsts-file "$HOME/.cache/wget/wget-hsts"'
 end
@@ -21,7 +21,7 @@ if status is-interactive
     if type -q exa
         alias ls "exa --icons --group"
 
-        if ! type -q tree
+        if not type -q tree
             alias tree "exa --tree"
         end
     else
@@ -34,6 +34,16 @@ if status is-interactive
         # -T 0 do not use tabs for alignment
 
         alias ls='ls --color=auto --time-style=long-iso --group-directories-first -bFhv -T 0'
+    end
+
+    # Install completion scripts
+    set completion_script_dir "$HOME/.config/fish/completions"
+    if type -q just
+
+        set just_completion_script $completion_script_dir"/just.fish"
+        if not test -f "$just_completion_script"
+            just --completions fish > "$just_completion_script"
+        end
     end
 end
 
