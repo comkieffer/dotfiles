@@ -1,6 +1,9 @@
 What I did today
 
-@daily
+#daily
+
+## How I feel today
+
 
 ## What I did today
 

@@ -13,7 +13,7 @@ indent_character: '|'
 journals:
   default: ~/Documents/Journal/
 linewrap: 79
-tagsymbols: '@#'
+tagsymbols: '@#&'
 template: today.md
 timeformat: '%Y-%m-%d %H:%M'
 version: v4.1

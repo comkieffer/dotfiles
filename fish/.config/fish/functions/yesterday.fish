@@ -1,5 +1,7 @@
-function yesterday --description 'Print jrnl entries for the last day'
-  set jrnl_flags --format md
+function yesterday --description 'Print jrnl entries for the last work day'
+
+
+  set jrnl_flags -tagged '#daily' --format md
   set day_of_week (date "+%u")
 
   set entries_since "yesterday"
@@ -13,5 +15,6 @@ function yesterday --description 'Print jrnl entries for the last day'
   end
 
   # jrnl will print out some status info on stderr. We don't care about it.
-  jrnl -from "$entries_since" -tagged @daily $jrnl_flags $argv 2>/dev/null | $pager
+  jrnl -from "$entries_since" $jrnl_flags 2>/dev/null | $pager
+
 end
