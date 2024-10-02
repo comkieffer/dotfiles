@@ -1,8 +1,28 @@
 
+# Make windows that match the criteria _float_
+#
+# To read winow information, use `xprop`
+#
+# The following properties are commonly used
+#
+# - `class` (The second part of `WM_CLASS`)
+# - `instance` (The first part of `WM_CLASS`)
+# - `title` (Uses the value of `WM_NAME` or `_NET_WM_NAME`
+# - `window_role` (The value of `WM_WINDOW_ROLE`)
+# - `window_type` (The value of `_NET_WM_WINDOW_TYPE`)
+#
+# A full list of properties is available at:
+# https://i3wm.org/docs/userguide.html#command_criteria
+
+
 for_window [class="^Regolith-control-center"] floating enable
 for_window [class="^Gnome-control-center"] floating enable
 
 for_window [title="^Preferences"] floating enable
+
+# Float Specific Browser Windows
+for_window [class="firefox" window_role="^page-info$"] floating enable
+for_window [class="firefox" title="Log in to your PayPal account"] floating enable
 
 # Float Matlab settings dialogs
 # Might actually be easier to use a whitelist of non-floating windows than to
@@ -21,6 +41,9 @@ for_window [class="^MATLAB" title="^Mask Editor"] floating enable
 for_window [class="^MATLAB" title="^S-Function Builder" ] floating enable
 for_window [class="^MATLAB" title="^Scope" ] floating enable
 
+# For Matplotlib Windows
+for_window [class="^Matplotlib"] floating enable
+
 # Only float Remmina server browser, not actual rdp windows.
 for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
 
@@ -38,4 +61,11 @@ for_window [class= "Solaar"] floating enable
 for_window [class="^Steam" title="^Steam - News"] floating enable
 
 
-for_window [class= "Ln_manager"] floating enable
+# MPLAB Windows
+#
+# Like most Java apps, MPLAB is shit at namign windows and giving them proper
+# roles. To get it behave nicely, we float everything but the `default` window.
+
+for_window [class="java" title="Loading..."] floating enable
+for_window [class="java" title="Harmony Library"] floating enable
+for_window [class="^MPLAB X IDE" title="^(?!.*: default$).*"] floating enable
