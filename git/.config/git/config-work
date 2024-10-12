@@ -1,5 +1,4 @@
-[credential]
-	helper = /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
+
 [user]
 	name = Thibaud Chupin
-	email = thibaud.chupin@ext.esa.int
+	email = thibaud.chupin@aac-clydespace.com
