@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+#
+# Read the entries in `NOW__FILE` and generate timesheet entries in the journal at
+# `JOURNAL_ROOT`.
+#
+# A `now` entry has the following format
+#
+# - [TIMESTAMP] TEXT
+#
+# Where the timestamp is in RFC 3339 format YYYY-MM-DD HH:MM:SS+ZZ:YY and the entry
+# is free form text (no newlines allowed).
+#
+# These entries are grouped by day and placed into a summary table in the journal file
+# for that day. This is the responsibility of this script.
+#
+
+import contextlib
+import os
+import logging
+import re
+import shutil
+import sys
+
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+from rich.logging import RichHandler
+
+NOW_FILE = Path("~/now.txt").expanduser()
+NOW_FILE_BACKUP = NOW_FILE.with_suffix(".txt.bak")
+JOURNAL_ROOT = Path("~/Documents/Hyperion-Day-To-Day/Daily/").expanduser()
+JOURNAL_FILE_SUFFIX = ".md"
+
+# NOW_FILE = Path("backup/now.txt").expanduser()
+# NOW_FILE_BACKUP = NOW_FILE.with_suffix(".txt.bak")
+# JOURNAL_ROOT = Path("backup/Hyperion-Day-To-Day/Daily/").expanduser()
+# JOURNAL_FILE_SUFFIX = ".md"
+
+
+@dataclass
+class LogEntry:
+    timestamp: datetime
+    entry: str
+
+    def __str__(self) -> str:
+        timestr = self.timestamp.isoformat().replace("T", " ")
+        return f"- [{timestr}] {self.entry}"
+
+
+def parse_now_file() -> list:
+    line_pattern = re.compile(r"-\s\[(?P<date>.*?)\]\s(?P<entry>.*)")
+
+    entries = []
+    for line_no, entry in enumerate(NOW_FILE.open()):
+        match = line_pattern.match(entry)
+        if not match:
+            logging.error(
+                f"Error: line {line_no} does not appear to be a regularly formatted log entry"
+            )
+            sys.exit(1)
+
+        entries.append(
+            LogEntry(
+                timestamp=datetime.fromisoformat(match.group("date")),
+                entry=match.group("entry"),
+            )
+        )
+
+    return entries
+
+
+def split_entries_by_day(entries: list[LogEntry]) -> dict[date, list[LogEntry]]:
+    if len(entries) == 0:
+        return dict()
+
+    entries_by_day = {}
+
+    for entry in entries:
+        entry_date = entry.timestamp.date()
+        if entry_date not in entries_by_day:
+            entries_by_day[entry_date] = []
+
+        entries_by_day[entry_date].append(entry)
+
+    return entries_by_day
+
+
+def format_duration(dt: timedelta):
+    seconds_remaining = dt.total_seconds()
+
+    full_hours, seconds_remaining = divmod(seconds_remaining, 60 * 60)
+    full_minutes, seconds_remaining = divmod(seconds_remaining, 60)
+
+    if full_hours == 0.0:
+        return f"{int(full_minutes)} min"
+
+    return f"{int(full_hours)} h, {int(full_minutes)} min"
+
+
+def generate_markdown_table(entries: list[LogEntry]):
+    table_columns = (
+        "Start",
+        "End",
+        "Duration",
+        "Project",
+        "WP",
+        "Description",
+    )
+    table = ""
+
+    table += "| " + " | ".join(table_columns) + " |\n"
+    table += "| " + " | ".join(["-" * len(x) for x in table_columns]) + " |\n"
+
+    for idx in range(len(entries) - 1):
+        start_time = entries[idx].timestamp
+        end_time = entries[idx + 1].timestamp
+        duration = end_time.replace(second=0) - start_time.replace(second=0)
+
+        table += (
+            f"| {start_time.strftime('%H:%M')} | {end_time.strftime('%H:%M')} "
+            f"| {format_duration(duration)} | | | {entries[idx].entry} |\n"
+        )
+
+    # Add the last line to the table. This is a fallback if the last entry was not
+    # actually the day's end.
+    start_time = entries[-1].timestamp
+    table += (
+        f"| {start_time.strftime('%H:%M')} | | | | | {entries[-1].entry} |\n"
+    )
+
+    return table
+
+
+def journal_file_for(this_day: date):
+    return (
+        JOURNAL_ROOT
+        / str(this_day.year)
+        / f"{this_day.strftime('%m - %B')}"
+        / f"{this_day.strftime('%d - %A') + JOURNAL_FILE_SUFFIX}"
+    )
+
+
+def main():
+    assert NOW_FILE.is_file()
+    assert JOURNAL_ROOT.is_dir()
+
+    entries = parse_now_file()
+    entries_remaining = []
+    entries_processed = []
+
+    logging.info(f"Backing up now file to {NOW_FILE_BACKUP} ...")
+    shutil.copy(NOW_FILE, NOW_FILE_BACKUP)
+
+    today = datetime.today().date()
+    for this_day, entries_this_day in split_entries_by_day(entries).items():
+        # Do not parse the current day because it will be incomplete
+        if this_day == today:
+            entries_remaining.extend(entries_this_day)
+            continue
+
+        this_day_jounal_file = journal_file_for(this_day)
+        logging.debug(f"Journal file for {this_day} is '{this_day_jounal_file}'")
+
+        # If we do not have a journal entry for the day, we just keep the timesheet
+        # entries and warn the user.
+        if not this_day_jounal_file.is_file():
+            logging.warning(
+                f"Journal file for '{this_day}' does not exist. The timesheet "
+                "entries for this day will remain in the now file."
+            )
+            entries_remaining.extend(entries_this_day)
+            continue
+
+        # If the file already has a timesheet section we won't try to update it.
+        if "## Time Sheet" in this_day_jounal_file.read_text():
+            logging.warning(
+                f"Journal file for '{this_day}' already has a timesheet section. "
+                "The file will not be updated."
+            )
+            entries_remaining.extend(entries_this_day)
+            continue
+
+        logging.debug(f"Adding timesheet summary to '{this_day_jounal_file}' ... ")
+
+        timesheet_entry = generate_markdown_table(entries_this_day)
+        with this_day_jounal_file.open("a") as f:
+            f.write("\n\n## Time Sheet\n\n")
+            f.write(timesheet_entry)
+
+        logging.info(
+            f"Wrote {len(entries_this_day)} entries to '{this_day_jounal_file}'."
+        )
+
+        entries_processed.extend(entries_this_day)
+
+    logging.debug(f"Removing processed entries from '{NOW_FILE}' ...")
+    with NOW_FILE.open("w") as f:
+        for entry in entries_remaining:
+            f.write(str(entry) + "\n")
+
+    logging.info(f"Read {len(entries)} entroes from '{NOW_FILE}'.")
+    logging.info(f"Wrote {len(entries_processed)} entries to day files.")
+    logging.info(f"Wrote {len(entries_remaining)} entries back to '{NOW_FILE}'.")
+
+
+if __name__ == "__main__":
+    log_level = "NOTSET" if "VERBOSE" in os.environ else logging.INFO
+    logging.basicConfig(
+        level=log_level, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()]
+    )
+
+    with contextlib.suppress(KeyboardInterrupt):
+        main()
+
+    sys.exit(0)
