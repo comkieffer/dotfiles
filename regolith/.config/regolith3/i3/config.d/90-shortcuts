@@ -1,5 +1,6 @@
 bindsym Print exec "/usr/bin/flameshot full"
 bindsym Shift+Print exec "/usr/bin/flameshot gui"
+bindsym $mod+s exec "/usr/bin/flameshot gui"
 
 # Press $mod+o followed by either f, t, Escape or Return to launch firefox,
 # thunderbird or return to the default mode, respectively.
