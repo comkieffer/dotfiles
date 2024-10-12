@@ -1,0 +1,5 @@
+# Start flameshot for screenshots
+exec flameshot
+
+# Automatically pick a background for connected displays
+exec feh --bg-fill --no-fehbg --randomize ~/Pictures/Wallpapers/
