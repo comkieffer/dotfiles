@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+import asyncio
+
+import click
+
+from pulsectl import Pulse
+
+
+@click.group()
+def main():
+    pass
+
+
+@main.command()
+@click.option("-f", "--full", is_flag=True, default=False)
+def list_sinks(full):
+    with Pulse() as pulse:
+        for sink in pulse.sink_list():
+            if sink.port_active.available == "no":
+                continue
+
+            print(f"{sink.index: 3}. {sink.description}")
+
+            if full:
+                for f in sink.c_struct_fields:
+                    if f in {"index", "name", "description"}:
+                        continue
+
+                    print(f"    {f}: {getattr(sink, f)}")
+                print()
+
+
+@main.command()
+@click.option("-f", "--full", is_flag=True, default=False)
+def list_sink_inputs(full):
+    with Pulse() as pulse:
+        for sink_input in pulse.sink_input_list():
+            print(
+                f"{sink_input.index: 3}. {sink_input.proplist['application.name']} ({sink_input.name}) on sink {sink_input.sink}"
+            )
+
+            if full:
+                for f in sink_input.c_struct_fields:
+                    if f in {"index", "name"}:
+                        continue
+
+                    print(f"    {f}: {getattr(sink_input, f)}")
+
+                print(f"    Properties:")
+                for key, value in sink_input.proplist.items():
+                    print(f"    {key}: {value}")
+                print()
+
+
+@main.command()
+@click.argument("sink-pattern", default=None, required=False)
+def set_default_sink(sink_pattern):
+    sink_idx = None
+    if sink_pattern is None:
+        print("Active Sinks: ")
+        list_sinks()
+
+        sink_idx = input("Index of the sink to activate: ")
+
+    with Pulse() as pulse:
+        for sink in pulse.sink_list():
+            if (sink_idx is not None and sink.index == sink_idx) or (
+                sink_pattern is not None and (sink_pattern in sink.name or sink_pattern in sink.description)
+            ):
+                print(f"Setting default sink to {sink.index} ({sink.description}) ...")
+                pulse.sink_default_set(sink)
+
+                # Make sure that all the sin-inputs use the default sink
+                for sink_input in pulse.sink_input_list():
+                    if sink_input.sink != sink:
+                        print(
+                            f"Moving '{sink_input.name}' from sink {sink_input.sink} to sink {sink.index} ({sink.description}) ..."
+                        )
+                        pulse.sink_input_move(sink_input.index, sink.index)
+
+                break
+        else:
+            print("Pattern does not match any sinks")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+
+    click.echo("Exiting gracefully ...")
+    sys.exit(0)
