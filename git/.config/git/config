@@ -22,13 +22,16 @@ path = ~/.config/git/config-work
     find = "!git ls-files | grep -in"
 
     # Quick look at history with branches and stuff
-    lsd = log --graph --boundary '--format=%C(yellow)%h%Creset%C(bold cyan)%d%Creset %s %C(dim normal)(%ar)%Creset' --all
+    lsd = log --graph --boundary '--format=%C(yellow)%h%Creset%C(bold cyan)%d%Creset - %s %C(dim normal)(%ar)%Creset %C(bold blue)<%an>%Creset' --stat
 
     # List git branches sorted by last modified and ashow useful metadata
     # Example:
     #   master      Merge branch so-and-so          (3 weeks ago)  <Thibaud Chupin>
     #   my-feature  Implement feature this-and-that (3 weeks ago)  <Thibaud Chupin>
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
+
+    # Undo the last commit
+    undo = reset HEAD~1 --mixed
 
     # Delete branches that no longer exist on the remote
     gone = "!f() \
@@ -64,6 +67,12 @@ path = ~/.config/git/config-work
     # Checkout a merge request from the command line
     # Usage: git mr origin 35
     mr = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
+
+    view-mr = "!f() { glab mr view --web; }; f"
+
+    amend = commit --amend --edit
+
+    wip = commit --no-verify --message 'wip'
 
     # Short commands
     cp = cherry-pick
