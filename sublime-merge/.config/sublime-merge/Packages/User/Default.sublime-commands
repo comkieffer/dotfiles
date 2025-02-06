@@ -1,0 +1,37 @@
+[
+    {
+        "caption": "Remove \"gone\" branches (tracked branch was deleted)",
+        "command": "git",
+        "args": { "argv": ["gone"] }
+    },
+    {
+        "caption": "Sync repository with origin",
+        "command": "git",
+        "args": { "argv": ["sync"] }
+    },
+    {
+        "caption": "Open in Terminal",
+        "command": "git",
+        "args": {"argv": ["open-terminal"]},
+    },
+    {
+        "caption": "Create \"fixup!\" commit!!!",
+        "command": "git",
+        "args": {"argv": ["commit", "--fixup", "$select_commit", "-m", "$text"]},
+    },
+    {
+        "caption": "Absorb staged changes",
+        "command": "git",
+        "args": {"argv": ["absorb"]},
+    },
+    {
+        "caption": "Start interactive rebase in terminal",
+        "command": "git",
+        "args": {"argv": ["rebase-terminal", "$select_commit"]}
+    },
+    {
+        "caption": "Rebase onto… (branch/tag)",
+        "command": "git",
+        "args": {"argv": ["rebase", "$select_branch", "--onto", "$select_ref"]},
+    },
+]

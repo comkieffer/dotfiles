@@ -70,6 +70,8 @@ path = ~/.config/git/config-work
 
     view-mr = "!f() { glab mr view --web; }; f"
 
+    sync = "!f() { git-extras sync; }; f"
+
     amend = commit --amend --edit
 
     wip = commit --no-verify --message 'wip'
@@ -81,6 +83,10 @@ path = ~/.config/git/config-work
     co = checkout
     cob = checkout -b
     br = branch
+
+    # Helpers for Sublime Merge
+
+    open-terminal = "!f() { x-terminal-emulator; }; f"
 
 [diff]
 	wsErrorHighlight = all # Show whitespace changes in diffs

@@ -1,0 +1,27 @@
+[
+	{ "id": "end" },
+    {
+        "caption": "Create \"fixup!\" commit",
+        "command": "git",
+        "args": {"argv": ["commit", "--fixup", "$commit"]},
+    },
+    {
+        "caption": "Copy commit URL",
+        "command": "git",
+        "args": {"argv": ["copy-commit-url", "$commit"]},
+    },
+	{ "id": "rebase", "caption": "-" },
+    {
+        "caption": "Start interactive rebase in terminal",
+        "command": "git",
+        "args": {"argv": ["rebase-terminal", "$select_commit"]}
+    },
+    {
+        "caption": "Rebase onto…",
+        "command": "show_command_palette",
+        "args": {
+            "command": "git",
+	        "args": {"argv": ["rebase", "$commit~1", "--onto", "$select_ref"]},
+        },
+    },
+]

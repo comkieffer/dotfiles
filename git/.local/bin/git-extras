@@ -1,0 +1,197 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "click",
+#     "python-gitlab",
+#     "rich",
+# ]
+# ///
+
+import re
+import sys
+from subprocess import run, PIPE, CalledProcessError
+from urllib.parse import urlparse
+
+import click
+import gitlab
+from rich import print
+
+
+
+# region Entrypoints
+
+@click.group()
+def main() -> None:
+    pass
+
+@main.command()
+def sync() -> None:
+    """Pull the default branch and rebase the current branch onto it"""
+
+    _, starting_branch = git("branch --show-current")
+    print(f"Initial branch is {starting_branch}")
+
+    git("fetch --tags --prune --prune-tags")
+
+    is_dirty, _ = git("diff --quiet", check=False)
+    if is_dirty:
+        print("Workspace is dirty. Stashing changes ...")
+        git("stash save --include-untracked before-sync")
+
+    _, default_on_remote = git("symbolic-ref refs/remotes/origin/HEAD --short")
+    default_branch = default_on_remote.split("/")[1]
+
+    if starting_branch != default_branch:
+        print(f"Switching to {default_branch} ...")
+        git(f"switch {default_branch}")
+
+    print(f"Pulling changes on {default_branch} ...")
+    git("pull origin")
+
+    if starting_branch != default_branch:
+        print(f"Switching to {starting_branch} and rebasing onto {default_branch} ...")
+        git(f"switch {starting_branch}")
+        git(f"rebase {default_branch}")
+
+    if is_dirty:
+        print("Popping stash ...")
+        git("pop stash")
+
+@main.command()
+@click.argument("url", type=str)
+@click.argument("token", type=str)
+def store_gitlab_token(url, token):
+    """
+    Save a personal access token for a gitlab instance
+
+    - Url of the gitlab instance
+    - Personal access token for the instance
+    """
+
+    cmd = [
+        "secret-tool", "store", "--label", f"Personal Access token for '{url}'", "service", url, "username", "personal-access-token",
+    ]
+
+    result = run(cmd, text=True, input=token)
+    if result.returncode != 0:
+        print("Unable to save access token to keyring.")
+        sys.exit(1)
+
+    print(f"Access token saved. Use '{sys.argv[0]} read-gitlab-token' to read it.")
+
+@main.command()
+def open_mr():
+    """Open the merge request associated with this branch"""
+
+    _, remote_url = git("remote get-url origin")
+
+    if "gitlab"  not in remote_url:
+        print("Error: Only gitlab remotes are supported.")
+        sys.exit(1)
+
+    http_remote = ssh_url_to_https(remote_url)
+
+    url_parts = urlparse(http_remote)
+    token = read_token(url_parts.hostname)
+
+    instance_url = f"{url_parts.scheme}://{url_parts.netloc}"
+    project_namespace = url_parts.path[1:]
+
+    try:
+        gl = gitlab.Gitlab(instance_url, private_token=token)
+        gl.auth()
+
+        project = gl.projects.get(project_namespace)
+
+        merge_requests = project.mergerequests.list(source_branch=branch_name, state='opened')
+
+        if merge_requests:
+            # Assuming the first result is the one you're interested in
+            merge_request_url = merge_requests[0].web_url
+            print(merge_request_url)
+        else:
+            print("No open merge requests found for this branch.")
+    except gitlab.GitlabGetError as e:
+        return f"Error: {e}"
+
+
+# endregion
+
+# region Support Methods
+
+def git(command: str | list[str], *, check: bool = True) -> (int, str):
+
+    if isinstance(command, str):
+        command = command.split(" ")
+
+    command = ["git", *command]
+
+    return exec(command)
+
+
+def exec(command: str | list[str], *, check: bool = True) -> (int, str):
+    try:
+        ret = run(
+            command, text=True, capture_output=True, check=check
+        )
+        return ret.returncode, ret.stdout.strip()
+    except CalledProcessError as ex:
+        print(
+            f"Call to {ex.cmd} failed. Returned {ex.returncode}. Standard Error was: '{ex.stderr}'"
+        )
+        sys.exit(1)
+
+def read_token(url) -> str:
+    cmd = [
+        "secret-tool", "lookup", "service", url
+    ]
+
+    result = run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    if result.returncode != 0:
+        print(f"Cannot find '{url}' in keyring")
+        sys.exit(1)
+
+    print(result.stdout.strip())
+
+def ssh_url_to_https(remote_url: str) -> str:
+    if remote_url.startswith("git@"):
+        http_url = remote_url.replace(":", "/")
+        http_url = re.sub(r"^git@", "https://", http_url)
+    elif remote_url.startswith("git://"):
+        http_url = re.sub(r"^git:", "https:", remote_url)
+    else:
+        http_url = remote_url  # If it's already an HTTP URL
+
+    return http_url.strip('/').replace('.git', '')
+
+def remote_url_to_api_url(url: str) -> str:
+    parts = urlparse(url)
+    return f"{parts.scheme}://{parts.hostname}/api/v4/"
+
+def get_merge_request_url_for(remote: str, branch: str):
+    headers = {
+        "PRIVATE-TOKEN": private_token
+    }
+    params = {
+        "source_branch": source_branch,
+        "state": "opened"
+    }
+
+    response = requests.get(f"{api_url}/projects/{project_id}/merge_requests", headers=headers, params=params)
+
+    if response.status_code == 200:
+        merge_requests = response.json()
+        if merge_requests:
+            merge_request = merge_requests[0]  # Assuming the first result is the one you're interested in
+            merge_request_url = f"{merge_request['web_url']}"
+            return merge_request_url
+        else:
+            return "No open merge requests found for this branch."
+    else:
+        return f"Error: {response.status_code} - {response.text}"
+
+# endregion
+
+if __name__ == "__main__":
+    main()

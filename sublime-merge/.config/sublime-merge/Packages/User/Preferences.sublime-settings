@@ -12,4 +12,6 @@
 	"display_author_date": true,
 	"time_format": "24h",
 	"expand_merge_commits_by_default": true,
+	"diff_algorithm": "match_git",
+	"editor_path": "vim",
 }
