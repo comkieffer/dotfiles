@@ -1,0 +1,12 @@
+# Mission Center is a better system monitor.
+# See https://missioncenter.io/
+---
+- name: Install Mission Center
+  hosts: localhost
+  tasks:
+    - name: Mission Center | install
+      import_tasks: tasks/install-gitlab-release-binary.yml
+      vars:
+        repo_name: "Mission Center"
+        project_id: 44426042
+        release_matcher: "AppImage"

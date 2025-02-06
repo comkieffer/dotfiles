@@ -1,0 +1,26 @@
+---
+- name: "{{ repo_name | title }} | get latest release tag"
+  ansible.builtin.shell: >
+    curl -s https://gitlab.com/api/v4/projects/{{ project_id }}/releases/ | jq -r 'sort_by(.released_at) | reverse | .[0].tag_name'
+  register: latest_release_tag
+
+- debug:
+    var:
+      - latest_release_tag.stdout
+      - release_matcher
+
+- name: "{{ repo_name | title }} | get latest release info"
+  uri:
+    # yamllint: disable rule:line-length
+    url: https://gitlab.com/api/v4/projects/{{ project_id }}/releases/{{ latest_release_tag.stdout }}
+  register: release_metadata
+
+- name: "{{ repo_name | title }} | install package"
+  loop: "{{ release_metadata.json.assets.links }}"
+  loop_control:
+    label: "{{ item.name }}"
+  # when: "'{{ release_matcher | default('_amd64.deb') }}' in item.name"
+  when: "release_matcher | default('_amd64.deb') in item.name"
+  become: true
+  ansible.builtin.apt:
+    deb: "{{ item.url }}"
