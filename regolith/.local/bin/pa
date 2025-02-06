@@ -6,6 +6,12 @@ import click
 
 from pulsectl import Pulse
 
+def active_sinks(pulse: Pulse):
+    for sink in pulse.sink_list():
+        if sink.port_active.available == "no":
+            continue
+
+        yield sink
 
 @click.group()
 def main():
@@ -16,10 +22,7 @@ def main():
 @click.option("-f", "--full", is_flag=True, default=False)
 def list_sinks(full):
     with Pulse() as pulse:
-        for sink in pulse.sink_list():
-            if sink.port_active.available == "no":
-                continue
-
+        for sink in active_sinks(pulse):
             print(f"{sink.index: 3}. {sink.description}")
 
             if full:
@@ -64,7 +67,7 @@ def set_default_sink(sink_pattern):
         sink_idx = input("Index of the sink to activate: ")
 
     with Pulse() as pulse:
-        for sink in pulse.sink_list():
+        for sink in active_sinks(pulse):
             if (sink_idx is not None and sink.index == sink_idx) or (
                 sink_pattern is not None and (sink_pattern in sink.name or sink_pattern in sink.description)
             ):
