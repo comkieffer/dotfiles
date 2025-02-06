@@ -18,7 +18,17 @@
 for_window [class="^Regolith-control-center"] floating enable
 for_window [class="^Gnome-control-center"] floating enable
 
+# For keychain viewer (Seahorse)
+for_window [title="^seahorse"] floating enable
+
 for_window [title="^Preferences"] floating enable
+
+# Only float Remmina server browser, not actual rdp windows.
+for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
+
+# Float gconfig windows (kconfig gui)
+for_window [title="^Gconf"] floating enable
+
 
 # Float Specific Browser Windows
 for_window [class="firefox" window_role="^page-info$"] floating enable
@@ -44,12 +54,6 @@ for_window [class="^MATLAB" title="^Scope" ] floating enable
 # For Matplotlib Windows
 for_window [class="^Matplotlib"] floating enable
 
-# Only float Remmina server browser, not actual rdp windows.
-for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
-
-# Float gconfig windows (kconfig gui)
-for_window [title="^Gconf"] floating enable
-
 # For Jetbrains tools
 for_window [class="^jetbrains-" title="^splash$"] floating enable
 for_window [class="^jetbrains-" title="^Welcome"] floating enable
@@ -60,6 +64,8 @@ for_window [class="Popsicle"] floating enable
 for_window [class= "Solaar"] floating enable
 for_window [class="^Steam" title="^Steam - News"] floating enable
 
+# Development Things
+for_window [instance="__main__.py"] floating enable
 
 # MPLAB Windows
 #
