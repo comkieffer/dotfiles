@@ -94,13 +94,12 @@ def action_distribute_windows() -> None:
     if monitors == 1:
         fix_edp1_dpi()
 
-
-def rofi(action_list: Sequence[str], prompt: str) -> str:
+def ilia(action_list: Sequence[str], prompt: str) -> str:
     actions = "\n".join(action_list)
 
     # -i  Case insensitive action matching
     ret = subprocess.run(
-        f"echo -n '{actions}' | rofi -dmenu -i -p '{prompt}'",
+        f"echo -n '{actions}' | ilia -p textlist -n -l '{prompt}'",
         shell=True,
         text=True,
         capture_output=True,
@@ -122,7 +121,7 @@ ACTIONS = {
 
 @click.command()
 def main() -> None:
-    selected_action = rofi(ACTIONS.keys(), "Select Action")
+    selected_action = ilia(ACTIONS.keys(), "Select Action")
 
     if selected_action not in ACTIONS:
         print(f"'{selected_action}' is not a supported action.")
