@@ -9,7 +9,7 @@ path = ~/.config/git/config-work
 [core]
 	fileMode = false
 	editor = vim
-    autocrlf = input
+  autocrlf = input
 
 [alias]
     # list the recent commits in a oneline, coloured form with the date
@@ -88,6 +88,9 @@ path = ~/.config/git/config-work
 
     open-terminal = "!f() { x-terminal-emulator; }; f"
 
+[init]
+	defaultBranch = master
+
 [diff]
 	wsErrorHighlight = all # Show whitespace changes in diffs
 
@@ -97,13 +100,16 @@ path = ~/.config/git/config-work
   # Automatically create remote tracking branch if required
   autoSetupRemote = true
 
+[pull]
+	rebase = true
+
 [rebase]
   # Automatically force-update any branches that point to commits that are being
   # rebased.
 	updateRefs = true
 
-[init]
-	defaultBranch = master
-
-[core "interactive"]
-	difffilter = perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
