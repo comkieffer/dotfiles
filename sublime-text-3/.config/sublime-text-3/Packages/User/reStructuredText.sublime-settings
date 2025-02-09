@@ -9,8 +9,5 @@
     "draw_indent_guides": false,
     "rulers": [],
 
-    "spell_check": true,
-    "ignored_words": [
-        "math", "png", "{filename}", "alt"
-    ]
+    "spell_check": true
 }
