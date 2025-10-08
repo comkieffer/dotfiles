@@ -30,6 +30,8 @@ path = ~/.config/git/config-work
     #   my-feature  Implement feature this-and-that (3 weeks ago)  <Thibaud Chupin>
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
+    brta = "!git for-each-ref refs/remotes/origin --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
+
     # Undo the last commit
     undo = reset HEAD~1 --mixed
 
