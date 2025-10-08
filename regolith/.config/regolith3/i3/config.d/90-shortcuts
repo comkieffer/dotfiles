@@ -8,7 +8,7 @@ set $tibo_mode_launcher Thibaud Commands: [a] Action Menu [d] Distribute Windows
 bindsym $mod+m mode "$tibo_mode_launcher"
 
 mode "$tibo_mode_launcher" {
-    bindsym a exec regolith-action-menu; mode "default"
+    bindsym a exec ck-action-menu; mode "default"
     bindsym a exec assign-workspaces; mode "default"
     bindsym g exec gl-tool goto; mode "default"
     bindsym h exec make-hero-window; mode "default"
