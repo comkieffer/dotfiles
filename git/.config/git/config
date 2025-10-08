@@ -3,7 +3,7 @@
 	name = Thibaud Chupin
 
 # Override settings for _work_ projects
-[include]
+[includeIf "gitdir:~/dev/hyperion/"]
 path = ~/.config/git/config-work
 
 [core]
