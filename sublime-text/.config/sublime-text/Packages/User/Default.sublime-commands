@@ -1,0 +1,8 @@
+[
+    {
+        "caption": "Remove \"gone\" branches (tracked branch was deleted)",
+        "command": "git",
+        "args": { "argv": ["gone"] }
+    },
+]
+
