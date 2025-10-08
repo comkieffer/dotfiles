@@ -29,7 +29,6 @@ for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
 # Float gconfig windows (kconfig gui)
 for_window [title="^Gconf"] floating enable
 
-
 # Float Specific Browser Windows
 for_window [class="firefox" window_role="^page-info$"] floating enable
 for_window [class="firefox" title="Log in to your PayPal account"] floating enable
@@ -57,6 +56,7 @@ for_window [class="^Matplotlib"] floating enable
 # For Jetbrains tools
 for_window [class="^jetbrains-" title="^splash$"] floating enable
 for_window [class="^jetbrains-" title="^Welcome"] floating enable
+for_window [class="^jetbrains-" title="History for Selection"] floating enable
 
 for_window [class="Anki" title="^Add"] floating enable
 for_window [class="Kazam"] floating enable
