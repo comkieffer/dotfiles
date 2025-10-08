@@ -1,0 +1,286 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "dbussy",
+# ]
+# ///
+
+import argparse
+import asyncio
+import functools
+import logging
+import shlex
+import sys
+
+from pathlib import Path
+from typing import NamedTuple
+
+from i3ipc import Event, WorkspaceEvent, WindowEvent
+from i3ipc.aio import Connection
+from i3ipc.aio import Con as Container
+
+logger = logging.getLogger(__name__)
+
+
+def icon(char: str) -> str:
+    # return f'<span font_desc=\"Hack Nerd Font\">{char}</span>'
+    return f'<span>{char}</span>'
+
+class Application(NamedTuple):
+    prio: int
+    icon: str | None
+
+
+
+APPLICATIONS: dict[str, Application] = {
+    "firefox_firefox": Application(10, icon("<")),
+    "ms-team": Application(10, icon("󰻞")),
+    "gnome-terminal": Application(20, icon("")),
+    "obsidian": Application(30, icon("")),
+    "sublime_merge": Application(80, icon("<")),
+    "spotify": Application(90, icon("")),
+    "code": Application(90, icon('<')),
+    "sublime_text": Application(91, icon("")),
+    "jetbrains-pycharm": Application(95,icon('<')),
+}
+
+
+# region Utility functions
+
+def static(**kwargs):
+    """Define static variables for the event handler."""
+
+    def decorator(fn):
+        fn.__dict__.update(kwargs)
+        return fn
+
+    return decorator
+
+
+@static(functions={})
+def on(*events: Event):
+    """Tag events that should be provided to the function."""
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            return fn(*args, **kwargs)
+
+        on.functions[fn] = events
+        return wrapper
+
+    return decorator
+
+async def notify(i3, **kwargs):
+    """Send a notification with notify-send."""
+    conn = i3.session_bus["org.freedesktop.Notifications"]
+    obj = conn["/org/freedesktop/Notifications"]
+    notifications = await obj.get_async_interface("org.freedesktop.Notifications")
+    parameters = dict(
+        app_name=logger.name,
+        replaces_id=0,
+        app_icon="dialog-information",
+        summary="",
+        actions=[],
+        hints={},
+        expire_timeout=5000,
+    )
+    parameters.update(kwargs)
+    return await notifications.Notify(**parameters)
+
+def print_workspace(workspace: Container):
+    """Show information about the focused workspace."""
+    
+    def format(container):
+        if container.window:
+            content = (
+                f"{(container.window_class or '???').lower()}: "
+                f"{(container.window_title or '???')}"
+            )
+
+        elif container.type == "workspace" and not container.nodes:
+            layout = container.ipc_data["workspace_layout"]
+            if layout == "default":
+                layout = container.layout
+
+            content = f"({layout})"
+
+        else:
+            content = f"({container.layout})"
+
+        root = content.lower()
+        
+        children = []
+        for child in container.nodes:
+            if child == container.nodes[-1]:
+                first = "└─"
+                others = "  "
+            else:
+                first = "├─"
+                others = "│ "
+            content = format(child).replace("\n", f"\n{others}")
+            children.append(f"{first} {content}")
+        
+        children.insert(0, root)
+        return "\n".join(children)
+
+    print(f"Workspace {workspace.num}: '{workspace.name}'")
+    print("root " + format(workspace))
+    
+async def print_workspaces(i3):
+
+    tree = await i3.get_tree()
+
+    for  w in tree.workspaces():
+        print_workspace(w)
+
+
+def container_repr(container: Container) -> str:
+    if len(container.nodes) == 0:
+        # This is a leaf node, probably a window
+        return f"<Window: {container.window_class}>"
+
+    return f"<Container: {container.name} ({container.num}) >"
+
+def event_repr(event: Event):
+    retval = ""
+    if isinstance(event, WorkspaceEvent):
+        current = event.current.num if event.current else None
+        old = event.old.num if event.old else None
+        retval = (
+            f"<{event.__class__.__name__}: "
+            f"change={event.change!r}, current='{current}', old='{old}'"
+            f">"
+        )
+    elif isinstance(event, WindowEvent):
+        if event.change == "focus":
+            retval = f"<{event.__class__.__name__}: change: {event.change!r}, focused: {container_repr(event.container)}>"
+        else:    
+            retval = f"<{event.__class__.__name__}: change: {event.change!r}, container: {container_repr(event.container)}>"
+    else:
+        retval = repr(event)
+
+
+    return retval
+
+def make_title_for_workspace(workspace: Container):
+    assert workspace.type == "workspace", f"Container is not a workspace. Was: {workspace.type}."
+
+    # TODO: teams is a chromium instance so we need to check WM_NAME (title) for the regex '| Microsoft Teams$'
+
+    application_classes = set(
+        con.window_class.lower() for con in workspace.leaves()
+    )
+    weighted_applications = sorted(
+        [
+            APPLICATIONS.get(name, Application(0, None)) for name in application_classes
+        ],
+        key=lambda app: app.prio,
+        reverse=True
+    )
+
+    # If the workspace is empty, we should not try to rename it
+    if len(weighted_applications) == 0:
+        return workspace.name
+
+    main_application = weighted_applications[0]
+
+    if main_application.icon is None: 
+        logger.debug("  No application icon for '{main_application.name}'")
+        application_icon = ""
+
+    return f"{workspace.num}: {workspace.num} {main_application.icon}<span> </span>"
+
+# endregion
+
+# region Utility classes
+
+class CommandEvent(NamedTuple):
+    name: str
+
+# endregion
+
+# region Command Handlers
+
+
+@on(Event.WORKSPACE, Event.WINDOW)
+def show_event(i3, e: Event):
+    """Show the current workspace."""
+    print(event_repr(e))
+
+
+@on(Event.WINDOW_NEW, Event.WINDOW_MOVE, Event.WINDOW_CLOSE)
+async def rename_workspace(i3, e: WindowEvent):
+    # ``e.container`` contains the new window.
+    # We want to get the workspace containing the window and list all the other windows
+    # it contains.
+
+    tree = await i3.get_tree()
+    workspaces = tree.workspaces()
+
+    for workspace in workspaces:
+        new_name = make_title_for_workspace(workspace)
+
+        if workspace.name != new_name:
+            logger.debug("Renaming workspace '%s'", workspace.num)
+            logger.debug("  from: %s", workspace.name)
+            logger.debug("    to: %s", new_name)
+
+            command = f'rename workspace "{workspace.name}" to "{new_name}"'.replace('"', '\"')
+            print(f'==> Exec: \"{command}\"')
+            await i3.command(command)
+
+    # await print_workspaces(i3)
+
+# endregion
+
+async def main():
+    i3 = await Connection(auto_reconnect=True).connect()
+
+    for fn, events in on.functions.items():
+        for event in events:
+            if isinstance(event, Event):
+                logger.info("Binding event handler '%s' to '%s' ...", fn.__name__, event)
+                i3.on(event, fn)
+
+    await i3.main()
+
+if __name__ == '__main__':
+    description = sys.modules[__name__].__doc__ or ""
+    for fn, events in on.functions.items():
+        description += f" {fn.__doc__}"
+
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "--debug",
+        "-d",
+        action="store_true",
+        default=False,
+        help="enable debugging",
+    )
+    options = parser.parse_args()
+
+    # Logging
+    root = logging.getLogger("")
+    root.setLevel(logging.WARNING)
+
+    logger.setLevel(logging.DEBUG if options.debug else logging.INFO)
+    if sys.stderr.isatty():
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        root.addHandler(ch)
+    else:
+        # root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
+        root.addHandler(
+            logging.FileHandler(Path("~/.i3-companion.log").expanduser())
+        )
+        root.setLevel(logging.DEBUG)
+
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.exception("An error occurred")
+        sys.exit(1)
+
+    sys.exit(0)

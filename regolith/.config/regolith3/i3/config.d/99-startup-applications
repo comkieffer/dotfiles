@@ -3,3 +3,6 @@ exec flameshot
 
 # Automatically pick a background for connected displays
 exec feh --bg-fill --no-fehbg --randomize ~/Pictures/Wallpapers/
+
+# Start the i3-companion
+exec --no-startup-id i3-companion --debug
