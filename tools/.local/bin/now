@@ -1,0 +1,510 @@
+#!/usr/bin/env -S uv run --script --offline
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "click",
+#     "dbussy",
+#     "rich",
+# ]
+# ///
+
+# We _NEED_ to hardcode this path because we want to run this script using the system
+# python even if the user has activated a virtual environment.
+
+from __future__ import annotations
+
+import os
+import time
+import sys
+import re
+import contextlib
+import logging
+import textwrap
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+from rich import print
+from rich.prompt import Confirm
+from rich.panel import Panel
+from rich.table import Table
+from rich.logging import RichHandler
+
+import click
+from rich.text import DEFAULT_JUSTIFY
+
+import ravel # from dbussy
+
+logger = logging.getLogger(__name__)
+
+NOW_FILE = Path("~/now.txt").expanduser()
+
+# How often should we prompt the user to update their status?
+NOW_PROMPT_INTERVAL = timedelta(minutes=15)
+
+LOCAL_TIME_ZONE = ZoneInfo(Path("/etc/timezone").read_text().strip())
+
+DAY_START = 8
+DAY_END = 18
+
+#
+# Type Definitions
+#
+
+
+@dataclass
+class LogEntry:
+    timestamp: datetime
+    entry: str
+
+    @property
+    def project(self) -> str | None:
+        words = self.entry.split()
+        for word in words:
+            if word.startswith("@"):
+                return word[1:].lower()
+        return None
+
+    @property
+    def is_break(self) -> bool:
+        return self.project == "break"
+
+    @property
+    def is_holiday(self) -> bool:
+        return self.project == "holiday"
+
+    @property
+    def is_meeting(self) -> bool:
+        return self.project == "meeting"
+
+    @staticmethod
+    def from_string(entry: str):
+        line_pattern = re.compile(r"-\s\[(?P<date>.*?)\]\s(?P<entry>.*)")
+
+        match = line_pattern.match(entry)
+        if not match:
+            print(
+                Panel.fit(
+                    f"Not a a valid log entry:\n\n{entry}", title="[bold red]Error"
+                )
+            )
+            sys.exit(1)
+
+        return LogEntry(
+            timestamp=datetime.fromisoformat(match.group("date")),
+            entry=match.group("entry"),
+        )
+
+    def __str__(self) -> str:
+        timestr = self.timestamp.isoformat().replace("T", " ")
+        return f"- [{timestr}] {self.entry}"
+
+
+class NowFile:
+    def __init__(self, entries: list[LogEntry]):
+        self.entries = entries
+
+    @staticmethod
+    def load() -> NowFile:
+        entries = []
+        for line in NOW_FILE.open():
+            entries.append(LogEntry.from_string(line))
+
+        return NowFile(entries=entries)
+
+#
+# Helper Functions
+#
+
+
+def human_time_since(date: datetime) -> str:
+    # Assume that all the times we have are in the local timezone.
+    now = datetime.now(tz=date.tzinfo)
+    delta = now - date
+
+    # If the delta is from more than a week ago
+    if delta.days > 7:
+        return f"{delta.days} days ago"
+
+    # If the time is from last week but not yesterday
+    if delta.days > 1:
+        return f"last {date.strftime('%A')}"
+
+    if date.day != now.day:
+        return "yesterday"
+
+    minutes = delta.seconds // 60
+    hours = minutes // 60
+    if hours == 1:
+        return f"1 hour ago"
+    if hours > 1:
+        return f"{hours} hours ago"
+
+    if minutes == 1:
+        return f"1 minute ago"
+
+    return f"{minutes} minutes ago"
+
+
+def human_duration(delta: timedelta) -> str:
+    """Return a string with an approximate representation of the duration."""
+    def plural(count: int, unit: str) -> str:
+        if count > 1:
+            unit += "s"
+        return f"{count:2} {unit}"
+
+    if delta.days >= 1:
+        return plural(delta.days, "days")
+
+    minutes = delta.seconds // 60
+    hours = minutes // 60
+    if hours >= 1:
+        return plural(hours, "hour")
+
+    return plural(minutes, "minute")
+
+def format_duration(duration: timedelta) -> str:
+    duration_parts = []
+
+    hours, minutes = divmod(duration.seconds / 60, 60)
+    assert int(hours) == hours
+
+    if hours >= 1:
+        duration_parts.append(f"{int(hours)} hours")
+
+    duration_parts.append(f"{int(minutes)} minutes")
+
+    return " ".join(duration_parts)
+
+#
+# Actual Implementation
+#
+
+@click.command()
+@click.option("--verbose", is_flag=True, help="Enable verbose logging")
+@click.option(
+    "--should-update",
+    is_flag=True,
+    help="Check whether we need to ask the user for an update.",
+)
+@click.option(
+    "--prompt",
+    is_flag=True,
+    help="Ask the user whether they want to log an update or not.",
+)
+@click.option(
+    "--notify",
+    is_flag=True,
+    help="Show a notification asking the user whether they want to log an update or not.",
+)
+@click.option("--show", type=click.DateTime(formats=("%Y-%m-%d",)), default=None, help="Show entries on a specific day")
+@click.option(
+    "--since", type=click.DateTime(formats=("%H:%M",)), default=None, help="When the activity started"
+)
+@click.argument("status", nargs=-1)
+@click.pass_context
+def main(ctx: click.Context, verbose: bool, should_update: bool, prompt: bool, notify: bool, show: datetime | None, since: datetime, status: list[str]) -> None:
+    if any((should_update, prompt, notify)) and since:
+        raise click.UsageError(
+            "Cannot use '--since' in conjunction with '--should-update', '--prompt', or '--notify'"
+        )
+
+    if any((should_update, prompt)) and status:
+        raise click.UsageError("Cannot specify status and other options at the same time.")
+
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        datefmt="[%X]",
+        format="%(message)s",
+        handlers=[RichHandler()],
+    )
+
+    if should_update:
+        # Invert the logic to match return codes (0 means we should update)
+        sys.exit(not is_time_for_update())
+
+    if prompt:
+        sys.exit(prompt_user())
+
+    if notify:
+        sys.exit(notify_user())
+
+    if show is not None:
+        sys.exit(show_entries_on(show.date(), is_current=False))
+
+    if not status:
+        sys.exit(show_entries_on(datetime.now().date(), is_current=True))
+
+    start_time = datetime.now(tz=LOCAL_TIME_ZONE)
+    start_time = start_time.replace(second=0, microsecond=0)
+    if since is not None:
+        start_time = start_time.replace(hour=since.hour, minute=since.minute)
+
+    # If we have a log entry, write it to the file.
+    if len(status) > 0:
+        entry = LogEntry(
+            timestamp=start_time, entry=" ".join(status)
+        )
+        with NOW_FILE.open("a") as f:
+            f.write(str(entry) + "\n")
+
+        return
+
+def is_time_for_update():
+    now = datetime.now(tz=LOCAL_TIME_ZONE)
+
+    # Only ask for updates on work days.
+    if not now.weekday() <= 5:
+        logger.debug("Not a work day, no need to update.")
+        return False
+
+    last_entry = NowFile.load().entries[-1]
+    if last_entry.is_break and last_entry.timestamp.date() == now.date():
+        logger.debug("Last entry today was a break, no need to update.")
+        return False
+
+    if last_entry.is_holiday:
+        logger.debug("Last entry today was a holiday, no need to update.")
+        return False
+
+    if last_entry.timestamp.date() < now.date() and now.timestamp.hour >= 17:
+        logger.debug("No entries today and no longer during work hours. No need to update.")
+        return False
+
+    time_since_last_entry = now - last_entry.timestamp
+    if last_entry.is_meeting and time_since_last_entry > timedelta(minutes=60):
+        logger.debug("Last entry is a meeting, but it started less than an hour ago. No need to update")
+        return False
+
+    # if we haven't logged an update in a while, ask for an update.
+    mtime = NOW_FILE.stat().st_mtime
+    time_since_update = now - datetime.fromtimestamp(mtime, tz=LOCAL_TIME_ZONE)
+
+    return time_since_update > NOW_PROMPT_INTERVAL
+
+
+def prompt_user():
+    last_entry = NowFile.load().entries[-1]
+
+    entry_wrapped = "\n".join(textwrap.wrap(last_entry.entry))
+    entry_indented = textwrap.indent(entry_wrapped, "> ")
+
+    print(
+        Panel.fit(
+            "Remember to add entries to your [i]now[/] log every now and then?\n"
+            "\n"
+            f"Your last entry was {human_time_since(last_entry.timestamp)}: \n"
+            "\n" + entry_indented,
+            title="Howdy, cowboy!",
+            padding=(1, 4),
+        )
+    )
+
+    # Change the mtime of the file to prevent us from asking again too soon.
+    new_mtime = time.time()
+    os.utime(NOW_FILE, (new_mtime, new_mtime))
+
+    return 0
+
+def notify_user():
+    def notify(bus, **kwargs):
+        """Send a notification with notify-send."""
+        conn = bus["org.freedesktop.Notifications"]
+        obj = conn["/org/freedesktop/Notifications"]
+        notifications = obj.get_interface("org.freedesktop.Notifications")
+
+        parameters = dict(
+            app_name="now",
+            replaces_id=0,
+            app_icon="dialog-information",
+            summary="",
+            actions=[],
+            hints={},
+            expire_timeout=5000,
+        )
+        parameters.update(kwargs)
+
+        return notifications.Notify(**parameters)
+
+    bus = ravel.session_bus()
+
+    last_entry = NowFile.load().entries[-1]
+
+    entry_wrapped = "\n".join(textwrap.wrap(last_entry.entry))
+    entry_indented = textwrap.indent(entry_wrapped, "> ")
+
+    # Id of the last notification of this type that we sent.
+    # This allows us to overwrite the notification and not display mutliple instances
+    # of the same notification on screen.
+    last_notification_id = 0
+
+    last_notification_id_file = Path("/tmp/now-last-notification-id")
+    if last_notification_id_file.is_file():
+        last_notification_id = int(last_notification_id_file.read_text())
+        logger.debug("Found last notification file, loaded previous id (%s).", last_notification_id)
+
+    (notification_id,) = notify(
+        bus,
+        summary="Howdy, cowboy!",
+        body=(
+            "Remember to add entries to your <tt>now</tt> log every now and then?\n"
+            "\n"
+            f"Your last entry was {human_time_since(last_entry.timestamp)}: \n"
+            "\n" + entry_indented
+        ),
+        expire_timeout=0, # Never expire
+        replaces_id = last_notification_id
+    )
+
+    logger.debug("Notification sent, notification id is %s", notification_id)
+    last_notification_id_file.write_text(str(notification_id))
+
+    return 0
+
+
+def show_entries(entries: list[LogEntry]) -> None:
+    grid = Table.grid(pad_edge=True)
+    grid.add_column(width=7)  # Timestamp
+    grid.add_column(width=15)  # duration
+    grid.add_column()  # entry
+    grid.add_column()  # project
+
+    def insert_spacer_rows(from_: datetime, to_: datetime):
+        current_time = from_.replace(minute=0)
+
+        while True:
+            current_time += timedelta(hours=2)
+            if current_time > to_:
+                break
+
+            grid.add_row(
+                current_time.strftime('%H:%M'),
+                "",
+                ".........."
+                "",
+            )
+
+
+    entry = entries[0]
+    day_start_time = entry.timestamp.replace(hour=DAY_START, minute=0)
+
+    # If we start our day before the first entry, we need to add some empty rows to the list
+
+    if entry.timestamp > day_start_time:
+        grid.add_row(
+            day_start_time.strftime('%H:%M'),
+            "",
+            ".........."
+            "",
+        )
+        insert_spacer_rows(day_start_time, entry.timestamp)
+
+    for idx in range(len(entries)):
+        previous_entry = entry
+        entry = entries[idx]
+
+        # If our entries are more than 2 hours apart, we want to add more spacer rows
+        if entry.timestamp - previous_entry.timestamp >= timedelta(hours=2):
+            insert_spacer_rows(previous_entry.timestamp, entry.timestamp)
+
+        duration = ""
+        if idx < len(entries) - 1:
+            next_entry = entries[idx + 1]
+            duration = "for " + human_duration(next_entry.timestamp - entry.timestamp)
+
+        def dim(msg):
+            return f"[dim]{msg}[/]" if entry.project == "break" else msg
+
+        # Look for words starting with `@` so that we can bold them
+        # We then concatenate all the words (with styling) back together.
+        styled_words = []
+        for word in entry.entry.split():
+            if word[0] == "@":
+                word = f"[b]{word}[/]"
+            styled_words.append(word)
+        styled_entry = " ".join(styled_words)
+
+        grid.add_row(
+            entry.timestamp.strftime('%H:%M'),
+            dim(f"[yellow]{duration}[/]"),
+            dim(styled_entry),
+            dim(f"  [b]{entry.project}[/]"),
+        )
+
+    # If we end our day after the last entry, we need to add some empty rows to the list
+    day_end_time = entry.timestamp.replace(hour=DAY_END, minute=0)
+    insert_spacer_rows(entry.timestamp, day_end_time)
+
+    print(grid)
+
+def show_timesheet_for(entries: list[LogEntry]) -> None:
+    projects = {}
+
+    for idx in range(len(entries) - 1):
+        entry = entries[idx]
+        next_entry = entries[idx + 1]
+
+        project_name = entry.project or "Unknown"
+        if project_name not in projects:
+            projects[project_name] = timedelta(0)
+
+        projects[project_name] += next_entry.timestamp - entry.timestamp
+
+
+    print("\n[b]Timesheet entries[/]:\n")
+
+    for project, duration in sorted(projects.items(), key=lambda kv: kv[1],reverse=True):
+        print(f"{project:15}: {format_duration(duration)}")
+
+
+    time_worked = sum(
+        {project: time for project,time in projects.items() if project != "break"}.values(),
+        timedelta(0)
+    )
+
+    time_on_break = sum(
+        {project: time for project,time in projects.items() if project == "break"}.values(),
+        timedelta(0)
+    )
+
+    print("[b]Work Time[/]      :", format_duration(time_worked))
+    print("[b]Break Time[/]     :", format_duration(time_on_break))
+
+
+
+def show_entries_on(day: date, *, is_current: bool):
+    # Otherwise, we just want to see updates from today
+    day_entries = [
+        entry
+        for entry in NowFile.load().entries
+        if entry.timestamp.date() == day
+    ]
+
+    if len(day_entries) == 0:
+        print(f"No entries for {day}.")
+        return
+
+    # If we are viewing the current day, and the last entry is not a break (_i.e._ we
+    # are still working), then we need to add a dummy entry at the current time so that
+    # we can compute totals including the current activity.
+
+    last_entry = day_entries[-1]
+    if is_current and last_entry.project != "break":
+        now  = datetime.now(tz=LOCAL_TIME_ZONE)
+        now = now.replace(second=0, microsecond=0)
+
+
+        day_entries.append(
+            LogEntry(entry="Now", timestamp=now)
+        )
+
+    show_entries(day_entries)
+    show_timesheet_for(day_entries)
+
+
+if __name__ == "__main__":
+    with contextlib.suppress(KeyboardInterrupt):
+        main()
+
+    sys.exit(0)
