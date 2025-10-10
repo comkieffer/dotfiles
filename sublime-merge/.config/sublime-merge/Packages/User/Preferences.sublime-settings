@@ -2,7 +2,7 @@
 	"font_face": "Source Code Pro",
 	"font_size": 9,
 	"translate_tabs_to_spaces": true,
-	"side_bar_layout": "commit_graph_as_column",
+	"side_bar_layout": "locations_as_column",
 	"added_words":
 	[
 		"quaternions"
@@ -12,6 +12,21 @@
 	"display_author_date": true,
 	"time_format": "24h",
 	"expand_merge_commits_by_default": true,
-	"diff_algorithm": "match_git",
-	"editor_path": "vim",
+	"repository_aliases":
+	{
+		"/home/tch/dev/sia/log/.git": "sia-log",
+		"/home/tch/dev/sia/dbc/.git": "sia-dbc",
+		"/home/tch/dev/sia/cmake-modules/.git": "sia-cmake-modules",
+		"/home/tch/dev/tests/cmake-modules/.git": "cmake-modules-changelog-test",
+		"/home/tch/dev/hyperion/products/reaction-wheel/rw222/rw222-python/.git": "[RW222] Python",
+		"/home/tch/dev/hyperion/products/reaction-wheel/rw222/rw222_multiseat_v1/.git": "[RW222] Multiseat Firmware",
+		"/home/tch/dev/hyperion/products/lasercom/lc200.sideboard.mcu/.git/modules/LC200.Sideboard.MCU.V1.0/hyperion-library": "[CSS Submodule] Hyperion Library",
+		"/home/tch/dev/hyperion/products/lasercom/lc200.sideboard.mcu/.git/modules/libraries/control-models": "[CSS] Control Models",
+		"/home/tch/dev/hyperion/products/lasercom/lc200.sideboard.mcu/.git/modules/libraries/sia-cmake-modules": "[CSS] sia-cmake-modules",
+		"/home/tch/dev/hyperion/products/lasercom/lc200.sideboard.mcu/.git/modules/libraries/sia-std": "[CSS] sia-std",
+	},
+	"diff_algorithm": "histogram",
+	/*"editor_path": "vim",*/
+	/*"editor_wait_args": "'' ",*/
+	/*"editor_path": "vim",*/
 }

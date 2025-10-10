@@ -1,0 +1,16 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"fish",
+		"GitGutter",
+		"LSP",
+		"LSP-pyright",
+		"LSP-ruff",
+		"Package Control",
+		"SideBarEnhancements",
+	],
+}

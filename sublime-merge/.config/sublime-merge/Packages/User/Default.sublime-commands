@@ -10,25 +10,36 @@
         "args": { "argv": ["sync"] }
     },
     {
-        "caption": "Open in Terminal",
-        "command": "git",
-        "args": {"argv": ["open-terminal"]},
-    },
-    {
-        "caption": "Create \"fixup!\" commit!!!",
-        "command": "git",
-        "args": {"argv": ["commit", "--fixup", "$select_commit", "-m", "$text"]},
-    },
-    {
         "caption": "Absorb staged changes",
         "command": "git",
         "args": {"argv": ["absorb"]},
     },
     {
-        "caption": "Start interactive rebase in terminal",
+        "caption": "Apply Fixups",
         "command": "git",
-        "args": {"argv": ["rebase-terminal", "$select_commit"]}
+        "args": {"argv": ["apply-fixup"]},
     },
+    {
+        "caption": "Open in Terminal",
+        "command": "git",
+        "args": {"argv": ["open-terminal"]},
+    },
+    {
+        "caption": "🔗 Open Repository Forge",
+        "command": "git",
+        "args": { "argv": ["open", "repo"] }
+    },
+    {
+        "caption": "🔗 Open Branch in Forge",
+        "command": "git",
+        "args": { "argv": ["open", "branch", "$select_branch"] }
+    },
+    {
+        "caption": "🔗 Create Pull Request in Forge",
+        "command": "git",
+        "args": { "argv": ["open", "pr", "$select_branch"] }
+    },
+
     {
         "caption": "Rebase onto… (branch/tag)",
         "command": "git",

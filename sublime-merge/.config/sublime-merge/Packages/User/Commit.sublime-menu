@@ -10,6 +10,11 @@
         "command": "git",
         "args": {"argv": ["copy-commit-url", "$commit"]},
     },
+    {
+        "caption": "🔗 Open Commit $short_commit in Forge",
+        "command": "git",
+        "args": { "argv": ["open", "commit", "$commit"] }
+    },
 	{ "id": "rebase", "caption": "-" },
     {
         "caption": "Start interactive rebase in terminal",

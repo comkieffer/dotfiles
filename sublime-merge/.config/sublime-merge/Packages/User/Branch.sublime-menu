@@ -1,0 +1,13 @@
+[
+    { "caption": "-", "id": "end" },
+    {
+        "caption": "🔗 Open Branch $branch in Forge",
+        "command": "git",
+        "args": { "argv": ["open", "branch", "$branch"] }
+    },
+    {
+        "caption": "🔗 Create Merge Request on $branch in Forge",
+        "command": "git",
+        "args": { "argv": ["open", "pr", "$branch"] }
+    }
+]
