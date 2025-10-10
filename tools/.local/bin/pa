@@ -59,24 +59,24 @@ def list_sink_inputs(full):
 @main.command()
 @click.argument("sink-pattern", default=None, required=False)
 def set_default_sink(sink_pattern):
-    sink_idx = None
-    if sink_pattern is None:
-        print("Active Sinks: ")
-        list_sinks()
+    """
+    Change the default sink.
 
-        sink_idx = input("Index of the sink to activate: ")
+    The default sink is selected with the `sink-pattern`. This should be a sub-string
+    match for the name of the desired sink.
+    """
 
     with Pulse() as pulse:
         for sink in active_sinks(pulse):
-            if (sink_idx is not None and sink.index == sink_idx) or (
-                sink_pattern is not None and (sink_pattern in sink.name or sink_pattern in sink.description)
-            ):
+            if sink_pattern in sink.name or sink_pattern in sink.description:
                 print(f"Setting default sink to {sink.index} ({sink.description}) ...")
                 pulse.sink_default_set(sink)
 
                 # Make sure that all the sin-inputs use the default sink
+                # This isn't required if all the sinks were moved when we set the default
+
                 for sink_input in pulse.sink_input_list():
-                    if sink_input.sink != sink:
+                    if sink_input.sink != sink.index:
                         print(
                             f"Moving '{sink_input.name}' from sink {sink_input.sink} to sink {sink.index} ({sink.description}) ..."
                         )
