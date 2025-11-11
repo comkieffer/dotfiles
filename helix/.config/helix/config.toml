@@ -1,0 +1,17 @@
+[editor]
+# Remove newlines after final newline
+trim-final-newlines = true
+
+[editor.file-picker]
+hidden = false  # Show hidden files in picker
+
+[editor.soft-wrap]
+enable = true
+
+[keys.normal]
+"^" = "goto_first_nonwhitespace"
+"$" = "goto_line_end"
+
+[keys.select]
+"^" = "goto_first_nonwhitespace"
+"$" = "goto_line_end"

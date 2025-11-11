@@ -47,6 +47,9 @@ STOWED_PROGRAMS = {
     },
     "git": {},
     "gdb": {},
+    "helix": {
+        "executable": "hx",
+    },
     "jrnl": {},
     "matlab": {},
     "vim": {},

@@ -1,0 +1,10 @@
+
+# Ruff settings: https://docs.astral.sh/ruff/editors/setup/#helix[[language]]
+name = "python"
+rulers = [ 88, ]
+languge-server = ["pylsp", "ruff"]
+auto-format = true
+
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
