@@ -1,0 +1,44 @@
+#!/bin/sh 
+
+set -e # Exit on error 
+
+header() {
+	echo ""
+	echo "#"
+	echo "# $@"
+	echo "#"
+	echo ""
+}
+
+# Out of the box, .local/bin is not on the PATH.
+PATH="${HOME}/.local/bin:$PATH"
+
+if ! command -v pipx > /dev/null; then 
+	header "Installing pipx ..."
+	sudo apt-get install -yqq pipx
+fi
+
+if ! [ -f .venv/bin/python ]; then 
+	header "Creating python virtual environment for pyinfra ..."
+	python3 -m venv .venv
+fi
+
+header "Activating virtual environment ..."
+. .venv/bin/activate
+
+if ! command -v pyinfra > /dev/null; then 
+	header "Installing pyinfra into venv ..."
+	.venv/bin/python -m pip install pyinfra
+fi
+
+pyinfra_cmd=$(which pyinfra)
+cd pyinfra
+
+(
+	header "Installing core packages as root ..."
+	sudo ${pyinfra_cmd} -y @local install-core-packages.py
+
+	header "Setting up user tools (no root)..."
+	pyinfra -y @local setup-user.py
+
+)
