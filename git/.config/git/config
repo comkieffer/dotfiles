@@ -12,6 +12,8 @@ path = ~/.config/git/config-work
   autocrlf = input
 
 [alias]
+    alias = config --get-regexp alias\\\\.
+
     # list the recent commits in a oneline, coloured form with the date
     ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
 
@@ -78,6 +80,10 @@ path = ~/.config/git/config-work
 
     wip = commit --no-verify --message 'wip'
 
+	# Reset un-staged permission changes.
+	# useful fi you have copied a repository over from a filesystem that does not support permission (e.g. FAT32).
+	permission-reset = !git diff -p -R --no-ext-diff --no-color --diff-filter=M | grep -E \"^(diff|(old|new) mode)\" --color=never | git apply
+
     # Short commands
     cp = cherry-pick
     st = status -s
@@ -89,6 +95,7 @@ path = ~/.config/git/config-work
     # Helpers for Sublime Merge
 
     open-terminal = "!f() { x-terminal-emulator; }; f"
+
 
 [init]
 	defaultBranch = master
