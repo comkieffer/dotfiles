@@ -2,24 +2,13 @@
 
 ## Installation
 
-Download the dotfiles repository:
+Run the bootstrap script to install the required dependencies
 
-``` console
-$ git clone URL
-$ cd dotfiles
+```console
+./bootstrap
 ```
 
-Install the required dependencies
-
-``` console
-$ installers/bootstrap.bash
-```
-
-Finally start setting up the system:
-
-``` console
-$ ~/local/bin/pyinfra @local installers/install-base-system.py
-```
+This will run the installers to set up the system. Future runs, can use the commands in the `justfile` directly. 
 
 ## Tool Setup
 
