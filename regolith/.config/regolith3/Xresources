@@ -10,37 +10,15 @@
 
 ! Regolith-look configuration
 ! This field is auto-updated when running `regolith-look set ...`
-regolith.look.path: /usr/share/regolith-look/default
-
-! Give workspaces nice names
-! Each regolith theme can use a different font, This is described in
-! /usr/share/regolith-look/THEME-NAME/root in the `gtk.font_name` option.
 !
-! The icons here come from https://www.nerdfonts.com/cheat-sheet
-! (The ayu theme uses nerd fonts).
-!
-! Note: workspace icons are only updated when a workspace is created.
-!
-! To see the icons in the browser, add `Hack Nerd Font` to the list of editor
-! fonts.
+! WARNING: This will also overwrte the symlink.
+regolith.look.path: /usr/share/regolith-look/ayu-dark
 
-! wm.workspace.01.name: 1: 1 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.02.name: 2: 2 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.03.name: 3: 3 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.04.name: 4: 4 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.05.name: 5: 5 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.06.name: 6: 6 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.07.name: 7: 7 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.08.name: 8: 8 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.09.name: 9: 9 <span font_desc="Hack Nerd Font"></span><span> </span>
-! wm.workspace.10.name: 0: 0 <span font_desc="Hack Nerd Font"></span><span> </span>
-
-! Use a Hack font the the bar
-wm.bar.font: Hack Nerd Font 10
+! Use a Hack font the the bar, this is required for the app icons in the status bar
+wm.bar.font: Hack Nerd Font Propo 10
 
 ! Fix fontsize for Gnome-Terminal
-! gnome.terminal.font: Ubuntu Mono 11
-gnome.terminal.font: Hack Nerd Font Mono 10
+gnome.terminal.font: Hack Nerd Font 10
 
 ! Tell regolith to not override the desktop set by gnome
 ! gnome.wallpaper:
