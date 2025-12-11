@@ -1,10 +1,17 @@
 
-# Ruff settings: https://docs.astral.sh/ruff/editors/setup/#helix[[language]]
+# Ruff settings: https://docs.astral.sh/ruff/editors/setup/#helix
+
+[[language]]
 name = "python"
 rulers = [ 88, ]
-languge-server = ["pylsp", "ruff"]
+language-servers = ["pylsp", "ruff"]
 auto-format = true
 
 [language-server.ruff]
 command = "ruff"
 args = ["server"]
+
+[[language]]
+name = "markdown"
+text-width = 100
+soft-wrap.wrap-at-text-width = true
