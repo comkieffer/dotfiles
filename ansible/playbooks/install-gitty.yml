@@ -1,9 +1,0 @@
----
-- name: Install Gitty
-  hosts: localhost
-  tasks:
-    - name: Gitty | install
-      import_tasks: tasks/install-github-release-package.yml
-      vars:
-        github_user: muesli
-        github_repo: gitty
