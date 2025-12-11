@@ -70,12 +70,9 @@ for_window [class="^Steam" title="^Steam - News"] floating enable
 
 # Development Things
 for_window [instance="__main__.py"] floating enable
+for_window [title=".*__float__.*"] floating enable
 
-# MPLAB Windows
-#
-# Like most Java apps, MPLAB is shit at namign windows and giving them proper
-# roles. To get it behave nicely, we float everything but the `default` window.
-
-for_window [class="java" title="Loading..."] floating enable
-for_window [class="java" title="Harmony Library"] floating enable
-for_window [class="^MPLAB X IDE" title="^(?!.*: default$).*"] floating enable
+for_window [app_id="i3ctl" title="mode-bindings-preview"] floating enable
+no_focus [app_id="i3ctl" title="mode-bindings-preview"]
+for_window [app_id="i3ctl" title="split-mode-icon"] floating enable, move position 40 40
+no_focus [app_id="i3ctl" title="split-mode-icon"] 
