@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+
+"""
+Post-process a jrnl entry to replace shorthand MR and Issue links with full links.
+
+Given the following shorthand reference to a merge request `sia-log!7`, translate it
+into the full link to the merge request on gitlab. The same strategy is also applied to
+expanding issue links (`sia-log#12`).
+
+Usage
+-----
+
+The tool is meant to be called with jrnl after creating an entry with
+
+    jrnl --config-overrides editor post-process-jrnl-entry -1 --edit
+
+"""
+
+from __future__ import annotations
+
+import contextlib
+import re
+import shutil
+import sys
+import os.path
+
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from pathlib import Path
+from typing import TYPE_CHECKING
+from urllib.parse import urljoin
+
+try:
+    from rich import print
+except ImportError:
+    pass
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+GITLAB_HOST = "https://gitlab.hyperion.space/"
+
+PROJECT_TO_PATH = {
+    "sia-log": "sia/log",
+    "code-quality-tools": "hyperion/build-tools/code-quality-tools",
+}
+
+def do_merge_request_ref_replacement(ref: re.Match) -> str:
+    project = ref.group("project")
+    mr_number = ref.group("mr")
+
+    print(f"{ref.groups()}")
+
+    if project not in PROJECT_TO_PATH:
+        print(f"Error: `{project}` is not a known project reference.")
+        sys.exit(1)
+
+    mr_url = urljoin(
+        GITLAB_HOST, PROJECT_TO_PATH[project]
+    ) + "/-/merge_requests/" + str(mr_number)
+
+    return f"[{project}!{mr_number}]({mr_url})"
+
+
+def do_issue_ref_replacement(ref: re.Match) -> str:
+    project = ref.group("project")
+    issue_number = ref.group("issue")
+
+    if project not in PROJECT_TO_PATH:
+        print(f"Error: `{project}` is not a known project reference.")
+        sys.exit(1)
+
+    issue_url = urljoin(
+        GITLAB_HOST, PROJECT_TO_PATH[project]
+    ) + "/-/issues/" + str(issue_number)
+
+    return f"[{project}#{issue_number}]({issue_url})"
+
+
+def parse_args() -> Namespace:
+    parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument("file", type=Path, help="Path to the file to post-process")
+
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
+
+    shutil.copy2(args.file, args.file.with_suffix(".txt.bak"))
+
+    # Regex Note
+    # `(?! ... )` is a negative lookahead. This means that starting at the current
+    # position in the expression, ensure that the given pattern will not match.
+    # Does not consume characters.
+    #
+    # We use this to prevent the regex from matching the shorthand syntax if it has
+    # already been expanded into a link. We want to match `sia-log!7` but not
+    # `[sia-log!7]`.
+    #
+    # It would seem to make more sense to check that the pattern does not start with `[`
+    # but to do that we need a variable length negative lookbehind which is not a thing
+    # that regex engines like.
+    merge_request_matcher = re.compile(
+        (
+            r"(?P<project>[\w-]+?)"  # As few letters or `-` characters as possible
+            r"!"                     # Until a `!` is found
+            r"(?P<mr>\d+(?!\]))\b"     # Then match numbers, if the last character is not `]`
+        ), re.VERBOSE
+    )
+    issue_matcher = re.compile(r"(?P<project>[\w-]+?)#(?P<issue>\d+(?!\]))\b")
+
+    input_text = args.file.read_text()
+    input_text = merge_request_matcher.sub(
+        do_merge_request_ref_replacement, input_text
+    )
+    input_text = issue_matcher.sub(
+        do_issue_ref_replacement, input_text
+    )
+
+    args.file.write_text(input_text)
+
+
+if __name__ == "__main__":
+    with contextlib.suppress(KeyboardInterrupt):
+        main()
