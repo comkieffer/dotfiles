@@ -15,14 +15,14 @@
 # https://i3wm.org/docs/userguide.html#command_criteria
 
 
-for_window [class="^Regolith-control-center"] floating enable
-for_window [class="^Gnome-control-center"] floating enable
+# Generic rules for dialogs
+for_window [title="^Preferences"] floating enable
+for_window [title="Select Folder"] floating enable
+
+for_window [app_id="^.+-control-center"] floating enable
 
 # For keychain viewer (Seahorse)
 for_window [title="^seahorse"] floating enable
-
-for_window [title="^Preferences"] floating enable
-
 # Only float Remmina server browser, not actual rdp windows.
 for_window [class= "org.remmina.Remmina" title="^Remmina"] floating enable
 
@@ -32,8 +32,11 @@ for_window [title="^Gconf"] floating enable
 # Float Specific Browser Windows
 for_window [class="firefox" window_role="^page-info$"] floating enable
 for_window [class="firefox" title="Log in to your PayPal account"] floating enable
+for_window [class="firefox" title="Extension: (Bitwarden Password Manager)"] floating enable
+for_window [class="firefox" title="Sign in – Google accounts — Mozilla Firefox"] floating enable
 
 # Float Matlab settings dialogs
+
 # Might actually be easier to use a whitelist of non-floating windows than to
 # add them all to this list.
 #
@@ -55,6 +58,7 @@ for_window [class="^Matplotlib"] floating enable
 
 # For Jetbrains tools
 for_window [class="^jetbrains-" title="^splash$"] floating enable
+for_window [class="^jetbrains-" title="^Data Sharing"] floating enable
 for_window [class="^jetbrains-" title="^Welcome"] floating enable
 for_window [class="^jetbrains-" title="History for Selection"] floating enable
 

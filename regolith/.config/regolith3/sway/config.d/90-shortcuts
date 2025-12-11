@@ -1,3 +1,4 @@
+# On keyboards that have a ptint screen key
 bindsym Print exec "/usr/bin/flameshot full"
 bindsym Shift+Print exec "/usr/bin/flameshot gui"
 bindsym $mod+s exec "/usr/bin/flameshot gui"
@@ -9,7 +10,7 @@ bindsym $mod+m mode "$tibo_mode_launcher"
 
 mode "$tibo_mode_launcher" {
     bindsym a exec ck-action-menu; mode "default"
-    bindsym a exec assign-workspaces; mode "default"
+    bindsym w exec assign-workspaces; mode "default"
     bindsym g exec gl-tool goto; mode "default"
     bindsym h exec make-hero-window; mode "default"
 
