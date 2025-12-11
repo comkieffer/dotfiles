@@ -108,6 +108,10 @@ class NowFile:
     @staticmethod
     def load() -> NowFile:
         entries = []
+
+        if not NOW_FILE.is_file():
+            return NowFile(entries=[])
+        
         for line in NOW_FILE.open():
             entries.append(LogEntry.from_string(line))
 
@@ -259,7 +263,12 @@ def is_time_for_update():
         logger.debug("Not a work day, no need to update.")
         return False
 
-    last_entry = NowFile.load().entries[-1]
+    now_entries = NowFile.load()
+    if len(now_entries.entries) == 0:
+        logger.debug("Now log is empty, no need to update.")
+        return False
+
+    last_entry = now_entries.entries[-1]
     if last_entry.is_break and last_entry.timestamp.date() == now.date():
         logger.debug("Last entry today was a break, no need to update.")
         return False
