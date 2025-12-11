@@ -23,5 +23,16 @@ gnome.terminal.font: Hack Nerd Font 10
 ! Tell regolith to not override the desktop set by gnome
 ! gnome.wallpaper:
 
+! Clear default keybinds
+
+wm.binding.settings: 
+wm.binding.bluetooth:
+wm.binding.display: 
+wm.binding.wifi:
+
+wm.binding.terminal: 
+wm.binding.browser: 
+wm.binding.files: 
+
 ! i3xblocks Configuration
 i3xrocks.value.font: Ubuntu 10
