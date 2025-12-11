@@ -12,6 +12,7 @@ path = ~/.config/git/config-work
   autocrlf = input
 
 [alias]
+	# List all configured aliases
     alias = config --get-regexp alias\\\\.
 
     # list the recent commits in a oneline, coloured form with the date
