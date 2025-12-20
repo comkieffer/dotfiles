@@ -1,5 +1,7 @@
 # Dotfiles Repository
 
+Configuration files for my Linux systen(s). Tools 
+
 ## Installation
 
 Run the bootstrap script to install the required dependencies
@@ -8,7 +10,9 @@ Run the bootstrap script to install the required dependencies
 ./bootstrap
 ```
 
-This will run the installers to set up the system. Future runs, can use the commands in the `justfile` directly. 
+This will run the installers to set up the system. Future runs, can use the commands in the `justfile` directly.
+
+To actually install the dotfiles for a specific tool, use `./install`.
 
 ## Tool Setup
 

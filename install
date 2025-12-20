@@ -1,25 +1,23 @@
 #! /usr/bin/env python3
 
 """
-Installer for my dotfiles, provides ome porcelain around GNU ``stow`` invocations.
+Installer for my dotfiles, provides some porcelain around GNU ``stow`` invocations.
 
-The installer looks at the ``STOWED_PROGRAMS`` dict for configurations. A configuration is a set of
-dotfiles stored in a folder. The name of the configuration is the name of the folder.
+The installer has rules for installing the configurations for different programs. To
+extend, or edit the rules, modify the `STOWED_PROGRAMS` dictionary in the source.
 
-The top level keys of the configurations dict are the configurations to install. The associated
-values are nested dicts with additional information on the configuration. A configuration is only
-installed if an executable with the same name is on the ``PATH``. The name can be overridden by
-passing the ``executable`` property in the configuration.
+By default, a configuration can only be installed if the associated executable is
+installed. For example, the `fish` shell configuration will only be installed if the
+`fish` binary is available on the PATH.
 
-Stow tends to be over-eager when linking things and it may be necessary to manually create directories
-before invoking ``stow``. The ``create_dirs`` key of the configuration is a list of directories to
-create before invoking ``stow``.
 
 USAGE:
 ./install all
 ./install vim bash
 
 """
+
+from __future__ import annotations
 
 import argparse
 import os
@@ -28,8 +26,38 @@ import sys
 
 from os.path import expanduser
 from collections.abc import Iterable
+from typing import TypedDict
 
-STOWED_PROGRAMS = {
+
+class ProgramConfiguration(TypedDict, total=False):
+    # Before intalling a configuration, the tool checks that the associated binary is
+    # installed (to not install configurations for things that are not installed). The
+    # executable name that is used is the name of the configuration. In some cases, the
+    # name of the configuration and the executable are different.
+    #
+    # For example: the helix editor binary is hx.
+    executable: str
+
+
+    # Directories that should be created before running stow to install the dotfiles.
+    #
+    # This is useful to ensure that stow creates symlinks to the files inside a
+    # diectory and not a symlink to the directory itself.
+    #
+    # For example: to install the set of fish completions we ship with the dotfiles,
+    # we need to ensure that `~/.config/fish/completions/` exists. Otherwise, when we
+    # run stow, it will just symlink the completions folder, and all the completions we
+    # install will appear in this repository.
+    create_dirs: list[str]
+
+    # A series of commands to run after running stow.
+    #
+    # For example, in fish, we want to update the plugins we install with fisher after
+    # we have deployed the configurations so that the actual installed plugins, and the
+    # manifest stay in sync.
+    post_install: list[str]
+
+STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
     "bash": {
         "create_dirs": [
             "~/.local/share",
@@ -44,6 +72,10 @@ STOWED_PROGRAMS = {
             "~/.config/fish/functions/",
             "~/.local/bin",
         ],
+        # Ensure that the list of plugins is up-to-date
+        "post-install": [
+            "fish -c 'fisher update'"
+        ]
     },
     "git": {},
     "gdb": {},
@@ -71,23 +103,27 @@ STOWED_PROGRAMS = {
             "~/.config/regolith3",
         ],
     },
+    "tools": {
+        # These scripts often depend on uv script mode to run
+        "executable": "uv",
+    },
 }
 
-g_targets_processed = []
+g_targets_processed: list[str] = []
 
 
-def is_installed(executable):
+def is_installed(executable: str) -> bool:
     ret = subprocess.run(
         ["which", executable], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     return not bool(ret.returncode)
 
 
-def stow(target, config):
+def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
     global g_targets_processed
     if target in g_targets_processed:
         print(f"    <{target}> already processed, skipping.")
-        return True
+        return True, "", ""
 
     g_targets_processed.append(target)
 
@@ -100,6 +136,9 @@ def stow(target, config):
                 os.makedirs(expanduser(directory))
             except FileExistsError:
                 pass
+
+    if "post-install" in config:
+        subprocess.run(config["post-install"], shell=True, check=True)
 
     # Note: Universal newlines tells python to use the default system encoding for the
     # stdout/stderr messages
@@ -115,8 +154,8 @@ def stow(target, config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Install program configurations to the appropriate locations under the current user's home directory using GNU stow.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__ + valid_targets_msg,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-f",
@@ -126,6 +165,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "targets",
+        metavar="TARGET",
         choices=[*STOWED_PROGRAMS.keys(), "all"],
         type=str,
         nargs="+",
