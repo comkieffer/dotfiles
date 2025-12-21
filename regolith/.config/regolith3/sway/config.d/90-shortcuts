@@ -45,11 +45,11 @@ mode launch_application {
 
 bindsym $mod+s mode launch_settings
 mode launch_settings {
-    bindsym o exec --no-startup-id $wm.program.settings; mode "default"                            # Settings
-    bindsym b exec --no-startup-id $wm.program.bluetooth; mode "default"                           # Bluetooth Settings
-    bindsym d exec --no-startup-id $wm.program.display; mode "default"                             # Display Settings
-    bindsym s exec --no-startup-id $wm.program.settings sound; mode "default"                      # Display Settings
-    bindsym w exec --no-startup-id $wm.program.wifi; mode "default"                                # Wi-Fi Settings
+    bindsym o exec --no-startup-id $wm.program.settings; mode "default";                            # Settings
+    bindsym b exec --no-startup-id $wm.program.bluetooth; mode "default";                           # Bluetooth Settings
+    bindsym d exec --no-startup-id $wm.program.display; mode "default";                             # Display Settings
+    bindsym s exec --no-startup-id $wm.program.settings sound; mode "default";                      # Display Settings
+    bindsym w exec --no-startup-id $wm.program.wifi; mode "default";                                # Wi-Fi Settings
 
     bindsym Escape mode "default"
     bindsym Return mode "default"
