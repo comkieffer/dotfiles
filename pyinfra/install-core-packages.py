@@ -59,6 +59,14 @@ apt.packages(
     no_recommends=True,
 )
 
+apt.packages(
+    name="Install libfuse to enable AppImage support",
+    packages=[
+        "libfuse2t64",
+    ],
+    no_recommends = True,
+)
+
 if not host.get_fact(Which, "bat"):
     which_batcat = host.get_fact(Which, "batcat")
     assert which_batcat, "batcat should have been installed with 'bat'"
