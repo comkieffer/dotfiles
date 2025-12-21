@@ -9,6 +9,16 @@ if type -q wget
     alias wget 'wget --hsts-file "$HOME/.cache/wget/wget-hsts"'
 end
 
+# Set EDITOR and VISUAL to sane values
+# See: https://unix.stackexchange.com/questions/4859/visual-vs-editor-what-s-the-difference
+for editor in hx vim vi nano
+    if type -q $editor
+        set -x VISUAL $editor
+        set -x EDITOR $editor
+        break
+    end
+end
+
 if status is-interactive
     # Commands to run in interactive sessions can go here
     alias ip "ip --color=auto"
@@ -42,7 +52,7 @@ if status is-interactive
 
         set just_completion_script $completion_script_dir"/just.fish"
         if not test -f "$just_completion_script"
-            just --completions fish > "$just_completion_script"
+            just --completions fish >"$just_completion_script"
         end
     end
 end
