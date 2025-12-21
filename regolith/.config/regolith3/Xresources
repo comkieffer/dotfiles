@@ -1,12 +1,12 @@
 
-! Overrides for Regolith settings!
+! Overrides for Regolith settings.
 !
 ! To deploy them use `regolith-look refresh`
 ! If the changes fail to load, ensure that `~/.config/regolith2/Xresources` is
 ! symlinked to this file.
 !
-! See reglotih-look-default root resources for an overviiew of keys
-! https://github.com/regolith-linux/regolith-look-default/blob/286e055f0710cbd5cab8732200bc3441771be99f/usr/share/regolith-look/default/root
+! See reglotih-look-default root resources for an overview of keys
+! -> /usr/share/regolith-look/default/root
 
 ! Regolith-look configuration
 ! This field is auto-updated when running `regolith-look set ...`
