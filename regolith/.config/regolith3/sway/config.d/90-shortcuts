@@ -35,7 +35,7 @@ mode launch_application {
     bindsym b exec --no-startup-id systemd-run --user --scope $wm.program.browser; mode "default";  # Open Web Browser
     bindsym c exec --no-startupid $HOME/.local/share/Jetbrains/Toolbox/apps/clion/bin/clion; mode "default";  # Open CLion
     bindsym f exec --no-startup-id $wm.program.files; mode "default";                               # Open File Manager
-    bindsym o exec --no-startup-id focus-obsidian; mode "default";                                  # Open or focus Obsidian
+    bindsym o exec --no-startup-id obsidian-focus; mode "default";                                  # Open or focus Obsidian
     bindsym p exec --no-startupid $HOME/.local/share/Jetbrains/Toolbox/apps/pycharm/bin/pycharm; mode "default";  # Open Pycharm
     bindsym t exec --no-startup-id $wm.program.terminal; mode "default";                            # Open Terminal
 

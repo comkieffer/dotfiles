@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Find Obsidian window in the Sway tree and get its workspace and container ID
+# The jq query searches workspaces for a window whose name matches the Obsidian version pattern
+# and returns the workspace name and container ID (tab-delimited)
+find_obsidian() {
+    swaymsg -t get_tree | jq -r '
+      .. |
+      select(.type? == "workspace") |
+      . as $workspace |
+      .. |
+      select(.pid? and (.name? // "" | test(" - Obsidian v[0-9]+\\.[0-9]+\\.[0-9]+$"))) |
+      "\($workspace.name)\t\(.id)"
+    ' | head -1
+}
+
+# Focus Obsidian window by switching workspace and focusing container
+focus_obsidian() {
+    local workspace=$1
+    local container_id=$2
+    swaymsg workspace "$workspace"
+    swaymsg "[con_id=$container_id]" focus
+}
+
+IFS=$'\t' read -r workspace container_id < <(find_obsidian)
+
+if [ -n "$workspace" ] && [ -n "$container_id" ]; then
+    # Obsidian is already running
+    echo "Found Obsidian on workspace: $workspace"
+    focus_obsidian "$workspace" "$container_id"
+else
+    # Obsidian is not running, launch it
+    echo "Obsidian not found, launching..."
+    obsidian >/dev/null 2>&1 &
+    disown
+
+    # Wait for the Obsidian window to appear (with timeout)
+    for i in {1..20}; do
+        sleep 0.5
+        IFS=$'\t' read -r workspace container_id < <(find_obsidian)
+        if [ -n "$workspace" ] && [ -n "$container_id" ]; then
+            echo "Obsidian window appeared on workspace: $workspace"
+            focus_obsidian "$workspace" "$container_id"
+            break
+        fi
+        if [ "$i" -eq 20 ]; then
+            echo "Timeout waiting for Obsidian window to appear"
+        fi
+    done
+fi
