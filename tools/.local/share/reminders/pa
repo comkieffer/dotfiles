@@ -1,0 +1,12 @@
+PulseAudio Control
+
+The [bold cyan]pa[/bold cyan] command manges the active PulseAudio sink..
+
+[dim]# Set the default sink[/dim]
+[bold green]$[/bold green] [bold]pa list-sinks[/bold]                  [dim]# Show available audio outputs[/dim]
+[bold green]$[/bold green] [bold]pa set-default-sink[/bold] [yellow]hdmi[/yellow]         [dim]# Switch to HDMI output[/dim]
+
+[dim]# Check what sink different outputs are playing on[/dim]
+[bold green]$[/bold green] [bold]pa list-sink-inputs[/bold]            [dim]# Show active audio streams[/dim]
+
+The sink pattern matches against device names or descriptions.

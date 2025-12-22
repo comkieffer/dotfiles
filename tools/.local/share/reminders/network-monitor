@@ -1,0 +1,9 @@
+Network Scanner
+
+The [bold cyan]network-monitor[/bold cyan] command continuously scans your network for active hosts using nmap.
+
+[bold green]$[/bold green] [bold]network-monitor[/bold]                      [dim]# Scan default network (192.168.1.0/24)[/dim]
+[bold green]$[/bold green] [bold]network-monitor[/bold] [yellow]10.0.0.0/24[/yellow]         [dim]# Scan specific subnet[/dim]
+[bold green]$[/bold green] [bold]sudo network-monitor --top-ports[/bold] [yellow]100[/yellow]  [dim]# Port scan mode (requires root)[/dim]
+
+[yellow]Options[/yellow]: [bold]--sort-by[/bold] (ipv4, ipv6, hostname, latest), [bold]-n[/bold] (no DNS lookup)

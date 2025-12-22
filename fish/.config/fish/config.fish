@@ -61,3 +61,7 @@ alias dotfiles "git --git-dir=$HOME/dev/personal/homedir --work-tree=$HOME"
 
 # Show the wifi password for the current network
 alias wifi 'nmcli dev wifi show-password'
+
+if type -q reminders
+    reminders
+end

@@ -1,0 +1,10 @@
+Activity Logger
+
+The [bold cyan]now[/bold cyan] command tracks what you're working on throughout the day.
+
+[bold green]$[/bold green] [bold]now[/bold]                                [dim]# Show today's entries[/dim]
+[bold green]$[/bold green] [bold]now[/bold] [yellow]Working on feature X @project[/yellow]  [dim]# Log current activity[/dim]
+[bold green]$[/bold green] [bold]now --since[/bold] [yellow]14:30[/yellow] [yellow]Meeting @project[/yellow]   [dim]# Log past activity[/dim]
+[bold green]$[/bold green] [bold]now --show[/bold] [yellow]2025-12-15[/yellow]              [dim]# View specific day[/dim]
+
+Tag projects with [bold cyan]@project-name[/bold cyan] to generate timesheets automatically.

@@ -106,6 +106,9 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
     "tools": {
         # These scripts often depend on uv script mode to run
         "executable": "uv",
+        "create_dirs": [
+            "~/.local/share/reminders"
+        ]
     },
 }
 
