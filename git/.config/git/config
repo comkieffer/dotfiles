@@ -8,7 +8,6 @@ path = ~/.config/git/config-work
 
 [core]
 	fileMode = false
-	editor = vim
   autocrlf = input
 
 [alias]
