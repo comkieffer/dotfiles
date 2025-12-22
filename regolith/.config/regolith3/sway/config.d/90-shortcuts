@@ -37,6 +37,7 @@ mode launch_application {
     bindsym f exec --no-startup-id $wm.program.files; mode "default";                               # Open File Manager
     bindsym o exec --no-startup-id obsidian-focus; mode "default";                                  # Open or focus Obsidian
     bindsym p exec --no-startupid $HOME/.local/share/Jetbrains/Toolbox/apps/pycharm/bin/pycharm; mode "default";  # Open Pycharm
+    bindsym s exec --no-startup-id smerge; mode "default";                                          # Open Sublime Merge
     bindsym t exec --no-startup-id $wm.program.terminal; mode "default";                            # Open Terminal
 
     bindsym Escape mode "default"
