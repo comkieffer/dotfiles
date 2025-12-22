@@ -20,12 +20,12 @@ USAGE:
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 
 from os.path import expanduser
 from collections.abc import Iterable
+from pathlib import Path
 from typing import TypedDict
 
 
@@ -57,11 +57,12 @@ class ProgramConfiguration(TypedDict, total=False):
     # manifest stay in sync.
     post_install: list[str]
 
+REQUIRED_DIRS = [
+    "~/.config/", "~/.local/share", "~/.local/bin",
+]
+
 STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
     "bash": {
-        "create_dirs": [
-            "~/.local/share",
-        ],
     },
     "fish": {
         # We use `fisher` to install plugins, this will put the installed functions in
@@ -70,10 +71,9 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
         "create_dirs": [
             "~/.config/fish/completions/",
             "~/.config/fish/functions/",
-            "~/.local/bin",
         ],
         # Ensure that the list of plugins is up-to-date
-        "post-install": [
+        "post_install": [
             "fish -c 'fisher update'"
         ]
     },
@@ -130,18 +130,8 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 
     g_targets_processed.append(target)
 
-    if "create_dirs" in config:
-        if not isinstance(config["create_dirs"], Iterable):
-            config["create_dirs"] = [config["create_dirs"]]
-
-        for directory in config["create_dirs"]:
-            try:
-                os.makedirs(expanduser(directory))
-            except FileExistsError:
-                pass
-
-    if "post-install" in config:
-        subprocess.run(config["post-install"], shell=True, check=True)
+    if "post_install" in config:
+        subprocess.run(config["post_install"], shell=True, check=True)
 
     # Note: Universal newlines tells python to use the default system encoding for the
     # stdout/stderr messages
@@ -156,6 +146,8 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 
 
 if __name__ == "__main__":
+    valid_targets_msg = f"\nValid targets are: {", ".join(STOWED_PROGRAMS.keys())}"
+
     parser = argparse.ArgumentParser(
         description=__doc__ + valid_targets_msg,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -183,6 +175,7 @@ if __name__ == "__main__":
         print("Error: `stow` is not installed. Install `stow` to continue.")
         sys.exit(1)
 
+    valid_targets = []
     for target in args.targets:
         if target in STOWED_PROGRAMS:
             executable_name = STOWED_PROGRAMS[target].get("executable", target)
@@ -195,16 +188,37 @@ if __name__ == "__main__":
                 )
                 continue
 
-            print(f"- Installing configurations for {target} ".ljust(60, "."), end="")
-            ok, command, errmsg = stow(target, STOWED_PROGRAMS[target])
-            if not ok:
-                print(" \033[31mFAIL\033[0m")
-                print(f"Error executing: {command}")
-                print(errmsg)
-                sys.exit(-1)
-            else:
-                print(" \033[32mOK\033[0m")
+            valid_targets.append(target)
         else:
             print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
+
+
+    # Create all the required directories before running
+    for dir in [Path(p) for p in REQUIRED_DIRS]:
+        if not dir.expanduser().is_dir():
+            print(f"- Creating {dir} ".ljust(60, "."), end="")
+            dir.expanduser().mkdir(parents=True)
+
+    for target in valid_targets:
+        if required_dirs := getattr(target, "create_dirs", None):
+            if not isinstance(required_dirs, Iterable):
+                required_dirs = [required_dirs]
+
+            for dir in [Path(p) for p in required_dirs]:
+                if not dir.expanduser().is_dir():
+                    print(f"- Creating {dir} ".ljust(60, "."), end="")
+                    dir.expanduser().mkdir(exist_ok=True, parents=True)
+
+
+    for target in valid_targets:
+        print(f"- Installing configurations for {target} ".ljust(60, "."), end="")
+        ok, command, errmsg = stow(target, STOWED_PROGRAMS[target])
+        if not ok:
+            print(" \033[31mFAIL\033[0m")
+            print(f"Error executing: {command}")
+            print(errmsg)
+            sys.exit(-1)
+        else:
+            print(" \033[32mOK\033[0m")
 
     sys.exit(0)
