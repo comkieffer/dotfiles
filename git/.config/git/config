@@ -13,7 +13,7 @@ path = ~/.config/git/config-work
 
 [alias]
 	# List all configured aliases
-    alias = config --get-regexp alias\\\\.
+    alias = config --get-regexp alias\\.
 
     # list the recent commits in a oneline, coloured form with the date
     ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
@@ -33,6 +33,7 @@ path = ~/.config/git/config-work
     #   my-feature  Implement feature this-and-that (3 weeks ago)  <Thibaud Chupin>
     brt = "!git for-each-ref refs/heads --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
+	# Like `brt` but lists branches from origin that have been checked out locally
     brta = "!git for-each-ref refs/remotes/origin --color=always --sort -committerdate --format='%(HEAD)%(color:reset);%(color:yellow)%(refname:short)%(color:reset);%(contents:subject);%(color:green)(%(committerdate:relative))%(color:blue);<%(authorname)>' | column -t -s ';'"
 
     # Undo the last commit
@@ -56,7 +57,7 @@ path = ~/.config/git/config-work
     # Perform interactive rebase up to the merge base with master
     apply-fixup = "!f() \
       { \
-        master_branch=$(git branch -l | grep -e master -e main | sed 's/*//') \
+        master_branch=$(git branch -l | grep -e master -e main | sed 's/*//'); \
         merge_base=$(git merge-base --fork-point $master_branch HEAD | cut -c 1-7); \
         if [ -z \"${merge_base}\" ]; then \
           echo \"Unable to locate merge base for the current branch.\"; \
@@ -67,7 +68,7 @@ path = ~/.config/git/config-work
       }; f"
 
     # Pick the branch to switch to
-    sw = !git switch $(git branch -a --format '%(refname:short)' | sed 's~origin/~~' | sort | uniq | fzf)
+    sw = "!git switch $(git branch -a --format '%(refname:short)' | sed 's~origin/~~' | sort | uniq | fzf)"
 
     # Checkout a merge request from the command line
     # Usage: git mr origin 35
@@ -83,7 +84,9 @@ path = ~/.config/git/config-work
 
 	# Reset un-staged permission changes.
 	# useful fi you have copied a repository over from a filesystem that does not support permission (e.g. FAT32).
-	permission-reset = !git diff -p -R --no-ext-diff --no-color --diff-filter=M | grep -E \"^(diff|(old|new) mode)\" --color=never | git apply
+	permission-reset = "!git diff -p -R --no-ext-diff --no-color --diff-filter=M \
+		| grep -E \"^(diff|(old|new) mode)\" --color=never \
+		| git apply"
 
     # Short commands
     cp = cherry-pick
