@@ -1,0 +1,280 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import string
+import subprocess
+import sys
+import re
+from pathlib import Path
+from contextlib import suppress
+from dataclasses import dataclass
+from typing import Self
+from functools import lru_cache
+from collections import defaultdict
+
+from rich.panel import Panel
+from rich.console import Console
+from rich.text import Text
+from rich.rule import Rule
+
+
+@dataclass
+class ToDoItem:
+	project: str
+	text: str
+
+def parse_args() -> argparse.Namespace:
+	"""Parse command line arguments.
+
+	Returns:
+		Parsed arguments including subcommand and options.
+	"""
+	parser = argparse.ArgumentParser(
+		description="Find and display TODO items from ToDo.md files"
+	)
+	parser.add_argument(
+		"-d", "--root-dir",
+		default=".",
+		type=Path,
+		help="Root directory to search for ToDo.md files (default: current directory)"
+	)
+
+	subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+	# List subcommand (default)
+	subparsers.add_parser("list", help="List all TODO items")
+
+	# Edit subcommand
+	edit_parser = subparsers.add_parser("edit", help="Open a project's ToDo.md file in editor")
+	edit_parser.add_argument(
+		"project",
+		help="Project name (case-insensitive) or '.' for current project"
+	)
+
+	args = parser.parse_args()
+
+	# Default to list command if no subcommand specified
+	if args.command is None:
+		args.command = "list"
+
+	return args
+
+def run(command: list[str]) -> str | None:
+	"""Execute a shell command and handle errors.
+
+	On failure, prints error details to stderr and continues execution.
+
+	Args:
+		command: Command and arguments to execute.
+
+	Returns:
+		Command stdout if successful, None if command failed.
+	"""
+	retval = subprocess.run(command, text=True, capture_output=True)
+
+	if retval.returncode != 0:
+		console = Console(stderr=True)
+		panel_content = Text()
+		panel_content.append(f"Command: {' '.join(command)}\n", style="bold")
+		panel_content.append(f"Return code: {retval.returncode}\n\n", style="bold red")
+
+		if retval.stdout:
+			panel_content.append(Rule(title="stdout"))
+			panel_content.append(retval.stdout)
+
+		if retval.stderr:
+			panel_content.append(Rule(title="stderr"))
+			panel_content.append(retval.stderr)
+
+		console.print(Panel(panel_content, title=f"Command Returned {retval.returncode}", border_style="red"))
+		return None
+
+	return retval.stdout
+
+def find_todo_files(root_dir: Path) -> list[Path]:
+	"""Find all ToDo.md files recursively in the given directory.
+
+	Args:
+		root_dir: Directory to search from.
+
+	Returns:
+		List of paths to ToDo.md files.
+	"""
+	output = run(["fd", "-t", "f", "-i", "ToDo.md", str(root_dir)])
+	if output is None:
+		return []
+	return [Path(f) for f in output.splitlines() if len(f) > 0]
+
+
+def extract_todo_entries(file: Path) -> list[ToDoItem]:
+	"""Extract unchecked top-level todo items from a markdown file.
+
+	Only includes checkboxes that are not children of other checkboxes.
+	Checked items (- [x]) are excluded.
+
+	Args:
+		file: Path to the ToDo.md file.
+
+	Returns:
+		List of ToDoItem objects with project name and todo text.
+	"""
+	project = find_project_root(file)
+	todo_items = []
+
+	try:
+		with open(file, 'r') as f:
+			lines = f.readlines()
+	except Exception as e:
+		console = Console(stderr=True)
+		console.print(f"[red]Error reading {file}: {e}[/red]")
+		return []
+
+	# Regex to match markdown checkboxes: - [ ] or - [x]
+	checkbox_pattern = re.compile(r'''
+		^           # Start of line
+		(\s*)       # Group 1: Leading whitespace (indentation)
+		-\ \[       # Literal "- ["
+		([ xX])     # Group 2: Checkbox state (space, x, or X)
+		\]\ 	    # Literal "] "
+		(.+)        # Group 3: Todo text (rest of line)
+		$           # End of line
+	''', re.VERBOSE)
+
+	# We only care about ToDo entries that are not children of other ToDo entries.
+	# Instead of using a proper Markdown parser, we track the indentation of the
+	# first checkbox we find, and only include checkboxes at that same level or less.
+	min_indent = None
+
+	for line in lines:
+		match = checkbox_pattern.match(line)
+		if match:
+			# Convert tabs to 4 spaces, then measure indentation level
+			indent = match.group(1)
+			indentation_level = len(indent.replace('\t', '    '))
+			checked = match.group(2).lower() == 'x'
+			text = match.group(3).strip()
+
+			# Skip completed items
+			if checked:
+				continue
+
+			# First checkbox sets the baseline for top-level indentation
+			if min_indent is None:
+				min_indent = indentation_level
+
+			# Only include checkboxes at or before the minimum indent (top-level items)
+			if indentation_level <= min_indent:
+				todo_items.append(ToDoItem(project=project, text=text))
+
+	return todo_items
+
+
+@lru_cache
+def find_project_root(file: Path) -> str:
+	"""Find the project name for a file.
+
+	Uses git repository name if in a git repo, otherwise the parent directory name.
+
+	Args:
+		file: Path to file or directory.
+
+	Returns:
+		Project name (git repo name or parent directory name).
+	"""
+	file_dir = file.parent if file.is_file() else file
+
+	result = subprocess.run(
+		["git", "-C", str(file_dir), "rev-parse", "--show-toplevel"],
+		capture_output=True,
+		text=True
+	)
+
+	if result.returncode == 0:
+		return Path(result.stdout.strip()).name
+
+	return file_dir.name
+
+def to_title_case(msg: str) -> str:
+	return string.capwords(msg.replace('-', ' ').replace('_', ' '))
+
+
+def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
+	"""Find the ToDo.md file for a project by name (case-insensitive).
+
+	Args:
+		project_name: Project name to search for (case-insensitive).
+		root_dir: Root directory to search from.
+
+	Returns:
+		Path to the project's ToDo.md file.
+
+	Raises:
+		ValueError: If no matching project or multiple matches found.
+	"""
+	todo_files = find_todo_files(root_dir)
+	matches = []
+
+	for file in todo_files:
+		project = find_project_root(file)
+		if project.lower() == project_name.lower():
+			matches.append(file)
+
+	if len(matches) == 0:
+		raise ValueError(f"No project found matching '{project_name}'")
+	elif len(matches) > 1:
+		raise ValueError(f"Multiple projects found matching '{project_name}': {[str(f) for f in matches]}")
+
+	return matches[0]
+
+
+def open_in_editor(file: Path) -> None:
+	"""Open a file in the default editor.
+
+	Args:
+		file: Path to file to open.
+	"""
+	editor = os.environ.get('EDITOR', 'nano')
+	subprocess.run([editor, str(file)])
+
+
+def main():
+	"""Main entry point. Find and display todos grouped by project."""
+	args = parse_args()
+	console = Console()
+
+	if args.command == "edit":
+		try:
+			# Handle '.' as current project
+			project_name = args.project
+			if project_name == ".":
+				project_name = find_project_root(Path.cwd())
+
+			todo_file = find_todo_file_for(project_name, args.root_dir)
+			open_in_editor(todo_file)
+		except ValueError as e:
+			console.print(f"[red]Error: {e}[/red]", stderr=True)
+			sys.exit(1)
+	else:  # list command
+		todo_files = find_todo_files(args.root_dir)
+
+		todo_items = []
+		for file in todo_files:
+			todo_items.extend(extract_todo_entries(file))
+
+		if not todo_items:
+			console.print("[dim]No todo items found[/dim]")
+			return
+
+		by_project = defaultdict(list)
+		for item in todo_items:
+			by_project[item.project].append(item.text)
+
+		for project in sorted(by_project.keys()):
+			console.print(f"\n  [bold cyan]{to_title_case(project)}[/bold cyan]")
+			for todo in by_project[project]:
+				console.print(f"    • {todo}")
+
+if __name__ == "__main__":
+	with suppress(KeyboardInterrupt):
+		main()

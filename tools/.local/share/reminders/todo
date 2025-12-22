@@ -1,0 +1,6 @@
+List ToDo
+
+The [bold cyan]todo[/bold cyan] command list ToDo entries found in [dim]ToDo.md[/dim] files in child directories.
+
+[bold green]$[/bold green] [bold]todo list[/bold]         [dim]# List todo entries[/dim]
+[bold green]$[/bold green] [bold]todo add[/bold] [yellow]dirname[/yellow]  [dim]# Open a ToDo file in the editor[/dim] 
