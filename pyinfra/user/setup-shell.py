@@ -196,7 +196,7 @@ def download_and_install(
             f"{command} --version",
         ],
     )
-    
+
     return
 
 
@@ -212,7 +212,7 @@ download_and_install(
 )
 
 # Note: helix will always be re-downloaded because the version in the in tag has
-# leading zeros 
+# leading zeros
 download_and_install("helix-editor", "helix", command="hx", asset_matcher="x86_64-linux")
 
 download_and_install("casey", "just", asset_matcher="x86_64-unknown-linux-musl")

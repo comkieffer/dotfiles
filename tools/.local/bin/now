@@ -111,7 +111,7 @@ class NowFile:
 
         if not NOW_FILE.is_file():
             return NowFile(entries=[])
-        
+
         for line in NOW_FILE.open():
             entries.append(LogEntry.from_string(line))
 

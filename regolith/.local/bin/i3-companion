@@ -91,7 +91,7 @@ async def notify(i3, **kwargs):
 
 def print_workspace(workspace: Container):
     """Show information about the focused workspace."""
-    
+
     def format(container):
         if container.window:
             content = (
@@ -110,7 +110,7 @@ def print_workspace(workspace: Container):
             content = f"({container.layout})"
 
         root = content.lower()
-        
+
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:
@@ -121,13 +121,13 @@ def print_workspace(workspace: Container):
                 others = "│ "
             content = format(child).replace("\n", f"\n{others}")
             children.append(f"{first} {content}")
-        
+
         children.insert(0, root)
         return "\n".join(children)
 
     print(f"Workspace {workspace.num}: '{workspace.name}'")
     print("root " + format(workspace))
-    
+
 async def print_workspaces(i3):
 
     tree = await i3.get_tree()
@@ -156,7 +156,7 @@ def event_repr(event: Event):
     elif isinstance(event, WindowEvent):
         if event.change == "focus":
             retval = f"<{event.__class__.__name__}: change: {event.change!r}, focused: {container_repr(event.container)}>"
-        else:    
+        else:
             retval = f"<{event.__class__.__name__}: change: {event.change!r}, container: {container_repr(event.container)}>"
     else:
         retval = repr(event)
@@ -186,7 +186,7 @@ def make_title_for_workspace(workspace: Container):
 
     main_application = weighted_applications[0]
 
-    if main_application.icon is None: 
+    if main_application.icon is None:
         logger.debug("  No application icon for '{main_application.name}'")
         application_icon = ""
 

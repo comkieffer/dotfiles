@@ -1,6 +1,6 @@
-#!/bin/sh 
+#!/bin/sh
 
-set -e # Exit on error 
+set -e # Exit on error
 
 header() {
 	echo ""
@@ -13,12 +13,12 @@ header() {
 # Out of the box, .local/bin is not on the PATH.
 PATH="${HOME}/.local/bin:$PATH"
 
-if ! command -v pipx > /dev/null; then 
+if ! command -v pipx > /dev/null; then
 	header "Installing pipx ..."
 	sudo apt-get install -yqq pipx
 fi
 
-if ! [ -f .venv/bin/python ]; then 
+if ! [ -f .venv/bin/python ]; then
 	header "Creating python virtual environment for pyinfra ..."
 	python3 -m venv .venv
 fi
@@ -26,7 +26,7 @@ fi
 header "Activating virtual environment ..."
 . .venv/bin/activate
 
-if ! command -v pyinfra > /dev/null; then 
+if ! command -v pyinfra > /dev/null; then
 	header "Installing pyinfra into venv ..."
 	.venv/bin/python -m pip install pyinfra
 fi

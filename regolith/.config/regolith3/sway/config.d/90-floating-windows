@@ -75,4 +75,4 @@ for_window [title=".*__float__.*"] floating enable
 for_window [app_id="i3ctl" title="mode-bindings-preview"] floating enable
 no_focus [app_id="i3ctl" title="mode-bindings-preview"]
 for_window [app_id="i3ctl" title="split-mode-icon"] floating enable, move position 40 40
-no_focus [app_id="i3ctl" title="split-mode-icon"] 
+no_focus [app_id="i3ctl" title="split-mode-icon"]

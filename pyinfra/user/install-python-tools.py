@@ -19,4 +19,4 @@ if host.get_fact(Command, "hx --version"):
             "python-lsp-server",
         ],
     )
-    
+

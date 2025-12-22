@@ -8,7 +8,7 @@ files.directory(
     path=DOWNLOAD_DIR,
 )
 
- 
+
 apt.deb(
     name="Install gitbutler package",
     src="https://app.gitbutler.com/downloads/release/linux/x86_64/deb",

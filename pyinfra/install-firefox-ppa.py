@@ -1,7 +1,7 @@
 from io import StringIO
 
 from pyinfra import host
-from pyinfra.facts.snap import SnapPackages 
+from pyinfra.facts.snap import SnapPackages
 from pyinfra.operations import apt, snap
 from pyinfra.operations.server import files
 
@@ -33,13 +33,13 @@ Pin-Priority: -1
         packages="firefox",
         present=False,
     )
-    
+
     apt.packages(
         name="Install firefox package",
         packages="firefox",
         present=False,
     )
-    
+
     apt.packages(
         name="Install firefox package",
         packages="firefox",

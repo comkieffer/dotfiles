@@ -1,6 +1,6 @@
 # Dotfiles Repository
 
-Configuration files for my Linux systen(s). Tools 
+Configuration files for my Linux systen(s). Tools
 
 ## Installation
 
