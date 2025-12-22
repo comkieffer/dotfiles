@@ -55,6 +55,11 @@ if status is-interactive
             just --completions fish >"$just_completion_script"
         end
     end
+
+    # Bind Alt-z to run interactive zoxide query with fzf
+    if type -q fzf
+        bind \ez 'commandline -r "zq"; commandline -f execute'
+    end
 end
 
 alias dotfiles "git --git-dir=$HOME/dev/personal/homedir --work-tree=$HOME"
