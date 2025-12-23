@@ -9,6 +9,7 @@ update-system:
     # Instead we run pyinfra itself with `sudo`.
     cd pyinfra && sudo $(which pyinfra) -y @local install-core-packages.py
 
+    just pyinfra setup-groups.py
     just pyinfra setup-user.py
 
 # Run a command with pyinfra
