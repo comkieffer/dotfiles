@@ -67,9 +67,13 @@ except ImportError:
 
 @dataclass
 class ToDoItem:
-	project: str
 	text: str
+	project_path: Path
 	section: str | None = None
+
+	@property
+	def project(self) -> str:
+		return self.project_path.name
 
 def parse_args() -> argparse.Namespace:
 	"""Parse command line arguments.
@@ -167,7 +171,7 @@ def extract_todo_entries(file: Path) -> list[ToDoItem]:
 	Returns:
 		List of ToDoItem objects.
 	"""
-	project = find_project_root(file)
+	project_path = find_project_path(file)
 	todo_items = []
 
 	try:
@@ -230,22 +234,22 @@ def extract_todo_entries(file: Path) -> list[ToDoItem]:
 
 			# Only include checkboxes at or before the minimum indent (top-level items)
 			if indentation_level <= min_indent:
-				todo_items.append(ToDoItem(project=project, text=text, section=current_section))
+				todo_items.append(ToDoItem(text=text, project_path=project_path, section=current_section))
 
 	return todo_items
 
 
 @lru_cache
-def find_project_root(file: Path) -> str:
-	"""Find the project name for a file.
+def find_project_path(file: Path) -> Path:
+	"""Find the project root path for a file.
 
-	Uses git repository name if in a git repo, otherwise the parent directory name.
+	Uses git repository root if in a git repo, otherwise the parent directory.
 
 	Args:
 		file: Path to file or directory.
 
 	Returns:
-		Project name (git repo name or parent directory name).
+		Project root path.
 	"""
 	file_dir = file.parent if file.is_file() else file
 
@@ -256,9 +260,24 @@ def find_project_root(file: Path) -> str:
 	)
 
 	if result.returncode == 0:
-		return Path(result.stdout.strip()).name
+		return Path(result.stdout.strip())
 
-	return file_dir.name
+	return file_dir
+
+def path_with_tilde(path: Path) -> str:
+	"""Convert a path to use ~ for home directory.
+
+	Args:
+		path: Path to convert.
+
+	Returns:
+		String representation with ~ if under home directory.
+	"""
+	try:
+		home = Path.home()
+		return f"~/{path.relative_to(home)}"
+	except ValueError:
+		return str(path)
 
 def to_title_case(msg: str) -> str:
 	return string.capwords(msg.replace('-', ' ').replace('_', ' '))
@@ -281,7 +300,7 @@ def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
 	matches = []
 
 	for file in todo_files:
-		project = find_project_root(file)
+		project = find_project_path(file).name
 		if project.lower() == project_name.lower():
 			matches.append(file)
 
@@ -313,7 +332,7 @@ def main():
 			# Handle '.' as current project
 			project_name = args.project
 			if project_name == ".":
-				project_name = find_project_root(Path.cwd())
+				project_name = find_project_path(Path.cwd()).name
 
 			todo_file = find_todo_file_for(project_name, args.root_dir)
 			open_in_editor(todo_file)
@@ -333,11 +352,15 @@ def main():
 
 		# Group by project, then by section within each project
 		by_project = defaultdict(lambda: defaultdict(list))
+		project_paths = {}
 		for item in todo_items:
 			by_project[item.project][item.section].append(item.text)
+			project_paths[item.project] = item.project_path
 
+		# Print ToDo items
 		for project in sorted(by_project.keys()):
-			console.print(f"\n  [bold cyan]{to_title_case(project)}[/bold cyan] [dim]{project}[/dim]")
+			project_path = path_with_tilde(project_paths[project])
+			console.print(f"\n  [bold cyan]{to_title_case(project)}[/bold cyan]    [dim]{project_path}[/dim]")
 
 			sections = by_project[project]
 			# Show items without a section first (directly under project)
