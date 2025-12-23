@@ -20,7 +20,7 @@ try:
 	from rich.text import Text
 	from rich.rule import Rule
 except ImportError:
-	# If rich is not available, use these simpler classes instead. 
+	# If rich is not available, use these simpler classes instead.
 
 	def _strip_markup(text: str) -> str:
 		"""Remove rich markup tags from text."""

@@ -89,16 +89,7 @@ path = ~/.config/git/config-work
 		| grep -E \"^(diff|(old|new) mode)\" --color=never \
 		| git apply"
 
-	# Short commands
-	cp = cherry-pick
-	st = status -s
-	ci = commit
-	co = checkout
-	cob = checkout -b
-	br = branch
-
 	# Helpers for Sublime Merge
-
 	open-terminal = "!f() { x-terminal-emulator; }; f"
 
 
