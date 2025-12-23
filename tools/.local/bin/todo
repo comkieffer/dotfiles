@@ -146,6 +146,8 @@ def run(command: list[str]) -> str | None:
 def find_todo_files(root_dir: Path) -> list[Path]:
 	"""Find all ToDo.md files recursively in the given directory.
 
+	Skips files in directories containing "_archived" in their path.
+
 	Args:
 		root_dir: Directory to search from.
 
@@ -155,7 +157,9 @@ def find_todo_files(root_dir: Path) -> list[Path]:
 	output = run(["fd", "-t", "f", "-i", "ToDo.md", str(root_dir)])
 	if output is None:
 		return []
-	return [Path(f) for f in output.splitlines() if len(f) > 0]
+	files = [Path(f) for f in output.splitlines() if len(f) > 0]
+	# Filter out archived directories
+	return [f for f in files if "_archived" not in str(f)]
 
 
 def extract_todo_entries(file: Path) -> list[ToDoItem]:

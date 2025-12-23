@@ -2,5 +2,7 @@ List ToDo
 
 The [bold cyan]todo[/bold cyan] command list ToDo entries found in [dim]ToDo.md[/dim] files in child directories.
 
+Files in directories containing [yellow]_archived[/yellow] in their path are automatically skipped.
+
 [bold green]$[/bold green] [bold]todo list[/bold]         [dim]# List todo entries[/dim]
-[bold green]$[/bold green] [bold]todo add[/bold] [yellow]dirname[/yellow]  [dim]# Open a ToDo file in the editor[/dim] 
+[bold green]$[/bold green] [bold]todo edit[/bold] [yellow]project[/yellow]  [dim]# Open a project's ToDo file in the editor[/dim]
