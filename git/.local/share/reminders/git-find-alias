@@ -1,0 +1,9 @@
+Git Find Alias
+
+Search for files in the repository by path.
+
+[bold green]$[/bold green] [bold]git find[/bold] [yellow]pattern[/yellow]        [dim]# Find files matching pattern (case-insensitive)[/dim]
+
+Examples:
+[bold green]$[/bold green] [bold]git find[/bold] [yellow]config[/yellow]         [dim]# Find all files with "config" in path[/dim]
+[bold green]$[/bold green] [bold]git find[/bold] [yellow]\.py[/yellow]           [dim]# Find all Python files[/dim]

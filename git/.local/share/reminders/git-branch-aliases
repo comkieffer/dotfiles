@@ -1,0 +1,7 @@
+Git Branch Aliases
+
+Manage and navigate branches with helpful metadata.
+
+[bold green]$[/bold green] [bold]git brt[/bold]                  [dim]# List local branches sorted by last modified[/dim]
+[bold green]$[/bold green] [bold]git brta[/bold]                 [dim]# List remote branches (from origin)[/dim]
+[bold green]$[/bold green] [bold]git sw[/bold]                   [dim]# Interactive branch switcher (uses fzf)[/dim]

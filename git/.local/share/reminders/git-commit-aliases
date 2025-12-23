@@ -1,0 +1,8 @@
+Git Commit Aliases
+
+Helpers for creating commits.
+
+[bold green]$[/bold green] [bold]git wip[/bold]                  [dim]# Commit with "wip" message (skips hooks)[/dim]
+[bold green]$[/bold green] [bold]git amend[/bold]                [dim]# Edit the last commit message[/dim]
+
+[bold cyan]wip[/bold cyan] is useful for quick work-in-progress commits. Uses [dim]--no-verify[/dim] to skip pre-commit hooks.

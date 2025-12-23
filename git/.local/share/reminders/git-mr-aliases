@@ -1,0 +1,6 @@
+Git Merge Request Aliases
+
+Work with GitLab merge requests from the command line.
+
+[bold green]$[/bold green] [bold]git mr[/bold] [yellow]origin 35[/yellow]         [dim]# Checkout merge request #35 from origin (on GitLab)[/dim]
+[bold green]$[/bold green] [bold]git view-mr[/bold]              [dim]# Open current branch's MR in web browser (on Gitlab)[/dim]

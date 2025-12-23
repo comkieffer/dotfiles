@@ -1,0 +1,10 @@
+Git Rebase Aliases
+
+Interactive rebase helpers with autosquash and autostash.
+
+[bold green]$[/bold green] [bold]git frbi[/bold]                 [dim]# Pick parent commit for rebase (uses fzf)[/dim]
+[bold green]$[/bold green] [bold]git apply-fixup[/bold]          [dim]# Rebase to merge-base with master/main[/dim]
+
+Both commands use [bold cyan]--autosquash[/bold cyan] to automatically apply fixup commits and [bold cyan]--update-refs[/bold cyan] to update dependent branches.
+
+[bold]See also:[/bold] [bold cyan]git-absorb[/bold cyan] - automatically creates fixup commits for staged changes.
