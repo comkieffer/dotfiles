@@ -13,10 +13,56 @@ from typing import Self
 from functools import lru_cache
 from collections import defaultdict
 
-from rich.panel import Panel
-from rich.console import Console
-from rich.text import Text
-from rich.rule import Rule
+# Detect if rich is available
+try:
+	from rich.panel import Panel
+	from rich.console import Console
+	from rich.text import Text
+	from rich.rule import Rule
+except ImportError:
+	# If rich is not available, use these simpler classes instead. 
+
+	def _strip_markup(text: str) -> str:
+		"""Remove rich markup tags from text."""
+		return re.sub(r'\[/?[^\]]+\]', '', text)
+
+	class Console:
+		def __init__(self, stderr=False):
+			self.file = sys.stderr if stderr else sys.stdout
+
+		def print(self, *args, **kwargs):
+			text = ' '.join(_strip_markup(str(arg)) for arg in args)
+			print(text, file=kwargs.get('file', self.file))
+
+	class Text:
+		def __init__(self):
+			self.parts = []
+
+		def append(self, text, style=None):
+			self.parts.append(str(text))
+
+		def __str__(self):
+			return ''.join(_strip_markup(p) for p in self.parts)
+
+	class Panel:
+		def __init__(self, content, title=None, border_style=None):
+			self.content = str(content)
+			self.title = title
+
+		def __str__(self):
+			lines = []
+			if self.title:
+				lines.append(f"=== {self.title} ===")
+			lines.append(_strip_markup(self.content))
+			lines.append("=" * 40)
+			return '\n'.join(lines)
+
+	class Rule:
+		def __init__(self, title=None):
+			self.title = title
+
+		def __str__(self):
+			return f"--- {self.title} ---\n" if self.title else "-" * 40
 
 
 @dataclass
