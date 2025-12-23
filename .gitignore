@@ -2,5 +2,8 @@
 # You're not getting my shh keys !
 ssh/
 
+# Ignore python virtualenv
+.venv
+
 # Ignore pyinfra logfiles
 pyinfra-*
