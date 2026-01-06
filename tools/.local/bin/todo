@@ -94,7 +94,12 @@ def parse_args() -> argparse.Namespace:
 	subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
 	# List subcommand (default)
-	subparsers.add_parser("list", help="List all TODO items")
+	list_parser = subparsers.add_parser("list", help="List all TODO items")
+	list_parser.add_argument(
+		"project",
+		nargs="?",
+		help="Project name (case-insensitive) or '.' for current project"
+	)
 
 	# Edit subcommand
 	edit_parser = subparsers.add_parser("edit", help="Open a project's ToDo.md file in editor")
@@ -108,6 +113,7 @@ def parse_args() -> argparse.Namespace:
 	# Default to list command if no subcommand specified
 	if args.command is None:
 		args.command = "list"
+		args.project = None
 
 	return args
 
@@ -344,7 +350,16 @@ def main():
 			console.print(f"[red]Error: {e}[/red]", stderr=True)
 			sys.exit(1)
 	else:  # list command
-		todo_files = find_todo_files(args.root_dir)
+
+		# Handle '.' as current project
+		project_name = args.project
+		if project_name == ".":
+			project_name = find_project_path(Path.cwd()).name
+
+		if project_name:
+			todo_files = [find_todo_file_for(project_name, args.root_dir)]
+		else:
+			todo_files = find_todo_files(args.root_dir)
 
 		todo_items = []
 		for file in todo_files:
