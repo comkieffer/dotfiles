@@ -17,6 +17,8 @@ regolith.look.path: /usr/share/regolith-look/ayu-dark
 ! Use a Hack font the the bar, this is required for the app icons in the status bar
 wm.bar.font: Hack Nerd Font Propo 10
 
+! wm.bar.status_config $HOME/.config/regolith3/i3status-rust/config.toml
+
 ! Fix fontsize for Gnome-Terminal
 gnome.terminal.font: Hack Nerd Font 10
 
@@ -25,14 +27,11 @@ gnome.terminal.font: Hack Nerd Font 10
 
 ! Clear default keybinds
 
-wm.binding.settings: 
-wm.binding.bluetooth:
-wm.binding.display: 
-wm.binding.wifi:
+! wm.binding.settings:
+! wm.binding.bluetooth:
+! wm.binding.display:
+! wm.binding.wifi:
 
-wm.binding.terminal: 
-wm.binding.browser: 
-wm.binding.files: 
-
-! i3xblocks Configuration
-i3xrocks.value.font: Ubuntu 10
+! wm.binding.terminal:
+! wm.binding.browser:
+! wm.binding.files:
