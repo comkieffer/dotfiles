@@ -317,7 +317,9 @@ def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
 	if len(matches) == 0:
 		raise ValueError(f"No project found matching '{project_name}'")
 	elif len(matches) > 1:
-		raise ValueError(f"Multiple projects found matching '{project_name}': {[str(f) for f in matches]}")
+		# Return the match that is closest to the project root.
+		distance = map(matches, lambda match: len(match.relative_to(project).parents))
+		return sorted(distance)[0]
 
 	return matches[0]
 
