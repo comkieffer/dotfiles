@@ -54,6 +54,13 @@ Show a warning when a command is used instead of an alias/abbreviation in fish.
 
 Run `cdp-cache-refresh refresh` to refresh the projects cache.
 
+### Regolith Session
+
+To better understand the regolith session, look at:
+
+- /usr/bin/regolith-session-wayland
+- /usr/lib/regolith/regolith-session-common.sh
+
 ## Manual Configuration
 
 ### Sublime Text 3
