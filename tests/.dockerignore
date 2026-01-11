@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Git
+.git/
+
+# Logs
+pyinfra-*.log
+
+# Sensitive data
+ssh/

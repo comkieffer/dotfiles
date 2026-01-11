@@ -10,7 +10,8 @@ apt.packages(
     name="Install core tools",
     packages=[
         "curl",
-        "fishgimp",
+        "fish",
+        "gimp",
         "inkscape",
         "stow",
     ],
@@ -67,22 +68,18 @@ apt.packages(
     no_recommends = True,
 )
 
-if not host.get_fact(Which, "bat"):
-    which_batcat = host.get_fact(Which, "batcat")
-    assert which_batcat, "batcat should have been installed with 'bat'"
+# Create symlinks for renamed binaries if they don't already exist
+# Note: In newer Ubuntu versions, bat and fd-find may install directly as bat/fd
+files.link(
+    name="Creating symlink for 'batcat' -> 'bat'",
+    path="/usr/bin/bat",
+    target="/usr/bin/batcat",
+    present=True,
+)
 
-    files.link(
-        name="Creating symlink for 'batcat' -> 'bat'",
-        path="/usr/bin/bat",
-        target=which_batcat,
-    )
-
-if not host.get_fact(Which, "fd"):
-    which_fdfind = host.get_fact(Which, "fdfind")
-    assert which_fdfind, "fdfind should have been installed with 'fd-find'"
-
-    files.link(
-        name="Creating symlink for 'fdfind' -> 'fd'",
-        path="/usr/bin/fd",
-        target=which_fdfind,
-    )
+files.link(
+    name="Creating symlink for 'fdfind' -> 'fd'",
+    path="/usr/bin/fd",
+    target="/usr/bin/fdfind",
+    present=True,
+)

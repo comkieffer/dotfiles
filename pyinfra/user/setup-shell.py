@@ -221,4 +221,4 @@ download_and_install(
     "starship", "starship", asset_matcher="x86_64-unknown-linux-musl.tar.gz$"
 )
 
-download_and_install("ajeetdsouza", "zoxide", asset_matcher="x86_64")
+download_and_install("ajeetdsouza", "zoxide", asset_matcher="x86_64-unknown-linux-musl")

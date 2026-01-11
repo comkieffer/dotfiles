@@ -14,13 +14,15 @@ header() {
 PATH="${HOME}/.local/bin:$PATH"
 
 if ! command -v pipx > /dev/null; then
-	header "Installing pipx ..."
-	sudo apt-get install -yqq pipx
+	header "Installing pipx and Python dependencies ..."
+	sudo apt-get update -qq
+	sudo apt-get install -yqq pipx python3-requests
 fi
 
 if ! command -v pyinfra > /dev/null; then
 	header "Installing pyinfra with pipx ..."
 	pipx install pyinfra
+	pipx inject pyinfra requests
 fi
 
 pyinfra_cmd=$(which pyinfra)

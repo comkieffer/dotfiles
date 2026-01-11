@@ -1,5 +1,5 @@
 from pyinfra import host
-from pyinfra.facts.server import Command
+from pyinfra.facts.server import Which
 from pyinfra.operations import pipx
 
 pipx.packages(
@@ -12,11 +12,10 @@ pipx.packages(
 )
 
 # If helix is installed, install the lsp
-if host.get_fact(Command, "hx --version"):
+if host.get_fact(Which, "hx"):
     pipx.packages(
         name="Install python-lsp",
         packages=[
             "python-lsp-server",
         ],
     )
-
