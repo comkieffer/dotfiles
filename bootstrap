@@ -5,7 +5,7 @@ set -e # Exit on error
 header() {
 	echo ""
 	echo "#"
-	echo "# $@"
+	echo "# $*"
 	echo "#"
 	echo ""
 }
@@ -18,17 +18,9 @@ if ! command -v pipx > /dev/null; then
 	sudo apt-get install -yqq pipx
 fi
 
-if ! [ -f .venv/bin/python ]; then
-	header "Creating python virtual environment for pyinfra ..."
-	python3 -m venv .venv
-fi
-
-header "Activating virtual environment ..."
-. .venv/bin/activate
-
 if ! command -v pyinfra > /dev/null; then
-	header "Installing pyinfra into venv ..."
-	.venv/bin/python -m pip install pyinfra
+	header "Installing pyinfra with pipx ..."
+	pipx install pyinfra
 fi
 
 pyinfra_cmd=$(which pyinfra)
@@ -36,7 +28,7 @@ cd pyinfra
 
 (
 	header "Installing core packages as root ..."
-	sudo ${pyinfra_cmd} -y @local install-core-packages.py
+	sudo "${pyinfra_cmd}" -y @local install-core-packages.py
 
 	header "Setting up user tools (no root)..."
 	pyinfra -y @local setup-user.py

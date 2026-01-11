@@ -21,11 +21,11 @@ The `./install` script (Python) wraps GNU Stow with custom rules defined in `STO
 
 ### System Provisioning
 The `bootstrap` script sets up the system using pyinfra:
-1. Creates a Python venv at `.venv/`
-2. Installs pyinfra into the venv
+1. Installs pipx (if not already available)
+2. Installs pyinfra using pipx
 3. Runs pyinfra scripts from `pyinfra/` directory
 
-Pyinfra scripts handle package installation and system configuration.
+Pyinfra scripts handle package installation and system configuration. Python tools are installed using pipx (see `pyinfra/user/install-python-tools.py`).
 
 ### Reminder System
 Reminder files in `tools/.local/share/reminders/` use a specific format:
