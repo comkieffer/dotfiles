@@ -23,7 +23,7 @@ focus_obsidian() {
     swaymsg "[con_id=$container_id]" focus
 }
 
-IFS=$'\t' read -r workspace container_id < <(find_obsidian)
+IFS=$'\t' read -r workspace container_id < <(find_obsidian) || true
 
 if [ -n "$workspace" ] && [ -n "$container_id" ]; then
     # Obsidian is already running
@@ -38,7 +38,7 @@ else
     # Wait for the Obsidian window to appear (with timeout)
     for i in {1..20}; do
         sleep 0.5
-        IFS=$'\t' read -r workspace container_id < <(find_obsidian)
+        IFS=$'\t' read -r workspace container_id < <(find_obsidian) || true
         if [ -n "$workspace" ] && [ -n "$container_id" ]; then
             echo "Obsidian window appeared on workspace: $workspace"
             focus_obsidian "$workspace" "$container_id"
