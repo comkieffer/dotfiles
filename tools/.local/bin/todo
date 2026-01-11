@@ -65,6 +65,10 @@ except ImportError:
 			return f"--- {self.title} ---\n" if self.title else "-" * 40
 
 
+# ============================================================================
+# Data Structures
+# ============================================================================
+
 @dataclass
 class ToDoItem:
 	text: str
@@ -75,47 +79,35 @@ class ToDoItem:
 	def project(self) -> str:
 		return self.project_path.name
 
-def parse_args() -> argparse.Namespace:
-	"""Parse command line arguments.
+
+# ============================================================================
+# Utility Functions
+# ============================================================================
+
+def path_with_tilde(path: Path) -> str:
+	"""Convert a path to use ~ for home directory.
+
+	Args:
+		path: Path to convert.
 
 	Returns:
-		Parsed arguments including subcommand and options.
+		String representation with ~ if under home directory.
 	"""
-	parser = argparse.ArgumentParser(
-		description="Find and display TODO items from ToDo.md files"
-	)
-	parser.add_argument(
-		"-d", "--root-dir",
-		default=".",
-		type=Path,
-		help="Root directory to search for ToDo.md files (default: current directory)"
-	)
+	try:
+		home = Path.home()
+		return f"~/{path.relative_to(home)}"
+	except ValueError:
+		return str(path)
 
-	subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-	# List subcommand (default)
-	list_parser = subparsers.add_parser("list", help="List all TODO items")
-	list_parser.add_argument(
-		"project",
-		nargs="?",
-		help="Project name (case-insensitive) or '.' for current project"
-	)
+def to_title_case(msg: str) -> str:
+	"""Convert a string to title case, replacing hyphens and underscores with spaces."""
+	return string.capwords(msg.replace('-', ' ').replace('_', ' '))
 
-	# Edit subcommand
-	edit_parser = subparsers.add_parser("edit", help="Open a project's ToDo.md file in editor")
-	edit_parser.add_argument(
-		"project",
-		help="Project name (case-insensitive) or '.' for current project"
-	)
 
-	args = parser.parse_args()
-
-	# Default to list command if no subcommand specified
-	if args.command is None:
-		args.command = "list"
-		args.project = None
-
-	return args
+# ============================================================================
+# Command Execution
+# ============================================================================
 
 def run(command: list[str]) -> str | None:
 	"""Execute a shell command and handle errors.
@@ -149,6 +141,42 @@ def run(command: list[str]) -> str | None:
 
 	return retval.stdout
 
+
+# ============================================================================
+# Project/Git Operations
+# ============================================================================
+
+@lru_cache
+def find_project_path(file: Path) -> Path:
+	"""
+	Given a file path, find the root of the project it belongs to.
+
+	A project is a git repository, so the project is the closest git root.
+
+	Args:
+		file: Path to file or directory.
+
+	Returns:
+		Project root path.
+	"""
+	file_dir = file.parent if file.is_file() else file
+
+	result = subprocess.run(
+		["git", "-C", str(file_dir), "rev-parse", "--show-toplevel"],
+		capture_output=True,
+		text=True
+	)
+
+	if result.returncode == 0:
+		return Path(result.stdout.strip())
+
+	return file_dir
+
+
+# ============================================================================
+# File Operations
+# ============================================================================
+
 def find_todo_files(root_dir: Path) -> list[Path]:
 	"""Find all ToDo.md files recursively in the given directory.
 
@@ -168,6 +196,38 @@ def find_todo_files(root_dir: Path) -> list[Path]:
 
 	# Filter out archived directories
 	return [f for f in files if "_archived" not in str(f)]
+
+
+def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
+	"""Find the ToDo.md file for a project by name (case-insensitive).
+
+	Args:
+		project_name: Project name to search for (case-insensitive).
+		root_dir: Root directory to search from.
+
+	Returns:
+		Path to the project's ToDo.md file.
+
+	Raises:
+		ValueError: If no matching project or multiple matches found.
+	"""
+	todo_files = find_todo_files(root_dir)
+	matches = []
+
+	for file in todo_files:
+		project_path = find_project_path(file)
+
+		if project_path.name.lower() == project_name.lower():
+			matches.append(file)
+
+	if len(matches) == 0:
+		raise ValueError(f"No project found matching '{project_name}'")
+	elif len(matches) > 1:
+		# Return the match that is closest to the project root.
+		matches.sort(key=lambda match: len(match.relative_to(project_path).parents))
+		return matches[0]
+
+	return matches[0]
 
 
 def extract_todo_entries(file: Path) -> list[ToDoItem]:
@@ -251,82 +311,9 @@ def extract_todo_entries(file: Path) -> list[ToDoItem]:
 	return todo_items
 
 
-@lru_cache
-def find_project_path(file: Path) -> Path:
-	"""
-	Given a file path, find the root of the project it belongs to.
-
-	A project is a git repository, so the project is the closest git root.
-
-	Args:
-		file: Path to file or directory.
-
-	Returns:
-		Project root path.
-	"""
-	file_dir = file.parent if file.is_file() else file
-
-	result = subprocess.run(
-		["git", "-C", str(file_dir), "rev-parse", "--show-toplevel"],
-		capture_output=True,
-		text=True
-	)
-
-	if result.returncode == 0:
-		return Path(result.stdout.strip())
-
-	return file_dir
-
-def path_with_tilde(path: Path) -> str:
-	"""Convert a path to use ~ for home directory.
-
-	Args:
-		path: Path to convert.
-
-	Returns:
-		String representation with ~ if under home directory.
-	"""
-	try:
-		home = Path.home()
-		return f"~/{path.relative_to(home)}"
-	except ValueError:
-		return str(path)
-
-def to_title_case(msg: str) -> str:
-	return string.capwords(msg.replace('-', ' ').replace('_', ' '))
-
-
-def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
-	"""Find the ToDo.md file for a project by name (case-insensitive).
-
-	Args:
-		project_name: Project name to search for (case-insensitive).
-		root_dir: Root directory to search from.
-
-	Returns:
-		Path to the project's ToDo.md file.
-
-	Raises:
-		ValueError: If no matching project or multiple matches found.
-	"""
-	todo_files = find_todo_files(root_dir)
-	matches = []
-
-	for file in todo_files:
-		project_path = find_project_path(file)
-
-		if project_path.name.lower() == project_name.lower():
-			matches.append(file)
-
-	if len(matches) == 0:
-		raise ValueError(f"No project found matching '{project_name}'")
-	elif len(matches) > 1:
-		# Return the match that is closest to the project root.
-		matches.sort(key=lambda match: len(match.relative_to(project_path).parents))
-		return matches[0]
-
-	return matches[0]
-
+# ============================================================================
+# Editor Operations
+# ============================================================================
 
 def open_in_editor(file: Path) -> None:
 	"""Open a file in the default editor.
@@ -336,6 +323,58 @@ def open_in_editor(file: Path) -> None:
 	"""
 	editor = os.environ.get('EDITOR', 'nano')
 	subprocess.run([editor, str(file)])
+
+
+# ============================================================================
+# CLI Interface
+# ============================================================================
+
+def parse_args() -> argparse.Namespace:
+	"""Parse command line arguments.
+
+	Returns:
+		Parsed arguments including subcommand and options.
+	"""
+	parser = argparse.ArgumentParser(
+		description="Find and display TODO items from ToDo.md files"
+	)
+	parser.add_argument(
+		"-d", "--root-dir",
+		default=".",
+		type=Path,
+		help="Root directory to search for ToDo.md files (default: current directory)"
+	)
+
+	subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+	# List subcommand (default)
+	list_parser = subparsers.add_parser("list", help="List all TODO items")
+	list_parser.add_argument(
+		"project",
+		nargs="?",
+		help="Project name (case-insensitive) or '.' for current project"
+	)
+
+	# Edit subcommand
+	edit_parser = subparsers.add_parser("edit", help="Open a project's ToDo.md file in editor")
+	edit_parser.add_argument(
+		"project",
+		help="Project name (case-insensitive) or '.' for current project"
+	)
+
+	args = parser.parse_args()
+
+	# Default to list command if no subcommand specified
+	if args.command is None:
+		args.command = "list"
+		args.project = None
+
+	return args
+
+
+# ============================================================================
+# Main Entry Point
+# ============================================================================
 
 
 def main():
