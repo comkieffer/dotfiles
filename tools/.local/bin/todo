@@ -163,7 +163,9 @@ def find_todo_files(root_dir: Path) -> list[Path]:
 	output = run(["fd", "-t", "f", "-i", "ToDo.md", str(root_dir)])
 	if output is None:
 		return []
-	files = [Path(f) for f in output.splitlines() if len(f) > 0]
+
+	files = [Path(f).absolute() for f in output.splitlines() if len(f) > 0]
+
 	# Filter out archived directories
 	return [f for f in files if "_archived" not in str(f)]
 
@@ -251,9 +253,10 @@ def extract_todo_entries(file: Path) -> list[ToDoItem]:
 
 @lru_cache
 def find_project_path(file: Path) -> Path:
-	"""Find the project root path for a file.
+	"""
+	Given a file path, find the root of the project it belongs to.
 
-	Uses git repository root if in a git repo, otherwise the parent directory.
+	A project is a git repository, so the project is the closest git root.
 
 	Args:
 		file: Path to file or directory.
@@ -310,16 +313,17 @@ def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
 	matches = []
 
 	for file in todo_files:
-		project = find_project_path(file).name
-		if project.lower() == project_name.lower():
+		project_path = find_project_path(file)
+
+		if project_path.name.lower() == project_name.lower():
 			matches.append(file)
 
 	if len(matches) == 0:
 		raise ValueError(f"No project found matching '{project_name}'")
 	elif len(matches) > 1:
 		# Return the match that is closest to the project root.
-		distance = map(matches, lambda match: len(match.relative_to(project).parents))
-		return sorted(distance)[0]
+		matches.sort(key=lambda match: len(match.relative_to(project_path).parents))
+		return matches[0]
 
 	return matches[0]
 
