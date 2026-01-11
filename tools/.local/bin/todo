@@ -349,8 +349,11 @@ def main():
 			todo_file = find_todo_file_for(project_name, args.root_dir)
 			open_in_editor(todo_file)
 		except ValueError as e:
-			console.print(f"[red]Error: {e}[/red]", stderr=True)
+			stderr = Console(stderr=True)
+			stderr.print(f"[red]Error: {e}[/red]")
+
 			sys.exit(1)
+
 	else:  # list command
 
 		# Handle '.' as current project
