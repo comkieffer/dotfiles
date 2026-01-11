@@ -64,6 +64,13 @@ except ImportError:
 		def __str__(self):
 			return f"--- {self.title} ---\n" if self.title else "-" * 40
 
+# Detect if mistune is available for proper markdown parsing
+try:
+	import mistune
+	HAS_MISTUNE = True
+except ImportError:
+	HAS_MISTUNE = False
+
 
 # ============================================================================
 # Data Structures
@@ -73,11 +80,26 @@ except ImportError:
 class ToDoItem:
 	text: str
 	project_path: Path
+	file_path: Path  # Absolute path to the ToDo.md file
 	section: str | None = None
 
 	@property
 	def project(self) -> str:
 		return self.project_path.name
+
+	@property
+	def relative_file_path(self) -> Path:
+		"""Get the file path relative to the project root."""
+		return self.file_path.relative_to(self.project_path)
+
+	@property
+	def folder_name(self) -> str | None:
+		"""Get the name of the folder containing this ToDo file, or None if at project root."""
+		rel_path = self.relative_file_path
+		if len(rel_path.parents) > 1:  # More than just '.'
+			# Get the first directory component
+			return str(rel_path.parent)
+		return None
 
 
 # ============================================================================
@@ -198,18 +220,18 @@ def find_todo_files(root_dir: Path) -> list[Path]:
 	return [f for f in files if "_archived" not in str(f)]
 
 
-def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
-	"""Find the ToDo.md file for a project by name (case-insensitive).
+def find_todo_files_for(project_name: str, root_dir: Path) -> list[Path]:
+	"""Find all ToDo.md files for a project by name (case-insensitive).
 
 	Args:
 		project_name: Project name to search for (case-insensitive).
 		root_dir: Root directory to search from.
 
 	Returns:
-		Path to the project's ToDo.md file.
+		List of paths to the project's ToDo.md files, sorted by depth.
 
 	Raises:
-		ValueError: If no matching project or multiple matches found.
+		ValueError: If no matching project found.
 	"""
 	todo_files = find_todo_files(root_dir)
 	matches = []
@@ -222,16 +244,119 @@ def find_todo_file_for(project_name: str, root_dir: Path) -> Path:
 
 	if len(matches) == 0:
 		raise ValueError(f"No project found matching '{project_name}'")
-	elif len(matches) > 1:
-		# Return the match that is closest to the project root.
-		matches.sort(key=lambda match: len(match.relative_to(project_path).parents))
-		return matches[0]
 
-	return matches[0]
+	# Sort by depth (shallowest first)
+	matches.sort(key=lambda match: len(match.relative_to(find_project_path(match)).parts))
+	return matches
 
 
-def extract_todo_entries(file: Path) -> list[ToDoItem]:
-	"""Extract unchecked top-level todo items from a markdown file.
+def extract_todo_entries_with_mistune(file: Path) -> list[ToDoItem]:
+	"""Extract unchecked top-level todo items using mistune markdown parser.
+
+	Args:
+		file: Path to the ToDo.md file.
+
+	Returns:
+		List of ToDoItem objects.
+	"""
+	project_path = find_project_path(file)
+	todo_items = []
+
+	try:
+		with open(file, 'r') as f:
+			content = f.read()
+	except Exception as e:
+		console = Console(stderr=True)
+		console.print(f"[red]Error reading {file}: {e}[/red]")
+		return []
+
+	# Parse the markdown
+	markdown = mistune.create_markdown(renderer='ast')
+	ast = markdown(content)
+
+	# Track current section as we traverse
+	current_section = None
+	min_indent = None
+
+	def extract_text(node):
+		"""Recursively extract text from a node."""
+		if isinstance(node, str):
+			return node
+		if isinstance(node, dict):
+			if node.get('type') == 'text':
+				return node.get('raw', '')
+			children = node.get('children', [])
+			return ''.join(extract_text(child) for child in children)
+		if isinstance(node, list):
+			return ''.join(extract_text(item) for item in node)
+		return ''
+
+	def process_list_items(items, depth=0):
+		"""Process list items recursively."""
+		nonlocal min_indent
+
+		for item in items:
+			if not isinstance(item, dict):
+				continue
+
+			# Check if this is a task list item (checkbox)
+			is_checked = item.get('checked', None)
+
+			if is_checked is not None:  # It's a checkbox item
+				# Skip completed items
+				if is_checked:
+					continue
+
+				# First checkbox sets the baseline
+				if min_indent is None:
+					min_indent = depth
+
+				# Only include top-level items
+				if depth <= min_indent:
+					text = extract_text(item.get('children', [])).strip()
+					if text:
+						todo_items.append(ToDoItem(
+							text=text,
+							project_path=project_path,
+							file_path=file,
+							section=current_section
+						))
+
+			# Process nested lists
+			children = item.get('children', [])
+			for child in children:
+				if isinstance(child, dict) and child.get('type') == 'list':
+					process_list_items(child.get('children', []), depth + 1)
+
+	def process_node(node):
+		"""Process AST nodes."""
+		nonlocal current_section
+
+		if isinstance(node, list):
+			for item in node:
+				process_node(item)
+		elif isinstance(node, dict):
+			node_type = node.get('type')
+
+			# Track headings for section names
+			if node_type == 'heading':
+				current_section = extract_text(node.get('children', [])).strip()
+
+			# Process lists that might contain checkboxes
+			elif node_type == 'list':
+				process_list_items(node.get('children', []), 0)
+
+			# Recursively process children
+			children = node.get('children', [])
+			if children:
+				process_node(children)
+
+	process_node(ast)
+	return todo_items
+
+
+def extract_todo_entries_with_regex(file: Path) -> list[ToDoItem]:
+	"""Extract unchecked top-level todo items using regex (fallback method).
 
 	Only includes checkboxes that are not children of other checkboxes.
 	Checked items (- [x]) are excluded. Tracks section headers and associates
@@ -306,9 +431,26 @@ def extract_todo_entries(file: Path) -> list[ToDoItem]:
 
 			# Only include checkboxes at or before the minimum indent (top-level items)
 			if indentation_level <= min_indent:
-				todo_items.append(ToDoItem(text=text, project_path=project_path, section=current_section))
+				todo_items.append(ToDoItem(text=text, project_path=project_path, file_path=file, section=current_section))
 
 	return todo_items
+
+
+def extract_todo_entries(file: Path) -> list[ToDoItem]:
+	"""Extract unchecked top-level todo items from a markdown file.
+
+	Uses mistune if available, otherwise falls back to regex parsing.
+
+	Args:
+		file: Path to the ToDo.md file.
+
+	Returns:
+		List of ToDoItem objects.
+	"""
+	if HAS_MISTUNE:
+		return extract_todo_entries_with_mistune(file)
+	else:
+		return extract_todo_entries_with_regex(file)
 
 
 # ============================================================================
@@ -389,8 +531,9 @@ def main():
 			if project_name == ".":
 				project_name = find_project_path(Path.cwd()).name
 
-			todo_file = find_todo_file_for(project_name, args.root_dir)
-			open_in_editor(todo_file)
+			todo_files = find_todo_files_for(project_name, args.root_dir)
+			# If multiple files, open the one at the project root (first in sorted list)
+			open_in_editor(todo_files[0])
 		except ValueError as e:
 			stderr = Console(stderr=True)
 			stderr.print(f"[red]Error: {e}[/red]")
@@ -405,7 +548,7 @@ def main():
 			project_name = find_project_path(Path.cwd()).name
 
 		if project_name:
-			todo_files = [find_todo_file_for(project_name, args.root_dir)]
+			todo_files = find_todo_files_for(project_name, args.root_dir)
 		else:
 			todo_files = find_todo_files(args.root_dir)
 
@@ -417,11 +560,13 @@ def main():
 			console.print("[dim]No todo items found[/dim]")
 			return
 
-		# Group by project, then by section within each project
-		by_project = defaultdict(lambda: defaultdict(list))
+		# Group by project, then by folder, then by section
+		by_project = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 		project_paths = {}
+
 		for item in todo_items:
-			by_project[item.project][item.section].append(item.text)
+			folder = item.folder_name or ""  # Empty string for root-level todos
+			by_project[item.project][folder][item.section].append(item.text)
 			project_paths[item.project] = item.project_path
 
 		# Print ToDo items
@@ -429,17 +574,37 @@ def main():
 			project_path = path_with_tilde(project_paths[project])
 			console.print(f"\n  [bold cyan]{to_title_case(project)}[/bold cyan]    [dim]{project_path}[/dim]")
 
-			sections = by_project[project]
-			# Show items without a section first (directly under project)
-			if None in sections:
-				for todo in sections[None]:
-					console.print(f"    • {todo}")
+			folders = by_project[project]
 
-			# Show items grouped by section
-			for section in sorted([s for s in sections.keys() if s is not None]):
-				console.print(f"    [yellow]{section}[/yellow]")
-				for todo in sections[section]:
-					console.print(f"      • {todo}")
+			# Show root-level items first (folder = "")
+			if "" in folders:
+				sections = folders[""]
+				# Show items without a section first
+				if None in sections:
+					for todo in sections[None]:
+						console.print(f"    • {todo}")
+
+				# Show items grouped by section
+				for section in sorted([s for s in sections.keys() if s is not None]):
+					console.print(f"    [yellow]{section}[/yellow]")
+					for todo in sections[section]:
+						console.print(f"      • {todo}")
+
+			# Show items grouped by folder
+			for folder in sorted([f for f in folders.keys() if f != ""]):
+				console.print(f"    [magenta]{folder}[/magenta]")
+				sections = folders[folder]
+
+				# Show items without a section
+				if None in sections:
+					for todo in sections[None]:
+						console.print(f"      • {todo}")
+
+				# Show items grouped by section within this folder
+				for section in sorted([s for s in sections.keys() if s is not None]):
+					console.print(f"      [yellow]{section}[/yellow]")
+					for todo in sections[section]:
+						console.print(f"        • {todo}")
 
 if __name__ == "__main__":
 	with suppress(KeyboardInterrupt):
