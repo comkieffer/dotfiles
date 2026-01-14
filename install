@@ -134,9 +134,6 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 
     g_targets_processed.append(target)
 
-    if "post_install" in config:
-        subprocess.run(config["post_install"], shell=True, check=True)
-
     # Note: Universal newlines tells python to use the default system encoding for the
     # stdout/stderr messages
     command = ["stow", "--target", expanduser("~"), "--restow", target]
@@ -158,7 +155,7 @@ def action(name: str) -> Generator[None, None, None]:
         print(" \033[31mFAIL\033[0m")
         print(str(errmsg))
         sys.exit(-1)
-    
+
     print(" \033[32mOK\033[0m")
 
 if __name__ == "__main__":
@@ -208,7 +205,6 @@ if __name__ == "__main__":
         else:
             print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
 
-
     # Create all the required directories before running
     for dir in [Path(p) for p in REQUIRED_DIRS]:
         if not dir.expanduser().is_dir():
@@ -225,9 +221,13 @@ if __name__ == "__main__":
                     with action(f"Creating {dir}"):
                         dir.expanduser().mkdir(exist_ok=True, parents=True)
 
-
     for target in valid_targets:
+        target_properties = STOWED_PROGRAMS[target]
         with action(f"Installing configurations for {target}"):
-            ok, command, errmsg = stow(target, STOWED_PROGRAMS[target])
-        
+            ok, command, errmsg = stow(target, target_properties)
+
+        if post_install := target_properties.get("post_install", None):
+            with action(f"Running {post_install}"):
+                subprocess.run(post_install, shell=True, check=True)
+
     sys.exit(0)
