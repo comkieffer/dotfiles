@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Check if fzf is installed
+if ! command -v fzf &> /dev/null
+then
+    echo "fzf could not be found. Please install fzf before running this script."
+    exit 1
+fi
+
+# Check if the current directory is a Git repository
+if ! git rev-parse --is-inside-work-tree &> /dev/null
+then
+    echo "Current directory is not a Git repository."
+    exit 1
+fi
+
+git_files=$(git ls-files)
+
+# Use fzf to select a commit from the Git log
+selected_commit=$(
+  echo "$git_files" | \
+  fzf \
+  --layout=reverse \
+  --border \
+  --border-label="Fuzzy Find Git Log" \
+  --info=default \
+  --ansi \
+  --preview "git log --color=always --abbrev-commit -p -- {}" \
+  --preview-label='[ Diff ]' \
+  --header 'Copies commit hash to clipboard | CTRLC to cancel' \
+  --header-first \
+  --pointer='→' \
+)
+
+# Exit when if no commit is selected 
+if [ -z "$selected_commit" ]; then
+  exit 0
+fi
+
+# Extract the commit hash from the selected line
+commit_hash=$(echo "$selected_commit" | awk '{print $2}')
+
+# Copy the commit hash to the clipboard (Linux and macOS)
+if [ "$(uname)" == "Darwin" ]; then
+    echo -n "$commit_hash" | pbcopy
+else
+    echo -n "$commit_hash" | xclip -selection clipboard
+fi
+
