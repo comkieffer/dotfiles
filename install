@@ -25,8 +25,12 @@ import sys
 
 from os.path import expanduser
 from collections.abc import Iterable
+from contextlib import contextmanager
 from pathlib import Path
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
+
+if TYPE_CHECKING:
+    from typing import Generator
 
 
 class ProgramConfiguration(TypedDict, total=False):
@@ -130,9 +134,6 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 
     g_targets_processed.append(target)
 
-    if "post_install" in config:
-        subprocess.run(config["post_install"], shell=True, check=True)
-
     # Note: Universal newlines tells python to use the default system encoding for the
     # stdout/stderr messages
     command = ["stow", "--target", expanduser("~"), "--restow", target]
@@ -144,6 +145,18 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 
     return not bool(ret.returncode), " ".join(command), ret.stdout + ret.stderr
 
+@contextmanager
+def action(name: str) -> Generator[None, None, None]:
+    print(f"- {name} ".ljust(60, "."), end="")
+
+    try:
+        yield
+    except Exception as exc:
+        print(" \033[31mFAIL\033[0m")
+        print(str(errmsg))
+        sys.exit(-1)
+
+    print(" \033[32mOK\033[0m")
 
 if __name__ == "__main__":
     valid_targets_msg = f"\nValid targets are: {", ".join(STOWED_PROGRAMS.keys())}"
@@ -192,12 +205,11 @@ if __name__ == "__main__":
         else:
             print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
 
-
     # Create all the required directories before running
     for dir in [Path(p) for p in REQUIRED_DIRS]:
         if not dir.expanduser().is_dir():
-            print(f"- Creating {dir} ".ljust(60, "."), end="")
-            dir.expanduser().mkdir(parents=True)
+            with action(f"Creating {dir}"):
+                dir.expanduser().mkdir(parents=True)
 
     for target in valid_targets:
         if required_dirs := getattr(target, "create_dirs", None):
@@ -206,19 +218,16 @@ if __name__ == "__main__":
 
             for dir in [Path(p) for p in required_dirs]:
                 if not dir.expanduser().is_dir():
-                    print(f"- Creating {dir} ".ljust(60, "."), end="")
-                    dir.expanduser().mkdir(exist_ok=True, parents=True)
-
+                    with action(f"Creating {dir}"):
+                        dir.expanduser().mkdir(exist_ok=True, parents=True)
 
     for target in valid_targets:
-        print(f"- Installing configurations for {target} ".ljust(60, "."), end="")
-        ok, command, errmsg = stow(target, STOWED_PROGRAMS[target])
-        if not ok:
-            print(" \033[31mFAIL\033[0m")
-            print(f"Error executing: {command}")
-            print(errmsg)
-            sys.exit(-1)
-        else:
-            print(" \033[32mOK\033[0m")
+        target_properties = STOWED_PROGRAMS[target]
+        with action(f"Installing configurations for {target}"):
+            ok, command, errmsg = stow(target, target_properties)
+
+        if post_install := target_properties.get("post_install", None):
+            with action(f"Running {post_install}"):
+                subprocess.run(post_install, shell=True, check=True)
 
     sys.exit(0)
