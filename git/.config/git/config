@@ -145,6 +145,10 @@ path = ~/.config/git/config-work
 	# Automatically create remote tracking branch if required
 	autoSetupRemote = true
 
+	# Should `git fetch`, and `git pull` recusrively fetch into submodules.
+	# `on-demand` updates the submodule if a commit updates the submodule ref.
+	recurseSubmodules = on-demand
+
 [pull]
 	# Rebase local commits on top of fetched branch instead of merging
 	rebase = true
