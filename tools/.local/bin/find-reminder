@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Interactive reminder file selector using fzf
+
+REMINDERS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/reminders"
+
+if [[ ! -d "$REMINDERS_DIR" ]]; then
+    echo "Error: Reminders directory '$REMINDERS_DIR' not found" >&2
+    exit 1
+fi
+
+if ! command -v fzf &> /dev/null; then
+    echo "Error: fzf is not installed or not in PATH" >&2
+    exit 1
+fi
+
+# Find all reminder files and display with fzf
+cd "$REMINDERS_DIR" || exit 1
+
+find . -type f -printf '%f\n' | sort | \
+    fzf --preview 'reminders {}' \
+        --preview-window 'right:60%:wrap' \
+        --header 'Select a reminder to display'
