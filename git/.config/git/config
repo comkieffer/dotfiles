@@ -40,12 +40,38 @@ path = ~/.config/git/config-work
 	# Undo the last commit
 	undo = reset HEAD~1 --mixed
 
+	# Get the default branch name from the remote
+	# origin/HEAD is a symbolic ref that points to the remote's default branch.
+	# This is the tip of the default branch on the remote repository.
+	default-branch = !git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
+
 	# Delete branches that no longer exist on the remote
+	# As an alternative, see: https://github.com/foriequal0/git-trim, git-dmb
 	gone = "!f() \
 		{ \
 			git fetch --all --prune; \
-			git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D; \
+			git branch -vv | awk '/: gone]/ { \
+				if ($1 == \"*\") { \
+					printf \"Warning: Cannot delete current branch: %s\\n\", $2 > \"/dev/stderr\"; \
+				} else if ($1 == \"+\") { \
+					printf \"Warning: Cannot delete worktree branch: %s\\n\", $2 > \"/dev/stderr\"; \
+				} else { \
+					print $1; \
+				} \
+			}' | xargs -r git branch -D; \
 		}; f"
+
+	# Remove branches that have been merged into the default branch, without touching
+	# - the default branch;
+	# - the currently checked out branch ('*');
+	# - any branch that is used in a different worktree ('+');
+	clean = "!f() { \
+		git branch --merged $(git default-branch) \
+		| grep -Fv "$(git default-branch)" \
+		| grep -Fv '*' \
+		| grep -Fv '+' \
+		| xargs -n 1 git branch -d  \
+	}; f"
 
 	# Pick the parent commit for an interactive rebase.
 	# Note: --update-refs is only available in git > 2.38
@@ -55,11 +81,10 @@ path = ~/.config/git/config-work
 				$(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; \
 		}; f"
 
-	# Perform interactive rebase up to the merge base with master
+	# Perform interactive rebase up to the merge base with the default branch
 	apply-fixup = "!f() \
 		{ \
-			master_branch=$(git branch -l | grep -e master -e main | sed 's/*//'); \
-			merge_base=$(git merge-base --fork-point $master_branch HEAD | cut -c 1-7); \
+			merge_base=$(git merge-base --fork-point $(git default-branch) HEAD | cut -c 1-7); \
 			if [ -z \"${merge_base}\" ]; then \
 				echo \"Unable to locate merge base for the current branch.\"; \
 				exit 1; \
