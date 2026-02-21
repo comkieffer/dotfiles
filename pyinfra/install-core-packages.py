@@ -14,6 +14,7 @@ apt.packages(
         "gimp",
         "inkscape",
         "stow",
+        "gammastep",
     ],
     no_recommends=True,
 )

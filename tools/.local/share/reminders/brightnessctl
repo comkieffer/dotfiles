@@ -1,0 +1,15 @@
+Brightness Control
+
+The [bold cyan]brightnessctl[/bold cyan] command controls screen backlight brightness.
+
+[bold green]$[/bold green] [bold]brightnessctl[/bold]                [dim]# Show current brightness[/dim]
+[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]50%[/yellow]      [dim]# Set to 50%[/dim]
+[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]+10%[/yellow]     [dim]# Increase by 10%[/dim]
+[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]10%-[/yellow]     [dim]# Decrease by 10%[/dim]
+[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]5000[/yellow]     [dim]# Set to absolute value[/dim]
+
+[bold]Devices:[/bold]
+[bold green]$[/bold green] [bold]brightnessctl --list[/bold]        [dim]# List all controllable devices[/dim]
+[bold green]$[/bold green] [bold]brightnessctl -d[/bold] [yellow]kbd_backlight[/yellow] [bold]set[/bold] [yellow]50%[/yellow]  [dim]# Control keyboard backlight[/dim]
+
+[dim]Brightness changes are immediate and don't require sudo (udev rules handle permissions).[/dim]

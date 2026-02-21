@@ -1,0 +1,13 @@
+Toggle Night Light
+
+The [bold cyan]toggle-night-light[/bold cyan] command manages gammastep, which adjusts screen color temperature on Wayland to reduce eye strain.
+
+[bold green]$[/bold green] [bold]toggle-night-light[/bold]                       [dim]# Toggle night light on/off (default)[/dim]
+[bold green]$[/bold green] [bold]toggle-night-light toggle[/bold]                [dim]# Explicitly toggle on/off[/dim]
+[bold green]$[/bold green] [bold]toggle-night-light status[/bold]                [dim]# Show current status[/dim]
+[bold green]$[/bold green] [bold]toggle-night-light set-temperature[/bold] [yellow]3500[/yellow]  [dim]# Set temperature (1000-10000K)[/dim]
+
+[dim]Lower temperatures (1000-3000K) are warmer/redder, higher (4000-10000K) are cooler/bluer.[/dim]
+
+[bold]Configuration:[/bold]
+Edit [cyan]~/.config/gammastep/config.ini[/cyan] to set persistent temperature and location settings.
