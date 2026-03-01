@@ -60,13 +60,14 @@ if status is-interactive
     if type -q fzf
         bind \ez 'commandline -r "zq"; commandline -f execute'
     end
+
+    # Show reminders only in interactive shells
+    if type -q reminders
+        reminders
+    end
 end
 
 alias dotfiles "git --git-dir=$HOME/dev/personal/homedir --work-tree=$HOME"
 
 # Show the wifi password for the current network
 alias wifi 'nmcli dev wifi show-password'
-
-if type -q reminders
-    reminders
-end
