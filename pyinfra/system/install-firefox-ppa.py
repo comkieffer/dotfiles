@@ -1,3 +1,4 @@
+import textwrap
 from io import StringIO
 
 from pyinfra import host
@@ -14,17 +15,15 @@ if "firefox" in host.get_fact(SnapPackages):
 
     files.put(
         name="Use firefox from ppa",
-        src=StringIO(
-            """
-Package: *
-Pin: release o=LP-PPA-mozillateam
-Pin-Priority: 1001
+        src=StringIO(textwrap.dedent("""\
+            Package: *
+            Pin: release o=LP-PPA-mozillateam
+            Pin-Priority: 1001
 
-Package: firefox
-Pin: version 1:1snap*
-Pin-Priority: -1
-            """
-        ),
+            Package: firefox
+            Pin: version 1:1snap*
+            Pin-Priority: -1
+            """)),
         dest="/etc/apt/preferences.d/mozilla-firefox",
     )
 

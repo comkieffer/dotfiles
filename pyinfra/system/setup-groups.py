@@ -20,3 +20,7 @@ add_to_group("tch", "dialout")
 # Add user to video group for brightness control
 # Required for lightctl/brightnessctl to access /sys/class/backlight/*/brightness
 add_to_group("tch", "video")
+
+# Add user to docker group
+# Required for sudo-less use of docker
+add_to_group("tch", "docker")
