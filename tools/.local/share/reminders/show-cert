@@ -1,0 +1,9 @@
+Certificate Viewer
+
+The [bold cyan]show-cert[/bold cyan] command downloads and displays the TLS certificate for a given host.
+
+[bold green]$[/bold green] [bold]show-cert[/bold] [yellow]example.com[/yellow]              [dim]# Connect on default port 443[/dim]
+[bold green]$[/bold green] [bold]show-cert[/bold] [yellow]example.com:8443[/yellow]         [dim]# Connect on a custom port[/dim]
+[bold green]$[/bold green] [bold]show-cert[/bold] [yellow]https://example.com[/yellow]      [dim]# URL prefixes are stripped automatically[/dim]
+
+Output is paged with [bold]bat[/bold] if available, otherwise [bold]less[/bold].
