@@ -34,6 +34,8 @@ symbol = "docker "
 [golang]
 symbol = "go "
 
+[jobs]
+
 [memory_usage]
 symbol = "memory "
 
