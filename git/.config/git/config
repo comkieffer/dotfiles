@@ -117,6 +117,10 @@ path = ~/.config/git/config-work
 	# Helpers for Sublime Merge
 	open-terminal = "!f() { x-terminal-emulator; }; f"
 
+	# Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
+    dlog = -c diff.external=difft log --ext-diff
+    dshow = -c diff.external=difft show --ext-diff
+    ddiff = -c diff.external=difft diff
 
 [init]
 	# Use 'master' as the default branch name for new repositories
