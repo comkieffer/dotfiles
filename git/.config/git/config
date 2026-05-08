@@ -122,15 +122,41 @@ path = ~/.config/git/config-work
 	# Use 'master' as the default branch name for new repositories
 	defaultBranch = master
 
+[commit]
+	# Show full diff in commit editor
+	verbose = true
+
 [diff]
-	wsErrorHighlight = all # Show whitespace changes in diffs
+	# Better default algorithm that groups changes in more logical way than the
+	# default algorithm (myers)
+	algorithm = histogram
+
 	# Highlight changed words in diffs (not just changed lines)
 	colorWords = true
+
+	# Highlight lines that were moved differently than lines that were added or
+	# deleted
+	colorMoved = true
+
+	# In the diff header, instead of a/ and b/, show i/ (index), w/ (working
+	# directory), or c/ (commit).
+	mnemonicPrefix = true
+
 	# Treat punctuation/operators as separate units for granular code diff highlighting
 	wordRegex = \\w+|.
 
+	# Show whitespace changes in diffs
+	wsErrorHighlight = all
+
 	# Use difftastic as the default diff tool.
 	external = difft
+
+[fetch]
+	prune = true
+	pruneTags = true
+
+[help]
+	autocorrect = prompt
 
 [push]
 	# What should `git push` do if no refspec is given.
@@ -157,6 +183,11 @@ path = ~/.config/git/config-work
 	# Automatically force-update any branches that point to commits that are being
 	# rebased.
 	updateRefs = true
+
+[tag]
+	# Treat dotted version numbers as a series of integer values.
+	# This makes them sort in the expected order (0.5.101 < 0.5.1000)
+	sort = version:refname
 
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
