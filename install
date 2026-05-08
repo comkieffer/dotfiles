@@ -79,7 +79,22 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
         # Ensure that the list of plugins is up-to-date
         "post_install": [
             "fish -c 'fisher update'"
+        ],
+        "recommended-binaries": [
+            "atuin",
+            "bat",
+            "direnv",
+            "exa",
+            "fzf",
+            "git",
+            "hx",
+            "jq",
+            "just",
+            "ssh-agent",
+            "starship",
+            "zoxide",
         ]
+
     },
     "git": {},
     "gdb": {},
@@ -229,5 +244,11 @@ if __name__ == "__main__":
         if post_install := target_properties.get("post_install", None):
             with action(f"Running {post_install}"):
                 subprocess.run(post_install, shell=True, check=True)
+
+        if recommended_binaries := target_properties.get("recommended-binaries"):
+            print("Checking status of recommended binaries ...")
+            for binary in recommended_binaries:
+                status = "\033[32mFOUND\033[0m" if is_installed(binary) else "\033[31mMISSING\033[0m"
+                print(f"  {binary} ".ljust(60, ".") + f" {status}")
 
     sys.exit(0)
