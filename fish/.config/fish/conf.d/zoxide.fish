@@ -8,8 +8,11 @@
 #
 # Provides the `z` command to navigate the directory tree
 
-if status is-interactive
-    if type -q zoxide;
-        zoxide init fish | source
+if status is-interactive; and type -q zoxide;
+    zoxide init fish | source
+
+    # Bind Alt-z to run interactive zoxide query with fzf
+    if type -q fzf
+        bind \ez 'commandline -r "zq"; commandline -f execute'
     end
 end

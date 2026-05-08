@@ -56,11 +56,6 @@ if status is-interactive
         end
     end
 
-    # Bind Alt-z to run interactive zoxide query with fzf
-    if type -q fzf
-        bind \ez 'commandline -r "zq"; commandline -f execute'
-    end
-
     # Show reminders only in interactive shells
     if type -q reminders
         reminders
