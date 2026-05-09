@@ -68,6 +68,9 @@ for_window [class="Popsicle"] floating enable
 for_window [class= "Solaar"] floating enable
 for_window [class="^Steam" title="^Steam - News"] floating enable
 
+# For Inkscape
+for_window [class="org.inkscape.Inkscape" title="^(?!.*- Inkscape$).*$"] floating_enable
+
 # Development Things
 for_window [instance="__main__.py"] floating enable
 for_window [title=".*__float__.*"] floating enable
