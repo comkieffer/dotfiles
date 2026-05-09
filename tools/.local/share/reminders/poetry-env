@@ -12,17 +12,3 @@ Inspect and manage your Poetry environment and dependencies.
 [dim]# Environment information[/dim]
 [bold green]$[/bold green] [bold]poetry env info[/bold]                    [dim]# Show environment information[/dim]
 [bold green]$[/bold green] [bold]poetry env info --path[/bold]             [dim]# Show virtual environment path[/dim]
-[bold green]$[/bold green] [bold]poetry env list[/bold]                    [dim]# List available virtual environments[/dim]
-
-[dim]# Validation and debugging[/dim]
-[bold green]$[/bold green] [bold]poetry check[/bold]                       [dim]# Validate pyproject.toml structure[/dim]
-[bold green]$[/bold green] [bold]poetry debug info[/bold]                  [dim]# Show Poetry configuration and system info[/dim]
-[bold green]$[/bold green] [bold]poetry debug resolve[/bold]               [dim]# Debug dependency resolution[/dim]
-
-[dim]# Configuration[/dim]
-[bold green]$[/bold green] [bold]poetry config --list[/bold]               [dim]# Show all configuration settings[/dim]
-[bold green]$[/bold green] [bold]poetry config[/bold] [yellow]key value[/yellow]          [dim]# Set configuration option[/dim]
-
-[bold]Key files:[/bold]
-[cyan]pyproject.toml[/cyan] - Project metadata and dependencies
-[cyan]poetry.lock[/cyan] - Locked versions for reproducible installs
