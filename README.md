@@ -4,15 +4,28 @@ Configuration files for my Linux systen(s). Tools
 
 ## Installation
 
-Run the bootstrap script to install the required dependencies
+On a clean machine, run:
+
+```console
+curl -fsSL https://raw.githubusercontent.com/comkieffer/dotfiles/master/bootstrap-install | sh
+```
+
+This installs `git`, `stow`, and `python3` if missing, clones the repo to `~/dev/personal/dotfiles`, and runs `./install all`.
+
+To install dotfiles for a specific tool on an already-cloned repo, use `./install` directly:
+
+```console
+./install all        # install everything
+./install fish git   # install specific configs
+```
+
+To set up the full system (packages, user tools), run the pyinfra bootstrap:
 
 ```console
 ./bootstrap
 ```
 
-This will run the installers to set up the system. Future runs, can use the commands in the `justfile` directly.
-
-To actually install the dotfiles for a specific tool, use `./install`.
+Future runs can use the commands in the `justfile` directly.
 
 ## Tool Setup
 

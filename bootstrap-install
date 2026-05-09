@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+DOTFILES_REPO="https://github.com/comkieffer/dotfiles.git"
+DOTFILES_DIR="${HOME}/dev/personal/dotfiles"
+
+if ! command -v git > /dev/null || ! command -v stow > /dev/null || ! command -v python3 > /dev/null; then
+    sudo apt-get update -qq
+    sudo apt-get install -yqq git stow python3
+fi
+
+if [ ! -d "$DOTFILES_DIR" ]; then
+    mkdir -p "$(dirname "$DOTFILES_DIR")"
+    git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+fi
+
+cd "$DOTFILES_DIR"
+./install all
