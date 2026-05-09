@@ -1,0 +1,15 @@
+---
+git:
+  pagers:
+    # Multiple pagers are supported; cycle through them with the | key.
+
+    # --line-numbers renders file hyperlinks in the diff to jump to that
+    # location in the code.
+    - pager: |
+        delta --dark --paging=never --line-numbers --hyperlinks
+          --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+
+    # Some diff tools can't work as a simple pager like the ones above do,
+    # because they need access to the entire diff, so just post-processing
+    # git's diff is not enough for them.
+    - externalDiffCommand: difft --color=always
