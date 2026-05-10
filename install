@@ -404,11 +404,15 @@ if __name__ == "__main__":
                                     ctx.set_status("FAILED", color="\033[31m")
 
             else:
-                print("Checking status of recommended binaries ...")
-                for binary in recommended_binaries:
-                    indicator = "\033[32mFOUND\033[0m" if is_installed(binary) else "\033[31mMISSING\033[0m"
-                    print(f"  {binary} ".ljust(60, ".") + f" {indicator}")
-
-
+                with action("Checking status of recommended binaries", parent=root_ctx, container=True) as install_ctx:
+                    for binary in recommended_binaries:
+                        binary, min_version = split_version_from_name(binary)
+                        with action(f"Checking {binary}", parent=install_ctx) as ctx:
+                            if not is_installed(binary):
+                                ctx.set_status("MISSING", "\033[31m")
+                            elif min_version is not None and not package_satisfies(binary, min_version):
+                                ctx.set_status("WRONG VER", "\033[33m")
+                            else:
+                                ctx.set_status("FOUND", "\033[32m")
 
     sys.exit(0)
