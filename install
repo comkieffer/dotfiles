@@ -224,25 +224,56 @@ def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
 class ActionContext:
     def __init__(self, parent: ActionContext | None = None) -> None:
         self._status: str | None = None
-        self._log: list[str] = []
+        self._line_open: bool = False
         self.depth: int = parent.depth + 1 if parent else 0
 
-    def set_status(self, message: str, color: str = "\033[32m", log: str | list[str] | None = None) -> None:
+    def set_status(self, message: str, color: str = "\033[32m") -> None:
         self._status = f"{color}{message}\033[0m"
-        if log is not None:
-            self.set_log(log)
 
+    def _break_line(self) -> None:
+        if self._line_open:
+            print()
+            self._line_open = False
 
-    def set_log(self, log: str | list[str]) -> None:
-        if isinstance(log, str):
-            log = [log]
+    def log_info(self, message: str) -> None:
+        self._break_line()
+        print(textwrap.indent(message, "  " * (self.depth + 2)))
 
-        self._log = log or []
+    def log_warning(self, message: str) -> None:
+        self._break_line()
+        print("\033[33m" + textwrap.indent(message, "  " * (self.depth + 2)) + "\033[0m")
+
+    def log_error(self, message: str) -> None:
+        self._break_line()
+        print("\033[31m" + textwrap.indent(message, "  " * (self.depth + 2)) + "\033[0m")
 
 @contextmanager
 def action(name: str, parent: ActionContext | None = None, container: bool = False) -> Generator[ActionContext, None, None]:
+    """
+    Context manager to show status for an action.
+
+    Example:
+
+        Do action A ...................... OK
+        Do action B ...................... FAILED
+
+    The context manager can be nested to represent groups of actions (container=True)
+
+        Do action group ..................
+          Do thing that might fail ....... FAILED
+          Do thing that worked ........... OK
+
+        with action("Do action group", container=True) as root:
+            with action("Do thing that might fail", parent=root):
+                pass
+
+            with action("Do thing that worked", parent=root):
+                pass
+    """
     ctx = ActionContext(parent)
-    print(f"{'  '  * ctx.depth}- {name} ".ljust(60, "."), end=None if container else "", flush=True)
+    print(f"{'  '  * ctx.depth}- {name} ".ljust(60, "."), end="\n" if container else "", flush=True)
+
+    ctx._line_open = not container
 
     caught: Exception | None = None
     try:
@@ -252,11 +283,12 @@ def action(name: str, parent: ActionContext | None = None, container: bool = Fal
 
     if not container:
         default = "\033[31mFAIL\033[0m" if caught else "\033[32mOK\033[0m"
-        print(f" {ctx._status or default}")
-
-    if ctx._log:
-        for line in ctx._log:
-            print("  " * (ctx.depth + 2), line)
+        status_str = ctx._status or default
+        if ctx._line_open:
+            print(f" {status_str}")
+        else:
+            print("  " * (ctx.depth + 2) + status_str)
+        ctx._line_open = False
 
     if caught:
         if not ctx._status:
@@ -304,9 +336,8 @@ if __name__ == "__main__":
                 if is_installed(executable_name) or args.force:
                     valid_targets.append(target)
                 else:
-                    ctx.set_status("SKIP", color="\033[34m", log=f"Skipping <{target}>, <{executable_name}> is not in $PATH")
-
-
+                    ctx.log_info(f"Skipping <{target}>, <{executable_name}> is not in $PATH")
+                    ctx.set_status("SKIP", color="\033[34m")
         else:
             print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
 
@@ -334,7 +365,7 @@ if __name__ == "__main__":
         if post_install := target_properties.get("post_install", None):
             with action(f"Running {" ".join(post_install)}", parent=root_ctx) as ctx:
                 ret = subprocess.run(post_install, shell=True, text=True, check=True, capture_output=True)
-                ctx.set_log(ret.stdout.strip().splitlines())
+                ctx.log_info(ret.stdout.strip())
 
         if recommended_binaries := target_properties.get("recommended_binaries"):
             if args.install_recommends:
@@ -346,9 +377,9 @@ if __name__ == "__main__":
                             else:
                                 status, msg = install_binary(binary, candidate_paths)
                                 if not status:
-                                    ctx.set_status("FAILED", color="\033[31m", log=msg)
-
-
+                                    if msg:
+                                        ctx.log_error(msg)
+                                    ctx.set_status("FAILED", color="\033[31m")
 
             else:
                 print("Checking status of recommended binaries ...")
