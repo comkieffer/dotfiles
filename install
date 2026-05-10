@@ -89,16 +89,14 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
         "recommended_binaries": {
             "atuin": (),
             "bat": ("/usr/bin/bat", "/usr/bin/batcat"),
-            "direnv": (),
-            "exa": (),
-            "fzf": (),
-            "git": (),
-            "hx": (),
-            "jq": (),
-            "just": (),
-            "ssh-agent": (),
-            "starship": (),
-            "zoxide": (),
+            "direnv": ("/usr/bin/direnv"),
+            "exa": ("/usr/bin/exa"),
+            "fzf": ("/usr/bin/fzf"),
+            "hx": ("/usr/bin/helix"),
+            "jq": ("/usr/bin/jq"),
+            "just": ("/usr/bin/just", "ubi://casey/just"),
+            "starship": ("ubi:starship/starship"),
+            "zoxide": ("ubi:ajeetdsouza/zoxide"),
         }
 
     },
@@ -171,6 +169,10 @@ def install_package_for_ubuntu(package_name: str) -> bool:
     ok, _ = run_cmd("apt-get", "-yqq", "install", package_name)
     return ok
 
+def install_package_with_ubi(package_name: str) -> bool:
+    status, msg = run_cmd("ubi", "--project", package_name)
+    return status, msg
+
 def install_package(file: str) -> bool:
     _, distribution = run_cmd("lsb_release", "--id", "--short")
 
@@ -191,14 +193,34 @@ def find_package_for_file(file: str) -> str | None:
     return finders_per_distro[distribution](file)
 
 
-def install_binary(executable: str, paths: tuple[str, ...]) -> tuple[bool, str | None]:
-    # TODO: warn if we are not root and cannot install things
+def install_binary(ctx: ActionContext, executable: str, paths: tuple[str, ...]) -> bool:
     for exe_path in paths:
-        if package_name := find_package_for_file(exe_path):
-            if install_package(package_name):
-                return True, None
-            else:
-                return False, f"Unable to install package {package_name} for '{exe_path}'"
+        if "://" in exe_path:
+            protocol, path = exe_path.split("://", maxsplit=1)
+            match protocol:
+                case "ubi":
+                    if not is_installed("ubi"):
+                        ctx.log_warning(f"'ubi' is not installed, skipping {exe_path}")
+                        continue
+
+                    if install_package_with_ubi(path):
+                        return True
+
+                    ctx.log_warning(f"Unable to install '{path}' with ubi.")
+                case _:
+                    ctx.log_error(f"Unsupported protocol '{protocol}' for '{exe_path}'")
+        else:
+            # If there isn't a protocol, we assume that this is just a file path
+            if package_name := find_package_for_file(exe_path):
+                # TODO: warn if we are not root and cannot install things
+                if install_package(package_name):
+                    return True
+                else:
+                    ctx.log_error(f"Unable to install package {package_name} for '{exe_path}'")
+                    return False
+
+        ctx.log_error(f"Unable to install {executable}")
+        return False
 
     return False, f"Unable to find a package for {executable}"
 
