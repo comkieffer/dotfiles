@@ -20,6 +20,7 @@ USAGE:
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 import textwrap
@@ -150,6 +151,49 @@ def is_installed(executable: str) -> bool:
     )
     return not bool(ret.returncode)
 
+def split_version_from_name(package_name) -> tuple[str, tuple[int, ...] | None]:
+    min_version = None
+    if ">=" in package_name:
+        package_name, min_version_str = package_name.split(">=", maxsplit=1)
+        min_version = tuple(int(x) for x in min_version_str.split("."))
+
+    return package_name, min_version
+
+
+def version_satisfies(installed: tuple[int, ...], min: tuple[int, ...]) -> bool:
+    n = max(len(installed), len(min))
+    return installed + (0,) * (n - len(installed)) >= min + (0,) * (n - len(min))
+
+def parse_version_for_executable(executable: str) -> tuple[int, ...] | None:
+    # Need to run in shell so that $PATH is properly resolved (I think)
+    status = subprocess.run(f"{executable} --version", capture_output=True, text=True, shell=True)
+    if m := re.search(r"\d+\.\d+(?:\.\d+)?", status.stdout or ""):
+        return tuple(int(x) for x in m.group().split("."))
+
+    return None
+
+def package_satisfies_with_apt(package_name: str, min_version: tuple[int, ...]) -> bool:
+    ok, stdout = run_cmd("apt", "policy", package_name)
+    assert ok, "apt policy failed."
+
+    if m := re.search(r"Candidate:\s*(\d+\.\d+(?:\.\d+)?)", stdout):
+        package_version = tuple(int(x) for x in m.group(1).split("."))
+
+        return version_satisfies(package_version, min_version)
+
+    assert False, "The regex should have matched."
+
+
+def package_satisfies(package_name: str, min_version: tuple[int, ...]) -> bool:
+    _, distribution = run_cmd("lsb_release", "--id", "--short")
+
+    package_version_info_per_distro = {
+        "Ubuntu": package_satisfies_with_apt,
+    }
+
+    return package_version_info_per_distro[distribution](package_name, min_version)
+
+
 def find_package_for_file_on_ubuntu(file: str) -> str | None:
     packages = []
     _, output = run_cmd("apt-file", "find", file)
@@ -170,8 +214,8 @@ def install_package_for_ubuntu(package_name: str) -> bool:
     return ok
 
 def install_package_with_ubi(package_name: str) -> bool:
-    status, msg = run_cmd("ubi", "--project", package_name)
-    return status, msg
+    status, _ = run_cmd("ubi", "--project", package_name)
+    return status
 
 def install_package(file: str) -> bool:
     _, distribution = run_cmd("lsb_release", "--id", "--short")
@@ -193,17 +237,27 @@ def find_package_for_file(file: str) -> str | None:
     return finders_per_distro[distribution](file)
 
 
-def install_binary(ctx: ActionContext, executable: str, paths: tuple[str, ...]) -> bool:
+def install_binary(ctx: ActionContext, executable: str, min_version: tuple[int, ...] | None, paths: tuple[str, ...]) -> bool:
     for exe_path in paths:
         if "://" in exe_path:
             protocol, path = exe_path.split("://", maxsplit=1)
             match protocol:
                 case "ubi":
+                    # When installing with `ubi` we can't check the version ahead of
+                    # time, we can only check the version after the fact.
                     if not is_installed("ubi"):
                         ctx.log_warning(f"'ubi' is not installed, skipping {exe_path}")
                         continue
 
                     if install_package_with_ubi(path):
+                        installed_version = parse_version_for_executable(path)
+                        if not version_satisfies(installed_version, min_version):
+                            ctx.log_warning(
+                                f"Version of {executable} installed with ubi "
+                                f"({installed_version}) does not stasify requirement "
+                                f"({min_version})"
+                            )
+
                         return True
 
                     ctx.log_warning(f"Unable to install '{path}' with ubi.")
@@ -212,17 +266,24 @@ def install_binary(ctx: ActionContext, executable: str, paths: tuple[str, ...]) 
         else:
             # If there isn't a protocol, we assume that this is just a file path
             if package_name := find_package_for_file(exe_path):
-                # TODO: warn if we are not root and cannot install things
-                if install_package(package_name):
-                    return True
+                if min_version and not package_satisfies(package_name, min_version):
+                    ctx.log_warning(
+                        f"Version of {executable} in distribution repos does not match "
+                        "version requirement."
+                    )
                 else:
-                    ctx.log_error(f"Unable to install package {package_name} for '{exe_path}'")
-                    return False
+                    # TODO: warn if we are not root and cannot install things
+                    if install_package(package_name):
+                        return True
+                    else:
+                        ctx.log_error(f"Unable to install package {package_name} for '{exe_path}'")
+                        return False
 
         ctx.log_error(f"Unable to install {executable}")
         return False
 
-    return False, f"Unable to find a package for {executable}"
+    ctx.log_error(f"Unable to find a package for {executable}")
+    return False
 
 def stow(target: str, config: ProgramConfiguration) -> tuple[bool, str, str]:
     global g_targets_processed
@@ -249,13 +310,17 @@ class ActionContext:
         self._line_open: bool = False
         self.depth: int = parent.depth + 1 if parent else 0
 
-    def set_status(self, message: str, color: str = "\033[32m") -> None:
-        self._status = f"{color}{message}\033[0m"
+    def set_status(self, message: str, color: str = "\033[32m", reason: str = "") -> None:
+        self._status = f"{color}{message}\033[0m {reason}"
 
     def _break_line(self) -> None:
         if self._line_open:
             print()
             self._line_open = False
+
+    def log_debug(self, message: str) -> None:
+        self._break_line()
+        print(textwrap.indent(message, "  " * (self.depth + 2)))
 
     def log_info(self, message: str) -> None:
         self._break_line()
@@ -393,15 +458,12 @@ if __name__ == "__main__":
             if args.install_recommends:
                 with action("Installing recommended binaries", parent=root_ctx, container=True) as install_ctx:
                     for binary, candidate_paths in recommended_binaries.items():
+                        binary, min_version = split_version_from_name(binary)
                         with action(f"Installing {binary}", parent=install_ctx) as ctx:
                             if is_installed(binary):
-                                ctx.set_status("PRESENT", color="\033[32m")
-                            else:
-                                status, msg = install_binary(binary, candidate_paths)
-                                if not status:
-                                    if msg:
-                                        ctx.log_error(msg)
-                                    ctx.set_status("FAILED", color="\033[31m")
+                                ctx.set_status("SKIPPED", color="\033[32m", reason="(PRESENT)")
+                            elif not install_binary(ctx, binary, min_version, candidate_paths):
+                                ctx.set_status("FAILED", color="\033[31m")
 
             else:
                 with action("Checking status of recommended binaries", parent=root_ctx, container=True) as install_ctx:
