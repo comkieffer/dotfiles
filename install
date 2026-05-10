@@ -95,7 +95,7 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
             "fzf": ("/usr/bin/fzf"),
             "hx": ("/usr/bin/helix"),
             "jq": ("/usr/bin/jq"),
-            "just": ("/usr/bin/just", "ubi://casey/just"),
+            "just>=1.30": ("/usr/bin/just", "ubi://casey/just"),
             "starship": ("ubi:starship/starship"),
             "zoxide": ("ubi:ajeetdsouza/zoxide"),
         }
