@@ -7,3 +7,7 @@ ssh/
 
 # Ignore pyinfra logfiles
 pyinfra-*
+
+# Ignore sources, and build outputs from build scripts
+tool-builder/tool-srcs/
+tool-builder/build/

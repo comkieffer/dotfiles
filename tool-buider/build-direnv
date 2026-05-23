@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="v2.36.0"
+
+# shellcheck source=lib/stdlib
+source "$(dirname "${BASH_SOURCE[0]}")/lib/stdlib"
+
+"$TOOL_BUILDER_DIR/lib/build-with-go" \
+    --repo    "https://github.com/direnv/direnv.git" \
+    --version "$VERSION" \
+    --out     "$(bin_dir)/direnv" \
+    --ldflags "-X main.version=$VERSION"

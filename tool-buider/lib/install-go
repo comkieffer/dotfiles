@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GO_VERSION="1.24.3"
+
+# shellcheck source=lib/stdlib
+source "$(dirname "${BASH_SOURCE[0]}")/stdlib"
+
+detect_arch
+GO_ARCH="$(go_arch)"
+GO_DIR="$(build_dir)/go"
+GO_BIN="$GO_DIR/bin/go"
+
+echo "==> install-go: target $GO_DIR (Go $GO_VERSION, linux/$GO_ARCH)"
+
+if [[ -x "$GO_BIN" ]]; then
+    installed="$("$GO_BIN" version | grep -oP 'go\K[0-9.]+')"
+    if [[ "$installed" == "$GO_VERSION" ]]; then
+        echo "==> Go $GO_VERSION already installed, nothing to do"
+        exit 0
+    fi
+    echo "==> Found existing local Go $installed, replacing with $GO_VERSION"
+fi
+
+tarball="go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
+url="https://dl.google.com/go/$tarball"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+echo "==> Downloading $url"
+curl -fsSL "$url" -o "$tmpdir/$tarball"
+
+echo "==> Downloading checksum"
+curl -fsSL "$url.sha256" -o "$tmpdir/$tarball.sha256"
+
+echo "==> Verifying checksum"
+echo "$(cat "$tmpdir/$tarball.sha256")  $tmpdir/$tarball" | sha256sum --check --status
+echo "==> Checksum OK"
+
+echo "==> Extracting to $GO_DIR"
+rm -rf "$GO_DIR"
+mkdir -p "$(dirname "$GO_DIR")"
+tar -C "$(dirname "$GO_DIR")" -xzf "$tmpdir/$tarball"
+
+echo "==> Done: $("$GO_BIN" version)"

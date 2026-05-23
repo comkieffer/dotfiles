@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Source this file; do not execute it directly.
+
+TOOL_BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+build_dir() { echo "$TOOL_BUILDER_DIR/build"; }
+bin_dir()   { echo "$TOOL_BUILDER_DIR/tools"; }
+src_dir()   { echo "$TOOL_BUILDER_DIR/tools-srcs/$1"; }
+
+# Sets ARCH to uname -m form (x86_64, aarch64).
+detect_arch() {
+    case "$(uname -m)" in
+        x86_64|aarch64) ARCH="$(uname -m)" ;;
+        *) echo "Unsupported architecture: $(uname -m)" >&2; return 1 ;;
+    esac
+}
+
+# Maps ARCH to Go's naming convention (amd64, arm64).
+go_arch() {
+    case "$ARCH" in
+        x86_64)  echo "amd64" ;;
+        aarch64) echo "arm64" ;;
+    esac
+}
+
+# Clone a repo at a specific tag, or fetch+checkout if already cloned.
+fetch_or_clone() {
+    local repo="$1" version="$2" dir="$3"
+    if [[ -d "$dir/.git" ]]; then
+        echo "==> Fetching $version into $dir"
+        git -C "$dir" fetch --depth=1 origin "refs/tags/$version"
+        git -C "$dir" checkout FETCH_HEAD
+    else
+        echo "==> Cloning $repo ($version) into $dir"
+        git clone --depth=1 --branch "$version" "$repo" "$dir"
+    fi
+}
