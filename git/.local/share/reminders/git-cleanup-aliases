@@ -2,6 +2,6 @@ Git Cleanup Aliases
 
 Undo changes and clean up repository state.
 
-[bold green]$[/bold green] [bold]git undo[/bold]                 [dim]# Undo last commit (keep changes unstaged)[/dim]
-[bold green]$[/bold green] [bold]git gone[/bold]                 [dim]# Delete local branches removed on remote[/dim]
-[bold green]$[/bold green] [bold]git permission-reset[/bold]     [dim]# Reset unstaged permission changes[/dim]
+$ [prgm]git undo[/prgm]                 # Undo last commit (keep changes unstaged)
+$ [prgm]git gone[/prgm]                 # Delete local branches removed on remote
+$ [prgm]git permission-reset[/prgm]     # Reset unstaged permission changes

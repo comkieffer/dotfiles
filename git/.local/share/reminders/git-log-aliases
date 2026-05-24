@@ -2,6 +2,6 @@ Git Log Aliases
 
 View commit history in various formats.
 
-[bold green]$[/bold green] [bold]git ls[/bold]                    [dim]# List recent commits (oneline, colored)[/dim]
-[bold green]$[/bold green] [bold]git ll[/bold]                    [dim]# List commits with file changes[/dim]
-[bold green]$[/bold green] [bold]git lsd[/bold]                   [dim]# Graph view with stats[/dim]
+$ [prgm]git ls[/prgm]                    # List recent commits (oneline, colored)
+$ [prgm]git ll[/prgm]                    # List commits with file changes
+$ [prgm]git lsd[/prgm]                   # Graph view with stats

@@ -63,10 +63,6 @@ Makefile browser. Uses `fzf` to show rules in the makefile.
 
 Show a warning when a command is used instead of an alias/abbreviation in fish.
 
-#### cdo / cdp
-
-Run `cdp-cache-refresh refresh` to refresh the projects cache.
-
 ### Regolith Session
 
 To better understand the regolith session, look at:
