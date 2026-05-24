@@ -1,0 +1,11 @@
+# Poetry - Package Information
+
+Use the [bold cyan]poetry show[/bold cyan] command to view information about installed packages.
+
+[dim]# Viewing installed packages[/dim]
+[bold green]$[/bold green] [bold]poetry show[/bold]                        [dim]# List all installed packages[/dim]
+[bold green]$[/bold green] [bold]poetry show --tree[/bold]                 [dim]# Show dependency tree[/dim]
+
+[dim]# Viewing out-of-date packages[/dim]
+[bold green]$[/bold green] [bold]poetry show --outdated[/bold]             [dim]# Show only outdated packages[/dim]
+[bold green]$[/bold green] [bold]poetry show --latest[/bold]               [dim]# Show latest available versions[/dim]

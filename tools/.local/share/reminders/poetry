@@ -2,18 +2,8 @@ Python Dependency Management
 
 The [bold cyan]poetry[/bold cyan] command manages Python project dependencies and packaging.
 
-[dim]# Project setup[/dim]
-[bold green]$[/bold green] [bold]poetry new[/bold] [yellow]project-name[/yellow]          [dim]# Create new project with structure[/dim]
-[bold green]$[/bold green] [bold]poetry init[/bold]                        [dim]# Initialize poetry in existing project[/dim]
-[bold green]$[/bold green] [bold]poetry install[/bold]                     [dim]# Install dependencies from pyproject.toml[/dim]
 
 [dim]# Common operations[/dim]
 [bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow]               [dim]# Add package to dependencies[/dim]
 [bold green]$[/bold green] [bold]poetry run[/bold] [yellow]python script.py[/yellow]     [dim]# Run command in virtual environment[/dim]
 [bold green]$[/bold green] [bold]poetry shell[/bold]                      [dim]# Activate virtual environment[/dim]
-
-[dim]# Building and publishing[/dim]
-[bold green]$[/bold green] [bold]poetry build[/bold]                       [dim]# Build source and wheel distributions[/dim]
-[bold green]$[/bold green] [bold]poetry publish[/bold]                     [dim]# Publish to PyPI[/dim]
-
-[yellow]See also[/yellow]: [bold]poetry-packages[/bold], [bold]poetry-env[/bold]

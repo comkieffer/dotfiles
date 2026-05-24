@@ -1,0 +1,10 @@
+Poetry - Updating Packages
+
+Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]update[/bold] subcommand to add update depdendencies.
+
+[dim]# Updating dependencies[/dim]
+[bold green]$[/bold green] [bold]poetry update[/bold]                      [dim]# Update all dependencies[/dim]
+[bold green]$[/bold green] [bold]poetry update[/bold] [yellow]package1[/yellow] [cyan]\[package2][/cyan]  [dim]# Update one-or-more packages[/dim]
+
+[dim]# Updating the lockfile[/dim]
+[bold green]$[/bold green] [bold]poetry lock[/bold]                        [dim]# Update poetry.lock without installing[/dim]

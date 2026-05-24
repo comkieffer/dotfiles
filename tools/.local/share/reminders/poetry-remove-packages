@@ -1,0 +1,6 @@
+Poetry - Removing Packages
+
+Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]remove[/bold] subcommand to remove dependencies.
+
+[dim]# Removing dependencies[/dim]
+[bold green]$[/bold green] [bold]poetry remove[/bold] [yellow]package[/yellow]            [dim]# Remove package[/dim]

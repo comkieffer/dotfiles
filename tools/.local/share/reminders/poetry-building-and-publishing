@@ -1,0 +1,15 @@
+Poetry - Building & Publishing
+
+Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]build[/bold] subcommand to build the package, and the [bold]publish[/bold] subcommands to publish it to the package registry.
+
+[dim]# Building a Package[/dim]
+[bold green]$[/bold green] [bold]poetry build[/bold]                       [dim]# Build source and wheel distributions[/dim]
+
+[dim]# Adding a new Publishable Package Registry[/dim]
+[bold green]$[/bold green] [bold]poetry config[/bold] repositories.testpypi https://test.pypi.org/legacy/
+
+[dim]# Authenticating against a registry[/dim]
+[bold green]$[/bold green] [bold]poetry config[/bold] http-basic.foo <username> <password>  [dim]# Credentials stored in system keychain[/dim]
+
+[dim]# Publishing a Package[/dim]
+[bold green]$[/bold green] [bold]poetry publish[/bold]

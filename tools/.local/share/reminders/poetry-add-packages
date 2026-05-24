@@ -1,0 +1,18 @@
+Poetry - Adding Dependencies
+
+Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]add[/bold] subcommand to add new dependencies.
+
+[dim]# Adding dependencies[/dim]
+[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow]
+
+[dim]# Adding dependencies to a group[/dim]
+[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]--group=GROUP_NAME[/yellow] [cyan]package_name[/cyan]
+
+[dim]# Package Sources[/dim]
+
+- A [bold]name[/bold], with an optional constraint ([cyan]requests[/cyan], [cyan]requests@^2.3.0[/cyan])
+- A [bold]git repository[/bold] ([cyan]git+ssh://...[/cyan], [cyan]git+https://...[/cyan])
+- A [bold]revision[/bold] of a git repository ([cyan]git+ss://...#refspec[/cyan])
+- A [bold]wheel[/bold] ([cyan]my-package.whl[/cyan])
+- A [bold]directory[/bold] ([cyan]my-package/[/cyan],
+- A [bold]tarball[/bold] ([cyan]https://.../my-package.tar.gz[/cyan],)
