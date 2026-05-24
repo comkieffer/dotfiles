@@ -8,7 +8,31 @@ file is the title, the rest of the file is the reminder body. Empty lines betwee
 title and the body are ignored. Empty lines in the body are preserved.
 
 If ``rich`` is installed, it is used to print the reminders so rich markup may be used
-in the file. `
+in the file.
+
+# Authoring content
+
+Content is written in rich markup [0] (think old fashion forum formatting codes). If
+the ``rich`` library is installed, it is used to render the markup, otherwise, the tags
+are stripped, and no formatting is applied.
+
+To better suit the use case, some pseudo markup is applied:
+
+- Lines starting with ``$`` are console commands, the ``$`` receives special formatting.
+- ``#`` comments (from ``#`` to end of line) are automatically dimmed.
+- Pseudo-style tags are expanded before rendering:
+  - ``[prgm] ... [/prgm]`` → bold (program name)
+  - ``[arg] ... [/arg]`` → cyan (flag or argument name)
+  - ``[arg-value] ... [/arg-value]`` → yellow (argument value)
+
+Use color codes directly to format content.
+
+- Avoid using ``[bold]`` unless you absolutely want to draw attention to a phrase
+- Use `cyan` to make content stand out.
+- Use `magenta` for content that should be more muted (but not invisible)
+- Use `dim` for comments
+
+[0]: https://rich.readthedocs.io/en/stable/markup.html
 """
 
 import argparse
@@ -27,6 +51,7 @@ except ImportError:
 
 try:
     from rich.console import Console
+    from rich.errors import MarkupError
     from rich.padding import Padding
     from rich.panel import Panel
 
@@ -51,6 +76,31 @@ def read_non_empty_line(f: TextIO) -> str:
 def strip_rich_tags(text: str) -> str:
     """Remove Rich markup tags like [bold], [red], [/bold], etc."""
     return re.sub(r'\[/?[^\]]+\]', '', text)
+
+PSEUDO_STYLES = {
+    'prgm': 'bold',
+    'arg': 'cyan',
+    'arg-value': 'yellow',
+}
+
+def expand_pseudo_styles(text: str) -> str:
+    for pseudo, rich_style in PSEUDO_STYLES.items():
+        text = text.replace(f'[{pseudo}]', f'[{rich_style}]')
+        text = text.replace(f'[/{pseudo}]', f'[/{rich_style}]')
+    return text
+
+def format_comments(text: str) -> str:
+    # (?<!\[) — don't match # inside Rich color tags like [#ff0000]
+    # \s+     — require whitespace before #, so standalone "# heading" lines are left alone
+    # #[^\n]* — the # and everything to end of line (whitespace included in match to preserve spacing)
+    return re.sub(r'(?<!\[)\s+#[^\n]*', lambda m: f'[dim]{m.group()}[/dim]', text)
+
+def format_shell_lines(text: str) -> str:
+    lines = text.split('\n')
+    return '\n'.join(
+        '[bold green]$[/bold green]' + line[1:] if line.startswith('$') else line
+        for line in lines
+    )
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments.
@@ -94,15 +144,18 @@ def main() -> None:
 
     with selected_reminder.open("r") as f:
         reminder_title = read_non_empty_line(f)
-        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip()
+        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip('\n')
 
+    reminder_contents = expand_pseudo_styles(format_shell_lines(format_comments(reminder_contents)))
 
     if HAS_RICH:
         console = Console()
-
-        panel = Panel(reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1)
-        padded_panel = Padding(panel, (1, 1))
-        console.print(padded_panel)
+        try:
+            panel = Panel(reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1)
+            padded_panel = Padding(panel, (1, 1))
+            console.print(padded_panel)
+        except MarkupError as e:
+            print(f"Markup error in {selected_reminder.name}: {e}", file=sys.stderr)
     else:
         clean_title = strip_rich_tags(reminder_title)
         clean_contents = strip_rich_tags(reminder_contents)
