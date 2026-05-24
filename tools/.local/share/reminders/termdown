@@ -1,13 +1,13 @@
 Terminal Countdown Timer
 
-The [bold cyan]termdown[/bold cyan] command displays a countdown timer in the terminal.
+The [prgm]termdown[/prgm] command displays a countdown timer in the terminal.
 
-[bold green]$[/bold green] [bold]termdown[/bold] [yellow]5m[/yellow]              [dim]# Countdown from 5 minutes[/dim]
-[bold green]$[/bold green] [bold]termdown[/bold] [yellow]10[/yellow]              [dim]# Countdown from 10 seconds[/dim]
+$ [prgm]termdown[/prgm] [arg-value]5m[/arg-value]              # Countdown from 5 minutes
+$ [prgm]termdown[/prgm] [arg-value]10[/arg-value]              # Countdown from 10 seconds
 
 [bold]Output effects[/bold]
 
-[bold green]$[/bold green] [bold]termdown[/bold] [yellow]25m[/yellow] [bold]--blink[/bold]     [dim]# Blink terminal when complete[/dim]
-[bold green]$[/bold green] [bold]termdown[/bold] [yellow]30m[/yellow] [bold]--exec[/bold] [yellow]"notify-send 'Timer done!'"[/yellow]  [dim]# Execute command when complete[/dim]
+$ [prgm]termdown[/prgm] [arg-value]25m[/arg-value] [arg]--blink[/arg]     # Blink terminal when complete
+$ [prgm]termdown[/prgm] [arg-value]30m[/arg-value] [arg]--exec[/arg] [arg-value]"notify-send 'Timer done!'"[/arg-value]  # Execute command when complete
 
 [dim]Press Ctrl+C to cancel the countdown. Supports time formats: s (seconds), m (minutes), h (hours).[/dim]

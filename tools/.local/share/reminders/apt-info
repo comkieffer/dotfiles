@@ -1,0 +1,6 @@
+APT - Package Information
+
+Use [prgm]apt show[/prgm] and [prgm]apt-cache[/prgm] to inspect packages.
+
+$ [prgm]apt show[/prgm] [arg-value]package[/arg-value]                  # Show detailed package info
+$ [prgm]apt-cache policy[/prgm] [arg-value]package[/arg-value]          # Show available versions and sources

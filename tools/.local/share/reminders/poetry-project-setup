@@ -1,10 +1,12 @@
 Poetry - Project Setup
 
-Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]add[/bold] subcommand to add new dependencies.
+Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use the [prgm]add[/prgm] subcommand to add new dependencies.
 
-[dim]# Create a new project[/dim]
-[bold green]$[/bold green] [bold]poetry new[/bold] [yellow]project-name[/yellow]            [dim]# Create new project at <project-name>[/dim]
-[bold green]$[/bold green] [bold]poetry init[/bold]                        [dim]# Create a basic pyproject.toml in the current directory[/dim]
+Create a new project
 
-[dim]# Installing an existing project[/dim]
-[bold green]$[/bold green] [bold]poetry install[/bold]                     [dim]# Install dependencies, and entrypoints, from pyproject.toml[/dim]
+$ [prgm]poetry new[/prgm] [arg-value]project-name[/arg-value]            # Create new project at <project-name>
+$ [prgm]poetry init[/prgm]                        # Create a basic pyproject.toml in the current directory
+
+Installing an existing project
+
+$ [prgm]poetry install[/prgm]                     # Install dependencies, and entrypoints, from pyproject.toml

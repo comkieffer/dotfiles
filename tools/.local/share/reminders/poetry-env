@@ -1,10 +1,12 @@
 Poetry - Environment Inspection
 
-Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]env[/bold] subcommand to explore the [cyan]venv[/cyan].
+Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use the [prgm]env[/prgm] subcommand to explore the [prgm]venv[/prgm].
 
-[dim]# Environment information[/dim]
-[bold green]$[/bold green] [bold]poetry env info[/bold]                    [dim]# Show environment information[/dim]
-[bold green]$[/bold green] [bold]poetry env activate[/bold]                    [dim]# Activate virtualenv[/dim]
+Environment information
 
-[dim]# Configuring virtualenv location[/dim]
-[bold green]$[/bold green] [bold]poetry config[/bold] [cyan]virtualenvs.in-project[/cyan] [yellow]true[/yellow]
+$ [prgm]poetry env info[/prgm]                    # Show environment information
+$ [prgm]poetry env activate[/prgm]                # Activate virtualenv
+
+Configuring virtualenv location
+
+$ [prgm]poetry config[/prgm] [arg-value]virtualenvs.in-project[/arg-value] [arg-value]true[/arg-value]

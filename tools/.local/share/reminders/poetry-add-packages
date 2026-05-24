@@ -1,18 +1,15 @@
 Poetry - Adding Dependencies
 
-Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]add[/bold] subcommand to add new dependencies.
+Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use the [prgm]add[/prgm] subcommand to add new dependencies.
 
-[dim]# Adding dependencies[/dim]
-[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow]
+$ [prgm]poetry add[/prgm] [arg-value]package[/arg-value]
+$ [prgm]poetry add[/prgm] [arg]--group[/arg]=[arg-value]GROUP_NAME[/arg-value] [arg-value]package_name[/arg-value]
 
-[dim]# Adding dependencies to a group[/dim]
-[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]--group=GROUP_NAME[/yellow] [cyan]package_name[/cyan]
+Package Sources
 
-[dim]# Package Sources[/dim]
-
-- A [bold]name[/bold], with an optional constraint ([cyan]requests[/cyan], [cyan]requests@^2.3.0[/cyan])
-- A [bold]git repository[/bold] ([cyan]git+ssh://...[/cyan], [cyan]git+https://...[/cyan])
-- A [bold]revision[/bold] of a git repository ([cyan]git+ss://...#refspec[/cyan])
-- A [bold]wheel[/bold] ([cyan]my-package.whl[/cyan])
-- A [bold]directory[/bold] ([cyan]my-package/[/cyan],
-- A [bold]tarball[/bold] ([cyan]https://.../my-package.tar.gz[/cyan],)
+- A [cyan]name[/cyan], with an optional constraint ([magenta]requests[/magenta], [magenta]requests@^2.3.0[/magenta])
+- A [cyan]git repository[/cyan] ([magenta]git+ssh://...[/magenta], [magenta]git+https://...[/magenta])
+- A [cyan]revision[/cyan] of a git repository ([magenta]git+ssh://...#refspec[/magenta])
+- A [cyan]wheel[/cyan] ([magenta]my-package.whl[/magenta])
+- A [cyan]directory[/cyan] ([magenta]my-package/[/magenta])
+- A [cyan]tarball[/cyan] ([magenta]https://.../my-package.tar.gz[/magenta])

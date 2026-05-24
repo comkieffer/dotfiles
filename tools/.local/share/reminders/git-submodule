@@ -1,0 +1,14 @@
+Git Submodules
+
+Use the [prgm]submodule[/prgm] command in [prgm]git[/prgm] to manage submodules.
+
+Initialising
+
+$ [prgm]git clone[/prgm] [arg]--recurse-submodules[/arg] [arg-value]<url>[/arg-value]           # Clone with submodules
+$ [prgm]git submodule update[/prgm] [arg]--init[/arg] [arg]--recursive[/arg]        # Init after cloning without --recurse-submodules
+
+Updating, Inspecting, & Removing
+
+$ [prgm]git submodule update[/prgm] [arg]--remote[/arg]                   # Fetch and update to latest upstream commit
+$ [prgm]git submodule status[/prgm]                           # Show current commit for each submodule
+$ [prgm]git rm[/prgm] [arg-value]<path>[/arg-value]

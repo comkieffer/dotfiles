@@ -1,0 +1,16 @@
+File Permissions - Octal
+
+Each digit represents user / group / other. r=4, w=2, x=1 — sum for each.
+
+  [arg-value]7[/arg-value]  rwx  read, write, execute
+  [arg-value]6[/arg-value]  rw-  read, write
+  [arg-value]5[/arg-value]  r-x  read, execute
+  [arg-value]4[/arg-value]  r--  read only
+  [arg-value]0[/arg-value]  ---  no permissions
+
+Common values:
+
+  [arg-value]755[/arg-value]  rwxr-xr-x  directories and executables
+  [arg-value]644[/arg-value]  rw-r--r--  regular files
+  [arg-value]600[/arg-value]  rw-------  private files (SSH keys, etc.)
+  [arg-value]700[/arg-value]  rwx------  private directories

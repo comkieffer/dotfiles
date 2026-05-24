@@ -1,0 +1,19 @@
+curl - Common Options
+
+Transfer data with [prgm]curl[/prgm].
+
+$ [prgm]curl[/prgm] [arg]-sLo[/arg] [arg-value]file.zip[/arg-value] [arg-value]https://example.com/file.zip[/arg-value]
+
+Output
+
+  [arg]-o[/arg] [arg-value]file[/arg-value]           save to named file
+  [arg]-O[/arg]                save with remote filename
+  [arg]-s[/arg]                silent — no progress output
+  [arg]-v[/arg]                verbose — show request and response headers
+
+Request
+
+  [arg]-L[/arg]                follow redirects
+  [arg]-I[/arg]                HEAD request (headers only)
+  [arg]-X[/arg] [arg-value]METHOD[/arg-value]         override HTTP method
+  [arg]-H[/arg] [arg-value]"Header: val"[/arg-value]  set a request header

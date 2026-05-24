@@ -1,0 +1,10 @@
+Fish - Fzf Shortcuts
+
+In [prgm]fish[/prgm], use the following shortcuts to spawn an [prgm]fzf[/prgm] picker.
+
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]F[/cyan] (File)      - Search directory
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]L[/cyan] (Log)       - Search git log
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]S[/cyan] (Status)    - Search git status
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]H[/cyan] (History)   - Search history
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]P[/cyan] (Processes) - Search processes
+  [cyan]Ctrl[/cyan] + [cyan]Alt[/cyan] + [cyan]V[/cyan] (Variables) - Search environment variables

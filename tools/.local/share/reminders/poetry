@@ -1,9 +1,0 @@
-Python Dependency Management
-
-The [bold cyan]poetry[/bold cyan] command manages Python project dependencies and packaging.
-
-
-[dim]# Common operations[/dim]
-[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow]               [dim]# Add package to dependencies[/dim]
-[bold green]$[/bold green] [bold]poetry run[/bold] [yellow]python script.py[/yellow]     [dim]# Run command in virtual environment[/dim]
-[bold green]$[/bold green] [bold]poetry shell[/bold]                      [dim]# Activate virtual environment[/dim]

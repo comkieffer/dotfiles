@@ -1,0 +1,10 @@
+Fish - Path Variables
+
+Use the [prgm]set[/prgm] command in fish to create a path variable (colon-delimited).
+
+# Create a path variable
+$ [prgm]set[/prgm] [arg]--path[/arg] [arg-value]<NAME>[/arg-value] [arg-value]<VALUE>[/arg-value]
+
+# Modify a path variable
+$ [prgm]set[/prgm] [arg]--append[/arg] [arg-value]<NAME>[/arg-value] [arg-value]<VALUE>[/arg-value]
+$ [prgm]set[/prgm] [arg]--prepend[/arg] [arg-value]<NAME>[/arg-value] [arg-value]<VALUE>[/arg-value]

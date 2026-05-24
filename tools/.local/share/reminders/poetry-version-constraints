@@ -1,13 +1,15 @@
-Poetry - Verison Constraints
+Poetry - Version Constraints
 
-Manage dependencies in your Python project with [bold]poetry[/bold]. Use version constraints to limit the range of one-or-more dependencies.
+Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use version constraints to limit the range of one-or-more dependencies.
 
-[dim]# Adding dependencies with version constraints[/dim]
-[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow][bold]@[/bold][yellow]^2.0[/yellow]       [dim]# Add with version constraint[/dim]
-[bold green]$[/bold green] [bold]poetry add[/bold] [yellow]package[/yellow][bold]@[/bold][yellow]latest[/yellow]    [dim]# Add latest version[/dim]
+Adding dependencies with version constraints
 
-[bold]Version constraints:[/bold]
-- [cyan]^2.0[/cyan]        Compatible    (>=2.0.0, <3.0.0)
-- [cyan]~2.1[/cyan]        Approximately (>=2.1.0, <2.2.0)
-- [cyan]>=2.0,<3.0[/cyan]  Range
-- [cyan]2.1.3[/cyan]       Exact version
+$ [prgm]poetry add[/prgm] [arg-value]package[/arg-value]@[arg-value]^2.0[/arg-value]       # Add with version constraint
+$ [prgm]poetry add[/prgm] [arg-value]package[/arg-value]@[arg-value]latest[/arg-value]    # Add latest version
+
+Version constraints:
+
+  [cyan]^2.0[/cyan]        Compatible    [magenta](>=2.0.0, <3.0.0)[/magenta]
+  [cyan]~2.1[/cyan]        Approximately [magenta](>=2.1.0, <2.2.0)[/magenta]
+  [cyan]>=2.0,<3.0[/cyan]  Range
+  [cyan]2.1.3[/cyan]       Exact version

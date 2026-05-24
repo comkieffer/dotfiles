@@ -1,0 +1,13 @@
+Fish - Set Variable
+
+Use the [prgm]set[/prgm] command in fish to set, or clear, a variable.
+
+# Set persistent variables
+$ [prgm]set[/prgm] [arg]--universal[/arg]  # --universal immediately available to all fish instances
+
+# Set Transient variables
+$ [prgm]set[/prgm] [arg]-g[/arg]  # --global - visible to all functions in the shell
+$ [prgm]set[/prgm] [arg]-x[/arg]  # --export - visible to child-processes
+
+# Check if a variable is set
+$ [prgm]set[/prgm] [arg]-q[/arg]  # --query

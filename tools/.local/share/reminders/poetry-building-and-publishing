@@ -1,15 +1,13 @@
 Poetry - Building & Publishing
 
-Manage dependencies in your Python project with [bold]poetry[/bold]. Use the [bold]build[/bold] subcommand to build the package, and the [bold]publish[/bold] subcommands to publish it to the package registry.
+Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use the [prgm]build[/prgm] subcommand to build the package, and the [prgm]publish[/prgm] subcommand to publish it to the package registry.
 
-[dim]# Building a Package[/dim]
-[bold green]$[/bold green] [bold]poetry build[/bold]                       [dim]# Build source and wheel distributions[/dim]
+Building & Publishing a Package
 
-[dim]# Adding a new Publishable Package Registry[/dim]
-[bold green]$[/bold green] [bold]poetry config[/bold] repositories.testpypi https://test.pypi.org/legacy/
+$ [prgm]poetry build[/prgm]                       # Build source and wheel distributions
+$ [prgm]poetry publish[/prgm]
 
-[dim]# Authenticating against a registry[/dim]
-[bold green]$[/bold green] [bold]poetry config[/bold] http-basic.foo <username> <password>  [dim]# Credentials stored in system keychain[/dim]
+Adding a new Publishable Package Registry
 
-[dim]# Publishing a Package[/dim]
-[bold green]$[/bold green] [bold]poetry publish[/bold]
+$ [prgm]poetry config[/prgm] [arg-value]repositories.testpypi[/arg-value] [arg-value]https://test.pypi.org/legacy/[/arg-value]
+$ [prgm]poetry config[/prgm] [arg-value]http-basic.foo[/arg-value] [arg-value]<username>[/arg-value] [arg-value]<password>[/arg-value]  # Credentials stored in system keychain

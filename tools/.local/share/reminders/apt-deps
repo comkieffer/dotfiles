@@ -1,0 +1,6 @@
+APT - Dependencies
+
+Use [prgm]apt depends[/prgm] and [prgm]apt rdepends[/prgm] to explore package dependencies.
+
+$ [prgm]apt depends[/prgm] [arg-value]package[/arg-value]               # Show what a package depends on
+$ [prgm]apt rdepends[/prgm] [arg-value]package[/arg-value]              # Show what depends on a package

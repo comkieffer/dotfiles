@@ -1,15 +1,14 @@
 Brightness Control
 
-The [bold cyan]brightnessctl[/bold cyan] command controls screen backlight brightness.
+The [prgm]brightnessctl[/prgm] command controls screen, and keyboard, backlight brightness.
 
-[bold green]$[/bold green] [bold]brightnessctl[/bold]                [dim]# Show current brightness[/dim]
-[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]50%[/yellow]      [dim]# Set to 50%[/dim]
-[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]+10%[/yellow]     [dim]# Increase by 10%[/dim]
-[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]10%-[/yellow]     [dim]# Decrease by 10%[/dim]
-[bold green]$[/bold green] [bold]brightnessctl set[/bold] [yellow]5000[/yellow]     [dim]# Set to absolute value[/dim]
+$ [prgm]brightnessctl[/prgm]                # Show current brightness
+$ [prgm]brightnessctl set[/prgm] [arg-value]50%[/arg-value]        # Set to 50%
+$ [prgm]brightnessctl set[/prgm] [arg-value]+10%[/arg-value]       # Increase by 10%
 
-[bold]Devices:[/bold]
-[bold green]$[/bold green] [bold]brightnessctl --list[/bold]        [dim]# List all controllable devices[/dim]
-[bold green]$[/bold green] [bold]brightnessctl -d[/bold] [yellow]kbd_backlight[/yellow] [bold]set[/bold] [yellow]50%[/yellow]  [dim]# Control keyboard backlight[/dim]
+Devices:
+
+$ [prgm]brightnessctl[/prgm] [arg]--list[/arg]                    # List all controllable devices
+$ [prgm]brightnessctl[/prgm] [arg]-d[/arg] [arg-value]kbd_backlight[/arg-value] [prgm]set[/prgm] [arg-value]50%[/arg-value]  # Control keyboard backlight
 
 [dim]Brightness changes are immediate and don't require sudo (udev rules handle permissions).[/dim]

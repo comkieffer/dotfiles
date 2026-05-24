@@ -1,0 +1,6 @@
+APT - Searching Packages
+
+Use [prgm]apt search[/prgm] to find packages by name or description.
+
+$ [prgm]apt search[/prgm] [arg-value]keyword[/arg-value]                       # Search names and descriptions
+$ [prgm]apt search[/prgm] [arg]--names-only[/arg] [arg-value]keyword[/arg-value]  # Search names only

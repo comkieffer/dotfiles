@@ -1,9 +1,9 @@
 Zq - Quickly jump to a directory
 
-[bold green]$[/bold green] zq dot  [dim]# Open fzf, pre-populated with zoxide query results[/dim]
+$ [prgm]zq[/prgm] [arg-value]dot[/arg-value]  # Open fzf, pre-populated with zoxide query results
 
-Zoxide (aliased to the [dim]z[/dim] command) makes it easy to jump to commomly used directories. If it jumps to the wrong directory, run [dim]z dirname[/dim] again to jump to the next most likely directory.
+[prgm]zoxide[/prgm] (aliased to the [prgm]z[/prgm] command) makes it easy to jump to commonly used directories. If it jumps to the wrong directory, run [prgm]z[/prgm] [arg-value]dirname[/arg-value] again to jump to the next most likely directory.
 
-Alternatively, use the [dim]zq[/dim] function to narrow down the list until a single result is left.
+Alternatively, use the [prgm]zq[/prgm] function to narrow down the list until a single result is left.
 
-For even faster access, use [bold]Alt + Z[/bold] to open [dim]zq[/dim]
+For even faster access, use [bold]Alt + Z[/bold] to open [prgm]zq[/prgm]

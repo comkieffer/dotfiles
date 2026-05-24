@@ -1,0 +1,8 @@
+APT - Finding Files in Packages
+
+Use [prgm]apt-file[/prgm] to search for files across packages.
+
+$ [prgm]apt-file search[/prgm] [arg-value]path[/arg-value]              # Find which package provides a file
+$ [prgm]apt-file list[/prgm] [arg-value]package[/arg-value]             # List all files in a package
+
+[dim]Requires installation and an initial [prgm]apt-file update[/prgm] to build the database.[/dim]

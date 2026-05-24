@@ -1,9 +1,0 @@
-Systemd Journal Viewer
-
-The [bold cyan]journalctl[/bold cyan] command queries and displays logs from systemd's journal.
-
-[dim]# Basic viewing[/dim]
-[bold green]$[/bold green] [bold]journalctl[/bold]                        [dim]# View all journal entries[/dim]
-[bold green]$[/bold green] [bold]journalctl -f[/bold]                     [dim]# Follow journal (like tail -f)[/dim]
-[bold green]$[/bold green] [bold]journalctl -r[/bold]                     [dim]# Reverse order (newest first)[/dim]
-[bold green]$[/bold green] [bold]journalctl -n[/bold] [yellow]50[/yellow]               [dim]# Show last N lines[/dim]

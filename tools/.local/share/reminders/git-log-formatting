@@ -1,0 +1,10 @@
+Git Log - Formatting
+
+$ [prgm]git log[/prgm] [arg]--oneline[/arg] [arg]--graph[/arg] [arg]--decorate[/arg]
+
+  [arg]--oneline[/arg]      one line per commit (short hash + subject)
+  [arg]--graph[/arg]        branch graph in the left margin
+  [arg]--decorate[/arg]     show branch and tag names
+  [arg]--stat[/arg]         show files changed and line counts
+  [arg]--name-only[/arg]    show only changed filenames
+  [arg]-p[/arg]             show full diff
