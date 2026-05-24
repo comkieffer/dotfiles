@@ -7,22 +7,3 @@ The [bold cyan]journalctl[/bold cyan] command queries and displays logs from sys
 [bold green]$[/bold green] [bold]journalctl -f[/bold]                     [dim]# Follow journal (like tail -f)[/dim]
 [bold green]$[/bold green] [bold]journalctl -r[/bold]                     [dim]# Reverse order (newest first)[/dim]
 [bold green]$[/bold green] [bold]journalctl -n[/bold] [yellow]50[/yellow]               [dim]# Show last N lines[/dim]
-
-[dim]# Filter by time[/dim]
-[bold green]$[/bold green] [bold]journalctl --since[/bold] [yellow]"1 hour ago"[/yellow]   [dim]# Entries since time[/dim]
-[bold green]$[/bold green] [bold]journalctl --since[/bold] [yellow]"2024-01-15"[/yellow]   [dim]# Entries since date[/dim]
-[bold green]$[/bold green] [bold]journalctl -b[/bold]                     [dim]# Current boot only[/dim]
-[bold green]$[/bold green] [bold]journalctl -b -1[/bold]                  [dim]# Previous boot[/dim]
-
-[dim]# Filter by unit/service[/dim]
-[bold green]$[/bold green] [bold]journalctl -u[/bold] [yellow]nginx[/yellow]             [dim]# Logs for specific unit[/dim]
-[bold green]$[/bold green] [bold]journalctl -u[/bold] [yellow]nginx[/yellow] [bold]-u[/bold] [yellow]mysql[/yellow]  [dim]# Multiple units[/dim]
-
-[dim]# Filter by priority[/dim]
-[bold green]$[/bold green] [bold]journalctl -p err[/bold]                 [dim]# Errors and above[/dim]
-[bold green]$[/bold green] [bold]journalctl -p warning[/bold]             [dim]# Warnings and above[/dim]
-
-[bold]Common combinations:[/bold]
-[bold green]$[/bold green] [bold]journalctl -u[/bold] [yellow]service[/yellow] [bold]-f[/bold]           [dim]# Follow a specific service[/dim]
-[bold green]$[/bold green] [bold]journalctl -u[/bold] [yellow]service[/yellow] [bold]--since today[/bold] [dim]# Service logs for today[/dim]
-[bold green]$[/bold green] [bold]journalctl -p err -b[/bold]              [dim]# All errors from current boot[/dim]

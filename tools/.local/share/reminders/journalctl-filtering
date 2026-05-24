@@ -1,0 +1,17 @@
+Journalctl - Filtering Logs
+
+The [bold cyan]journalctl[/bold cyan] command queries and displays logs from systemd's journal.
+
+[dim]# Filter by time (relative, or absolute)[/dim]
+[bold green]$[/bold green] [bold]journalctl --since[/bold] [yellow]"1 hour ago"[/yellow]
+
+[dim]# Filter by boot[/dim]
+[bold green]$[/bold green] [bold]journalctl -b[/bold]                     [dim]# Current boot only[/dim]
+[bold green]$[/bold green] [bold]journalctl -b -1[/bold]                  [dim]# Previous boot[/dim]
+
+[dim]# Filter by unit/service[/dim]
+[bold green]$[/bold green] [bold]journalctl -u[/bold] [yellow]nginx[/yellow]             [dim]# Logs for specific unit[/dim]
+
+[dim]# Filter by priority[/dim]
+[bold green]$[/bold green] [bold]journalctl -p err[/bold]
+[bold green]$[/bold green] [bold]journalctl -p warning[/bold]
