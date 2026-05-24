@@ -7,12 +7,26 @@
 #	https://starship.rs/presets/plain-text.html
 #
 
+
+[status]
+disabled = false
+
 [[battery.display]]
 threshold=25
 
+# Git prompt reads: 'on master (at a488cbf) with +597 -72 changes [status]'
+[git_branch]
+symbol = "on "
+format = "[$symbol$branch(:$remote_branch)]($style) "
+
 [git_commit]
-only_detached = false
+format = '[\(at $hash$tag\)]($style) '
+tag_disabled = false
 tag_symbol = " tag "
+
+[git_metrics]
+disabled = false
+format = "with [+$added]($added_style) [-$deleted]($deleted_style) changes "
 
 [git_status]
 staged = "+count "
@@ -27,12 +41,13 @@ symbol = "cmake "
 
 [directory]
 read_only = " ro"
+fish_style_pwd_dir_length = 1
+
+[direnv]
+disabled = false
 
 [docker_context]
 symbol = "docker "
-
-[golang]
-symbol = "go "
 
 [memory_usage]
 symbol = "memory "
@@ -40,15 +55,27 @@ symbol = "memory "
 [meson]
 symbol = "meson "
 
+[package]
+# If the directory builds a _package_, show the current version.
+# Not desireable since this is often redundant with git information.
+disabled = true
+
 [python]
 symbol = "py "
+# python_binary = [['poetry', 'env', 'info', '--executable']]
 
 [rust]
 symbol = "rs "
 
 [sudo]
 disabled = false
-# symbol = "sudo "
+symbol = "sudo "
 
 [time]
 disabled = false
+
+[jobs]
+
+[env_var.FISH_JOB_NAMES]
+format = "[(bg: $env_value)]($style) "
+style = "bold blue"
