@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="18.16.1"
+
+# shellcheck source=lib/stdlib
+source "$(dirname "${BASH_SOURCE[0]}")/lib/stdlib"
+
+"$TOOL_BUILDER_DIR/lib/build-with-rust" \
+    --repo    "https://github.com/atuinsh/atuin.git" \
+    --version "$VERSION" \
+    --out     "$(bin_dir)/atuin"
