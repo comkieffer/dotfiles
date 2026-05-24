@@ -127,6 +127,12 @@ STOWED_PROGRAMS: dict[str, ProgramConfiguration] = {
             "~/.config/regolith3",
         ],
     },
+    "vscode": {
+        "executable": "code",
+        "create_dirs": [
+            "~/.config/Code/User",
+        ],
+    },
     "tools": {
         # These scripts often depend on uv script mode to run
         "executable": "uv",
