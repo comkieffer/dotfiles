@@ -1,0 +1,9 @@
+name="just"
+version="1.51.0"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/casey/just.git" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}

@@ -1,0 +1,9 @@
+name="atuin"
+version="v18.16.1"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/atuinsh/atuin.git" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}

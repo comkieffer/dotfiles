@@ -1,0 +1,10 @@
+name="direnv"
+version="v2.36.0"
+
+build() {
+    build_with_go \
+        --repo    "https://github.com/direnv/direnv.git" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name" \
+        --ldflags "-X main.version=$version"
+}

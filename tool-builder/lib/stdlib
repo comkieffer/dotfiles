@@ -3,9 +3,9 @@
 
 TOOL_BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-build_dir() { echo "$TOOL_BUILDER_DIR/build"; }
+build_dir() { echo "$TOOL_BUILDER_DIR/cache"; }
 bin_dir()   { echo "$TOOL_BUILDER_DIR/tools"; }
-src_dir()   { echo "$TOOL_BUILDER_DIR/tools-srcs/$1"; }
+src_dir()   { echo "$TOOL_BUILDER_DIR/cache/srcs/$1"; }
 
 # Sets ARCH to uname -m form (x86_64, aarch64).
 detect_arch() {
@@ -35,3 +35,9 @@ fetch_or_clone() {
         git clone --depth=1 --branch "$version" "$repo" "$dir"
     fi
 }
+
+# shellcheck source=lib/go.bash
+source "$(dirname "${BASH_SOURCE[0]}")/go.bash"
+
+# shellcheck source=lib/rust.bash
+source "$(dirname "${BASH_SOURCE[0]}")/rust.bash"

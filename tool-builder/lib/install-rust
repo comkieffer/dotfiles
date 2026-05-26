@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUST_VERSION="1.87.0"
+RUST_VERSION="1.95.0"
 
-# shellcheck source=lib/stdlib
+# shellcheck source=tool-builder/lib/stdlib
 source "$(dirname "${BASH_SOURCE[0]}")/stdlib"
 
 detect_arch
+
+# shellcheck disable=SC2155
 export RUSTUP_HOME="$(build_dir)/rustup"
+RUSTUP_BIN="$CARGO_HOME/bin/rustup"
+
+# shellcheck disable=SC2155
 export CARGO_HOME="$(build_dir)/cargo"
 CARGO_BIN="$CARGO_HOME/bin/cargo"
 
 echo "==> install-rust: target $RUSTUP_HOME (Rust $RUST_VERSION, $ARCH)"
 
-if [[ -x "$CARGO_BIN" ]]; then
+if [[ -x "$RUSTUP_BIN" ]]; then
     installed="$("$CARGO_BIN" --version | grep -oP '\K[0-9]+\.[0-9]+\.[0-9]+')"
     if [[ "$installed" == "$RUST_VERSION" ]]; then
         echo "==> Rust $RUST_VERSION already installed"
     else
-        echo "==> Found existing local Rust $installed, replacing with $RUST_VERSION"
+        echo "==> Upgrading Rust $installed -> $RUST_VERSION"
+        "$RUSTUP_BIN" toolchain install "$RUST_VERSION"
+        "$RUSTUP_BIN" default "$RUST_VERSION"
     fi
 else
     rustup_init_url="https://static.rust-lang.org/rustup/dist/${ARCH}-unknown-linux-gnu/rustup-init"
@@ -36,8 +43,5 @@ else
         --default-toolchain "$RUST_VERSION" \
         -y
 fi
-
-echo "==> Adding musl target"
-"$CARGO_HOME/bin/rustup" target add "${ARCH}-unknown-linux-musl"
 
 echo "==> Done: $("$CARGO_BIN" --version)"
