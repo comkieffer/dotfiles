@@ -1,0 +1,16 @@
+name="fish"
+version="4.7.1"
+
+build() {
+    if ! command -v cmake &>/dev/null; then
+        echo "error: cmake is required to build fish (sudo apt install cmake)" >&2
+        return 1
+    fi
+
+    detect_arch
+    build_with_rust \
+        --repo    "https://github.com/fish-shell/fish-shell.git" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name" \
+        --target  "${ARCH}-unknown-linux-gnu"
+}
