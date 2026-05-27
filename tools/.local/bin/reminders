@@ -45,6 +45,7 @@ from typing import TextIO
 
 try:
     import platformdirs
+
     HAS_PLATFORMDIRS = True
 except ImportError:
     HAS_PLATFORMDIRS = False
@@ -73,34 +74,40 @@ def read_non_empty_line(f: TextIO) -> str:
             return line
     return ""
 
+
 def strip_rich_tags(text: str) -> str:
     """Remove Rich markup tags like [bold], [red], [/bold], etc."""
-    return re.sub(r'\[/?[^\]]+\]', '', text)
+    return re.sub(r"\[/?[^\]]+\]", "", text)
+
 
 PSEUDO_STYLES = {
-    'prgm': 'bold',
-    'arg': 'cyan',
-    'arg-value': 'yellow',
+    "prgm": "bold",
+    "arg": "cyan",
+    "arg-value": "yellow",
 }
+
 
 def expand_pseudo_styles(text: str) -> str:
     for pseudo, rich_style in PSEUDO_STYLES.items():
-        text = text.replace(f'[{pseudo}]', f'[{rich_style}]')
-        text = text.replace(f'[/{pseudo}]', f'[/{rich_style}]')
+        text = text.replace(f"[{pseudo}]", f"[{rich_style}]")
+        text = text.replace(f"[/{pseudo}]", f"[/{rich_style}]")
     return text
+
 
 def format_comments(text: str) -> str:
     # (?<!\[) — don't match # inside Rich color tags like [#ff0000]
     # \s+     — require whitespace before #, so standalone "# heading" lines are left alone
     # #[^\n]* — the # and everything to end of line (whitespace included in match to preserve spacing)
-    return re.sub(r'(?<!\[)\s+#[^\n]*', lambda m: f'[dim]{m.group()}[/dim]', text)
+    return re.sub(r"(?<!\[)\s+#[^\n]*", lambda m: f"[dim]{m.group()}[/dim]", text)
+
 
 def format_shell_lines(text: str) -> str:
-    lines = text.split('\n')
-    return '\n'.join(
-        '[bold green]$[/bold green]' + line[1:] if line.startswith('$') else line
+    lines = text.split("\n")
+    return "\n".join(
+        "[bold green]$[/bold green]" + line[1:] if line.startswith("$") else line
         for line in lines
     )
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments.
@@ -114,16 +121,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "file",
         nargs="?",
-        help="Specific reminder file to show (optional, shows random if not specified)"
+        help="Specific reminder file to show (optional, shows random if not specified)",
     )
     return parser.parse_args()
+
 
 def main() -> None:
     args = parse_args()
 
     if not REMINDERS_DIR.is_dir():
         sys.exit(0)
-
 
     reminder_files = [f for f in REMINDERS_DIR.iterdir() if f.is_file()]
     if len(reminder_files) == 0:
@@ -144,14 +151,18 @@ def main() -> None:
 
     with selected_reminder.open("r") as f:
         reminder_title = read_non_empty_line(f)
-        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip('\n')
+        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip("\n")
 
-    reminder_contents = expand_pseudo_styles(format_shell_lines(format_comments(reminder_contents)))
+    reminder_contents = expand_pseudo_styles(
+        format_shell_lines(format_comments(reminder_contents))
+    )
 
     if HAS_RICH:
         console = Console()
         try:
-            panel = Panel(reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1)
+            panel = Panel(
+                reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1
+            )
             padded_panel = Padding(panel, (1, 1))
             console.print(padded_panel)
         except MarkupError as e:
@@ -162,6 +173,7 @@ def main() -> None:
         print(clean_title + "\n\n" + clean_contents)
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     with suppress(KeyboardInterrupt):

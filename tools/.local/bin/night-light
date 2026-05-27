@@ -11,12 +11,7 @@ from rich import print as rprint
 def run(args: list[str], check: bool = True) -> subprocess.CompletedProcess:
     """Run command and return result."""
     try:
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            text=True,
-            check=check
-        )
+        result = subprocess.run(args, capture_output=True, text=True, check=check)
         return result
     except subprocess.CalledProcessError as e:
         rprint(f"[bold red]Error:[/bold red] Command failed: {e}")
@@ -80,7 +75,9 @@ def set_temperature(temperature):
     """
     # Validate range
     if not 1000 <= temperature <= 10000:
-        rprint("[bold red]Error:[/bold red] Temperature must be between 1000 and 10000K")
+        rprint(
+            "[bold red]Error:[/bold red] Temperature must be between 1000 and 10000K"
+        )
         sys.exit(1)
 
     # Stop the service
@@ -93,10 +90,12 @@ def set_temperature(temperature):
             ["gammastep", "-O", str(temperature)],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            start_new_session=True
+            start_new_session=True,
         )
         rprint(f"Temperature set to [cyan]{temperature}[/cyan]K (one-shot mode)")
-        rprint("[dim]Service stopped. Run 'toggle-night-light toggle' to restart normal mode.[/dim]")
+        rprint(
+            "[dim]Service stopped. Run 'toggle-night-light toggle' to restart normal mode.[/dim]"
+        )
     except Exception as e:
         rprint(f"[bold red]Error:[/bold red] Failed to set temperature: {e}")
         sys.exit(1)

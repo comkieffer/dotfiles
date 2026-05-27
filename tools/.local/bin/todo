@@ -9,387 +9,407 @@ import re
 from pathlib import Path
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Self
 from functools import lru_cache
 from collections import defaultdict
 
 # Detect if rich is available
 try:
-	from rich.panel import Panel
-	from rich.console import Console
-	from rich.text import Text
-	from rich.rule import Rule
+    from rich.panel import Panel
+    from rich.console import Console
+    from rich.text import Text
+    from rich.rule import Rule
 except ImportError:
-	# If rich is not available, use these simpler classes instead.
+    # If rich is not available, use these simpler classes instead.
 
-	def _strip_markup(text: str) -> str:
-		"""Remove rich markup tags from text."""
-		return re.sub(r'\[/?[^\]]+\]', '', text)
+    def _strip_markup(text: str) -> str:
+        """Remove rich markup tags from text."""
+        return re.sub(r"\[/?[^\]]+\]", "", text)
 
-	class Console:
-		def __init__(self, stderr=False):
-			self.file = sys.stderr if stderr else sys.stdout
+    class Console:
+        def __init__(self, stderr=False):
+            self.file = sys.stderr if stderr else sys.stdout
 
-		def print(self, *args, **kwargs):
-			text = ' '.join(_strip_markup(str(arg)) for arg in args)
-			print(text, file=kwargs.get('file', self.file))
+        def print(self, *args, **kwargs):
+            text = " ".join(_strip_markup(str(arg)) for arg in args)
+            print(text, file=kwargs.get("file", self.file))
 
-	class Text:
-		def __init__(self):
-			self.parts = []
+    class Text:
+        def __init__(self):
+            self.parts = []
 
-		def append(self, text, style=None):
-			self.parts.append(str(text))
+        def append(self, text, style=None):
+            self.parts.append(str(text))
 
-		def __str__(self):
-			return ''.join(_strip_markup(p) for p in self.parts)
+        def __str__(self):
+            return "".join(_strip_markup(p) for p in self.parts)
 
-	class Panel:
-		def __init__(self, content, title=None, border_style=None):
-			self.content = str(content)
-			self.title = title
+    class Panel:
+        def __init__(self, content, title=None, border_style=None):
+            self.content = str(content)
+            self.title = title
 
-		def __str__(self):
-			lines = []
-			if self.title:
-				lines.append(f"=== {self.title} ===")
-			lines.append(_strip_markup(self.content))
-			lines.append("=" * 40)
-			return '\n'.join(lines)
+        def __str__(self):
+            lines = []
+            if self.title:
+                lines.append(f"=== {self.title} ===")
+            lines.append(_strip_markup(self.content))
+            lines.append("=" * 40)
+            return "\n".join(lines)
 
-	class Rule:
-		def __init__(self, title=None):
-			self.title = title
+    class Rule:
+        def __init__(self, title=None):
+            self.title = title
 
-		def __str__(self):
-			return f"--- {self.title} ---\n" if self.title else "-" * 40
+        def __str__(self):
+            return f"--- {self.title} ---\n" if self.title else "-" * 40
+
 
 # Detect if mistune is available for proper markdown parsing
 try:
-	import mistune
-	HAS_MISTUNE = True
+    import mistune
+
+    HAS_MISTUNE = True
 except ImportError:
-	HAS_MISTUNE = False
+    HAS_MISTUNE = False
 
 
 # ============================================================================
 # Data Structures
 # ============================================================================
 
+
 @dataclass
 class ToDoItem:
-	text: str
-	project_path: Path
-	file_path: Path  # Absolute path to the ToDo.md file
-	section: str | None = None
+    text: str
+    project_path: Path
+    file_path: Path  # Absolute path to the ToDo.md file
+    section: str | None = None
 
-	@property
-	def project(self) -> str:
-		return self.project_path.name
+    @property
+    def project(self) -> str:
+        return self.project_path.name
 
-	@property
-	def relative_file_path(self) -> Path:
-		"""Get the file path relative to the project root."""
-		return self.file_path.relative_to(self.project_path)
+    @property
+    def relative_file_path(self) -> Path:
+        """Get the file path relative to the project root."""
+        return self.file_path.relative_to(self.project_path)
 
-	@property
-	def folder_name(self) -> str | None:
-		"""Get the name of the folder containing this ToDo file, or None if at project root."""
-		rel_path = self.relative_file_path
-		if len(rel_path.parents) > 1:  # More than just '.'
-			# Get the first directory component
-			return str(rel_path.parent)
-		return None
+    @property
+    def folder_name(self) -> str | None:
+        """Get the name of the folder containing this ToDo file, or None if at project root."""
+        rel_path = self.relative_file_path
+        if len(rel_path.parents) > 1:  # More than just '.'
+            # Get the first directory component
+            return str(rel_path.parent)
+        return None
 
 
 # ============================================================================
 # Utility Functions
 # ============================================================================
 
+
 def path_with_tilde(path: Path) -> str:
-	"""Convert a path to use ~ for home directory.
+    """Convert a path to use ~ for home directory.
 
-	Args:
-		path: Path to convert.
+    Args:
+            path: Path to convert.
 
-	Returns:
-		String representation with ~ if under home directory.
-	"""
-	try:
-		home = Path.home()
-		return f"~/{path.relative_to(home)}"
-	except ValueError:
-		return str(path)
+    Returns:
+            String representation with ~ if under home directory.
+    """
+    try:
+        home = Path.home()
+        return f"~/{path.relative_to(home)}"
+    except ValueError:
+        return str(path)
 
 
 def to_title_case(msg: str) -> str:
-	"""Convert a string to title case, replacing hyphens and underscores with spaces."""
-	return string.capwords(msg.replace('-', ' ').replace('_', ' '))
+    """Convert a string to title case, replacing hyphens and underscores with spaces."""
+    return string.capwords(msg.replace("-", " ").replace("_", " "))
 
 
 # ============================================================================
 # Command Execution
 # ============================================================================
 
+
 def run(command: list[str]) -> str | None:
-	"""Execute a shell command and handle errors.
+    """Execute a shell command and handle errors.
 
-	On failure, prints error details to stderr and continues execution.
+    On failure, prints error details to stderr and continues execution.
 
-	Args:
-		command: Command and arguments to execute.
+    Args:
+            command: Command and arguments to execute.
 
-	Returns:
-		Command stdout if successful, None if command failed.
-	"""
-	retval = subprocess.run(command, text=True, capture_output=True)
+    Returns:
+            Command stdout if successful, None if command failed.
+    """
+    retval = subprocess.run(command, text=True, capture_output=True)
 
-	if retval.returncode != 0:
-		console = Console(stderr=True)
-		panel_content = Text()
-		panel_content.append(f"Command: {' '.join(command)}\n", style="bold")
-		panel_content.append(f"Return code: {retval.returncode}\n\n", style="bold red")
+    if retval.returncode != 0:
+        console = Console(stderr=True)
+        panel_content = Text()
+        panel_content.append(f"Command: {' '.join(command)}\n", style="bold")
+        panel_content.append(f"Return code: {retval.returncode}\n\n", style="bold red")
 
-		if retval.stdout:
-			panel_content.append(Rule(title="stdout"))
-			panel_content.append(retval.stdout)
+        if retval.stdout:
+            panel_content.append(Rule(title="stdout"))
+            panel_content.append(retval.stdout)
 
-		if retval.stderr:
-			panel_content.append(Rule(title="stderr"))
-			panel_content.append(retval.stderr)
+        if retval.stderr:
+            panel_content.append(Rule(title="stderr"))
+            panel_content.append(retval.stderr)
 
-		console.print(Panel(panel_content, title=f"Command Returned {retval.returncode}", border_style="red"))
-		return None
+        console.print(
+            Panel(
+                panel_content,
+                title=f"Command Returned {retval.returncode}",
+                border_style="red",
+            )
+        )
+        return None
 
-	return retval.stdout
+    return retval.stdout
 
 
 # ============================================================================
 # Project/Git Operations
 # ============================================================================
 
+
 @lru_cache
 def find_project_path(file: Path) -> Path:
-	"""
-	Given a file path, find the root of the project it belongs to.
+    """
+    Given a file path, find the root of the project it belongs to.
 
-	A project is a git repository, so the project is the closest git root.
+    A project is a git repository, so the project is the closest git root.
 
-	Args:
-		file: Path to file or directory.
+    Args:
+            file: Path to file or directory.
 
-	Returns:
-		Project root path.
-	"""
-	file_dir = file.parent if file.is_file() else file
+    Returns:
+            Project root path.
+    """
+    file_dir = file.parent if file.is_file() else file
 
-	result = subprocess.run(
-		["git", "-C", str(file_dir), "rev-parse", "--show-toplevel"],
-		capture_output=True,
-		text=True
-	)
+    result = subprocess.run(
+        ["git", "-C", str(file_dir), "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+    )
 
-	if result.returncode == 0:
-		return Path(result.stdout.strip())
+    if result.returncode == 0:
+        return Path(result.stdout.strip())
 
-	return file_dir
+    return file_dir
 
 
 # ============================================================================
 # File Operations
 # ============================================================================
 
+
 def find_todo_files(root_dir: Path) -> list[Path]:
-	"""Find all ToDo.md files recursively in the given directory.
+    """Find all ToDo.md files recursively in the given directory.
 
-	Skips files in directories containing "_archived" in their path.
+    Skips files in directories containing "_archived" in their path.
 
-	Args:
-		root_dir: Directory to search from.
+    Args:
+            root_dir: Directory to search from.
 
-	Returns:
-		List of paths to ToDo.md files.
-	"""
-	output = run(["fd", "-t", "f", "-i", "ToDo.md", str(root_dir)])
-	if output is None:
-		return []
+    Returns:
+            List of paths to ToDo.md files.
+    """
+    output = run(["fd", "-t", "f", "-i", "ToDo.md", str(root_dir)])
+    if output is None:
+        return []
 
-	files = [Path(f).absolute() for f in output.splitlines() if len(f) > 0]
+    files = [Path(f).absolute() for f in output.splitlines() if len(f) > 0]
 
-	# Filter out archived directories
-	return [f for f in files if "_archived" not in str(f)]
+    # Filter out archived directories
+    return [f for f in files if "_archived" not in str(f)]
 
 
 def find_todo_files_for(project_name: str, root_dir: Path) -> list[Path]:
-	"""Find all ToDo.md files for a project by name (case-insensitive).
+    """Find all ToDo.md files for a project by name (case-insensitive).
 
-	Args:
-		project_name: Project name to search for (case-insensitive).
-		root_dir: Root directory to search from.
+    Args:
+            project_name: Project name to search for (case-insensitive).
+            root_dir: Root directory to search from.
 
-	Returns:
-		List of paths to the project's ToDo.md files, sorted by depth.
+    Returns:
+            List of paths to the project's ToDo.md files, sorted by depth.
 
-	Raises:
-		ValueError: If no matching project found.
-	"""
-	todo_files = find_todo_files(root_dir)
-	matches = []
+    Raises:
+            ValueError: If no matching project found.
+    """
+    todo_files = find_todo_files(root_dir)
+    matches = []
 
-	for file in todo_files:
-		project_path = find_project_path(file)
+    for file in todo_files:
+        project_path = find_project_path(file)
 
-		if project_path.name.lower() == project_name.lower():
-			matches.append(file)
+        if project_path.name.lower() == project_name.lower():
+            matches.append(file)
 
-	if len(matches) == 0:
-		raise ValueError(f"No project found matching '{project_name}'")
+    if len(matches) == 0:
+        raise ValueError(f"No project found matching '{project_name}'")
 
-	# Sort by depth (shallowest first)
-	matches.sort(key=lambda match: len(match.relative_to(find_project_path(match)).parts))
-	return matches
+    # Sort by depth (shallowest first)
+    matches.sort(
+        key=lambda match: len(match.relative_to(find_project_path(match)).parts)
+    )
+    return matches
 
 
 def extract_todo_entries_with_mistune(file: Path) -> list[ToDoItem]:
-	"""Extract unchecked top-level todo items using mistune markdown parser.
+    """Extract unchecked top-level todo items using mistune markdown parser.
 
-	Args:
-		file: Path to the ToDo.md file.
+    Args:
+            file: Path to the ToDo.md file.
 
-	Returns:
-		List of ToDoItem objects.
-	"""
-	project_path = find_project_path(file)
-	todo_items = []
+    Returns:
+            List of ToDoItem objects.
+    """
+    project_path = find_project_path(file)
+    todo_items = []
 
-	try:
-		with open(file, 'r') as f:
-			content = f.read()
-	except Exception as e:
-		console = Console(stderr=True)
-		console.print(f"[red]Error reading {file}: {e}[/red]")
-		return []
+    try:
+        with open(file) as f:
+            content = f.read()
+    except Exception as e:
+        console = Console(stderr=True)
+        console.print(f"[red]Error reading {file}: {e}[/red]")
+        return []
 
-	# Parse the markdown
-	markdown = mistune.create_markdown(renderer='ast')
-	ast = markdown(content)
+    # Parse the markdown
+    markdown = mistune.create_markdown(renderer="ast")
+    ast = markdown(content)
 
-	# Track current section as we traverse
-	current_section = None
-	min_indent = None
+    # Track current section as we traverse
+    current_section = None
+    min_indent = None
 
-	def extract_text(node):
-		"""Recursively extract text from a node."""
-		if isinstance(node, str):
-			return node
-		if isinstance(node, dict):
-			if node.get('type') == 'text':
-				return node.get('raw', '')
-			children = node.get('children', [])
-			return ''.join(extract_text(child) for child in children)
-		if isinstance(node, list):
-			return ''.join(extract_text(item) for item in node)
-		return ''
+    def extract_text(node):
+        """Recursively extract text from a node."""
+        if isinstance(node, str):
+            return node
+        if isinstance(node, dict):
+            if node.get("type") == "text":
+                return node.get("raw", "")
+            children = node.get("children", [])
+            return "".join(extract_text(child) for child in children)
+        if isinstance(node, list):
+            return "".join(extract_text(item) for item in node)
+        return ""
 
-	def process_list_items(items, depth=0):
-		"""Process list items recursively."""
-		nonlocal min_indent
+    def process_list_items(items, depth=0):
+        """Process list items recursively."""
+        nonlocal min_indent
 
-		for item in items:
-			if not isinstance(item, dict):
-				continue
+        for item in items:
+            if not isinstance(item, dict):
+                continue
 
-			# Check if this is a task list item (checkbox)
-			is_checked = item.get('checked', None)
+            # Check if this is a task list item (checkbox)
+            is_checked = item.get("checked", None)
 
-			if is_checked is not None:  # It's a checkbox item
-				# Skip completed items
-				if is_checked:
-					continue
+            if is_checked is not None:  # It's a checkbox item
+                # Skip completed items
+                if is_checked:
+                    continue
 
-				# First checkbox sets the baseline
-				if min_indent is None:
-					min_indent = depth
+                # First checkbox sets the baseline
+                if min_indent is None:
+                    min_indent = depth
 
-				# Only include top-level items
-				if depth <= min_indent:
-					text = extract_text(item.get('children', [])).strip()
-					if text:
-						todo_items.append(ToDoItem(
-							text=text,
-							project_path=project_path,
-							file_path=file,
-							section=current_section
-						))
+                # Only include top-level items
+                if depth <= min_indent:
+                    text = extract_text(item.get("children", [])).strip()
+                    if text:
+                        todo_items.append(
+                            ToDoItem(
+                                text=text,
+                                project_path=project_path,
+                                file_path=file,
+                                section=current_section,
+                            )
+                        )
 
-			# Process nested lists
-			children = item.get('children', [])
-			for child in children:
-				if isinstance(child, dict) and child.get('type') == 'list':
-					process_list_items(child.get('children', []), depth + 1)
+            # Process nested lists
+            children = item.get("children", [])
+            for child in children:
+                if isinstance(child, dict) and child.get("type") == "list":
+                    process_list_items(child.get("children", []), depth + 1)
 
-	def process_node(node):
-		"""Process AST nodes."""
-		nonlocal current_section
+    def process_node(node):
+        """Process AST nodes."""
+        nonlocal current_section
 
-		if isinstance(node, list):
-			for item in node:
-				process_node(item)
-		elif isinstance(node, dict):
-			node_type = node.get('type')
+        if isinstance(node, list):
+            for item in node:
+                process_node(item)
+        elif isinstance(node, dict):
+            node_type = node.get("type")
 
-			# Track headings for section names
-			if node_type == 'heading':
-				current_section = extract_text(node.get('children', [])).strip()
+            # Track headings for section names
+            if node_type == "heading":
+                current_section = extract_text(node.get("children", [])).strip()
 
-			# Process lists that might contain checkboxes
-			elif node_type == 'list':
-				process_list_items(node.get('children', []), 0)
+            # Process lists that might contain checkboxes
+            elif node_type == "list":
+                process_list_items(node.get("children", []), 0)
 
-			# Recursively process children
-			children = node.get('children', [])
-			if children:
-				process_node(children)
+            # Recursively process children
+            children = node.get("children", [])
+            if children:
+                process_node(children)
 
-	process_node(ast)
-	return todo_items
+    process_node(ast)
+    return todo_items
 
 
 def extract_todo_entries_with_regex(file: Path) -> list[ToDoItem]:
-	"""Extract unchecked top-level todo items using regex (fallback method).
+    """Extract unchecked top-level todo items using regex (fallback method).
 
-	Only includes checkboxes that are not children of other checkboxes.
-	Checked items (- [x]) are excluded. Tracks section headers and associates
-	them with todo items.
+    Only includes checkboxes that are not children of other checkboxes.
+    Checked items (- [x]) are excluded. Tracks section headers and associates
+    them with todo items.
 
-	Args:
-		file: Path to the ToDo.md file.
+    Args:
+            file: Path to the ToDo.md file.
 
-	Returns:
-		List of ToDoItem objects.
-	"""
-	project_path = find_project_path(file)
-	todo_items = []
+    Returns:
+            List of ToDoItem objects.
+    """
+    project_path = find_project_path(file)
+    todo_items = []
 
-	try:
-		with open(file, 'r') as f:
-			lines = f.readlines()
-	except Exception as e:
-		console = Console(stderr=True)
-		console.print(f"[red]Error reading {file}: {e}[/red]")
-		return []
+    try:
+        with open(file) as f:
+            lines = f.readlines()
+    except Exception as e:
+        console = Console(stderr=True)
+        console.print(f"[red]Error reading {file}: {e}[/red]")
+        return []
 
-	# Regex to match markdown headings at any level
-	heading_pattern = re.compile(r'''
+    # Regex to match markdown headings at any level
+    heading_pattern = re.compile(
+        r"""
 		^            # Start of line
 		(\#{1,6})    # Group 1: One to six hash symbols
 		\s+          # Whitespace
 		(.+)         # Group 2: Heading text
 		$            # End of line
-	''', re.VERBOSE)
+	""",
+        re.VERBOSE,
+    )
 
-	# Regex to match markdown checkboxes: - [ ] or - [x]
-	checkbox_pattern = re.compile(r'''
+    # Regex to match markdown checkboxes: - [ ] or - [x]
+    checkbox_pattern = re.compile(
+        r"""
 		^           # Start of line
 		(\s*)       # Group 1: Leading whitespace (indentation)
 		-\ \[       # Literal "- ["
@@ -397,121 +417,134 @@ def extract_todo_entries_with_regex(file: Path) -> list[ToDoItem]:
 		\]\ 	    # Literal "] "
 		(.+)        # Group 3: Todo text (rest of line)
 		$           # End of line
-	''', re.VERBOSE)
+	""",
+        re.VERBOSE,
+    )
 
-	# We only care about ToDo entries that are not children of other ToDo entries.
-	# Instead of using a proper Markdown parser, we track the indentation of the
-	# first checkbox we find, and only include checkboxes at that same level or less.
-	min_indent = None
-	current_section = None
+    # We only care about ToDo entries that are not children of other ToDo entries.
+    # Instead of using a proper Markdown parser, we track the indentation of the
+    # first checkbox we find, and only include checkboxes at that same level or less.
+    min_indent = None
+    current_section = None
 
-	for line in lines:
-		# Check if line is a heading
-		heading_match = heading_pattern.match(line)
-		if heading_match:
-			current_section = heading_match.group(2).strip()
-			continue
+    for line in lines:
+        # Check if line is a heading
+        heading_match = heading_pattern.match(line)
+        if heading_match:
+            current_section = heading_match.group(2).strip()
+            continue
 
-		# Check if line is a checkbox
-		match = checkbox_pattern.match(line)
-		if match:
-			# Convert tabs to 4 spaces, then measure indentation level
-			indent = match.group(1)
-			indentation_level = len(indent.replace('\t', '    '))
-			checked = match.group(2).lower() == 'x'
-			text = match.group(3).strip()
+        # Check if line is a checkbox
+        match = checkbox_pattern.match(line)
+        if match:
+            # Convert tabs to 4 spaces, then measure indentation level
+            indent = match.group(1)
+            indentation_level = len(indent.replace("\t", "    "))
+            checked = match.group(2).lower() == "x"
+            text = match.group(3).strip()
 
-			# Skip completed items
-			if checked:
-				continue
+            # Skip completed items
+            if checked:
+                continue
 
-			# First checkbox sets the baseline for top-level indentation
-			if min_indent is None:
-				min_indent = indentation_level
+            # First checkbox sets the baseline for top-level indentation
+            if min_indent is None:
+                min_indent = indentation_level
 
-			# Only include checkboxes at or before the minimum indent (top-level items)
-			if indentation_level <= min_indent:
-				todo_items.append(ToDoItem(text=text, project_path=project_path, file_path=file, section=current_section))
+            # Only include checkboxes at or before the minimum indent (top-level items)
+            if indentation_level <= min_indent:
+                todo_items.append(
+                    ToDoItem(
+                        text=text,
+                        project_path=project_path,
+                        file_path=file,
+                        section=current_section,
+                    )
+                )
 
-	return todo_items
+    return todo_items
 
 
 def extract_todo_entries(file: Path) -> list[ToDoItem]:
-	"""Extract unchecked top-level todo items from a markdown file.
+    """Extract unchecked top-level todo items from a markdown file.
 
-	Uses mistune if available, otherwise falls back to regex parsing.
+    Uses mistune if available, otherwise falls back to regex parsing.
 
-	Args:
-		file: Path to the ToDo.md file.
+    Args:
+            file: Path to the ToDo.md file.
 
-	Returns:
-		List of ToDoItem objects.
-	"""
-	if HAS_MISTUNE:
-		return extract_todo_entries_with_mistune(file)
-	else:
-		return extract_todo_entries_with_regex(file)
+    Returns:
+            List of ToDoItem objects.
+    """
+    if HAS_MISTUNE:
+        return extract_todo_entries_with_mistune(file)
+    else:
+        return extract_todo_entries_with_regex(file)
 
 
 # ============================================================================
 # Editor Operations
 # ============================================================================
 
-def open_in_editor(file: Path) -> None:
-	"""Open a file in the default editor.
 
-	Args:
-		file: Path to file to open.
-	"""
-	editor = os.environ.get('EDITOR', 'nano')
-	subprocess.run([editor, str(file)])
+def open_in_editor(file: Path) -> None:
+    """Open a file in the default editor.
+
+    Args:
+            file: Path to file to open.
+    """
+    editor = os.environ.get("EDITOR", "nano")
+    subprocess.run([editor, str(file)])
 
 
 # ============================================================================
 # CLI Interface
 # ============================================================================
 
+
 def parse_args() -> argparse.Namespace:
-	"""Parse command line arguments.
+    """Parse command line arguments.
 
-	Returns:
-		Parsed arguments including subcommand and options.
-	"""
-	parser = argparse.ArgumentParser(
-		description="Find and display TODO items from ToDo.md files"
-	)
-	parser.add_argument(
-		"-d", "--root-dir",
-		default=".",
-		type=Path,
-		help="Root directory to search for ToDo.md files (default: current directory)"
-	)
+    Returns:
+            Parsed arguments including subcommand and options.
+    """
+    parser = argparse.ArgumentParser(
+        description="Find and display TODO items from ToDo.md files"
+    )
+    parser.add_argument(
+        "-d",
+        "--root-dir",
+        default=".",
+        type=Path,
+        help="Root directory to search for ToDo.md files (default: current directory)",
+    )
 
-	subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-	# List subcommand (default)
-	list_parser = subparsers.add_parser("list", help="List all TODO items")
-	list_parser.add_argument(
-		"project",
-		nargs="?",
-		help="Project name (case-insensitive) or '.' for current project"
-	)
+    # List subcommand (default)
+    list_parser = subparsers.add_parser("list", help="List all TODO items")
+    list_parser.add_argument(
+        "project",
+        nargs="?",
+        help="Project name (case-insensitive) or '.' for current project",
+    )
 
-	# Edit subcommand
-	edit_parser = subparsers.add_parser("edit", help="Open a project's ToDo.md file in editor")
-	edit_parser.add_argument(
-		"project",
-		help="Project name (case-insensitive) or '.' for current project"
-	)
+    # Edit subcommand
+    edit_parser = subparsers.add_parser(
+        "edit", help="Open a project's ToDo.md file in editor"
+    )
+    edit_parser.add_argument(
+        "project", help="Project name (case-insensitive) or '.' for current project"
+    )
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
-	# Default to list command if no subcommand specified
-	if args.command is None:
-		args.command = "list"
-		args.project = None
+    # Default to list command if no subcommand specified
+    if args.command is None:
+        args.command = "list"
+        args.project = None
 
-	return args
+    return args
 
 
 # ============================================================================
@@ -520,92 +553,94 @@ def parse_args() -> argparse.Namespace:
 
 
 def main():
-	"""Main entry point. Find and display todos grouped by project."""
-	args = parse_args()
-	console = Console()
+    """Main entry point. Find and display todos grouped by project."""
+    args = parse_args()
+    console = Console()
 
-	if args.command == "edit":
-		try:
-			# Handle '.' as current project
-			project_name = args.project
-			if project_name == ".":
-				project_name = find_project_path(Path.cwd()).name
+    if args.command == "edit":
+        try:
+            # Handle '.' as current project
+            project_name = args.project
+            if project_name == ".":
+                project_name = find_project_path(Path.cwd()).name
 
-			todo_files = find_todo_files_for(project_name, args.root_dir)
-			# If multiple files, open the one at the project root (first in sorted list)
-			open_in_editor(todo_files[0])
-		except ValueError as e:
-			stderr = Console(stderr=True)
-			stderr.print(f"[red]Error: {e}[/red]")
+            todo_files = find_todo_files_for(project_name, args.root_dir)
+            # If multiple files, open the one at the project root (first in sorted list)
+            open_in_editor(todo_files[0])
+        except ValueError as e:
+            stderr = Console(stderr=True)
+            stderr.print(f"[red]Error: {e}[/red]")
 
-			sys.exit(1)
+            sys.exit(1)
 
-	else:  # list command
+    else:  # list command
+        # Handle '.' as current project
+        project_name = args.project
+        if project_name == ".":
+            project_name = find_project_path(Path.cwd()).name
 
-		# Handle '.' as current project
-		project_name = args.project
-		if project_name == ".":
-			project_name = find_project_path(Path.cwd()).name
+        if project_name:
+            todo_files = find_todo_files_for(project_name, args.root_dir)
+        else:
+            todo_files = find_todo_files(args.root_dir)
 
-		if project_name:
-			todo_files = find_todo_files_for(project_name, args.root_dir)
-		else:
-			todo_files = find_todo_files(args.root_dir)
+        todo_items = []
+        for file in todo_files:
+            todo_items.extend(extract_todo_entries(file))
 
-		todo_items = []
-		for file in todo_files:
-			todo_items.extend(extract_todo_entries(file))
+        if not todo_items:
+            console.print("[dim]No todo items found[/dim]")
+            return
 
-		if not todo_items:
-			console.print("[dim]No todo items found[/dim]")
-			return
+        # Group by project, then by folder, then by section
+        by_project = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        project_paths = {}
 
-		# Group by project, then by folder, then by section
-		by_project = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-		project_paths = {}
+        for item in todo_items:
+            folder = item.folder_name or ""  # Empty string for root-level todos
+            by_project[item.project][folder][item.section].append(item.text)
+            project_paths[item.project] = item.project_path
 
-		for item in todo_items:
-			folder = item.folder_name or ""  # Empty string for root-level todos
-			by_project[item.project][folder][item.section].append(item.text)
-			project_paths[item.project] = item.project_path
+        # Print ToDo items
+        for project in sorted(by_project.keys()):
+            project_path = path_with_tilde(project_paths[project])
+            console.print(
+                f"\n  [bold cyan]{to_title_case(project)}[/bold cyan]    [dim]{project_path}[/dim]"
+            )
 
-		# Print ToDo items
-		for project in sorted(by_project.keys()):
-			project_path = path_with_tilde(project_paths[project])
-			console.print(f"\n  [bold cyan]{to_title_case(project)}[/bold cyan]    [dim]{project_path}[/dim]")
+            folders = by_project[project]
 
-			folders = by_project[project]
+            # Show root-level items first (folder = "")
+            if "" in folders:
+                sections = folders[""]
+                # Show items without a section first
+                if None in sections:
+                    for todo in sections[None]:
+                        console.print(f"    • {todo}")
 
-			# Show root-level items first (folder = "")
-			if "" in folders:
-				sections = folders[""]
-				# Show items without a section first
-				if None in sections:
-					for todo in sections[None]:
-						console.print(f"    • {todo}")
+                # Show items grouped by section
+                for section in sorted([s for s in sections.keys() if s is not None]):
+                    console.print(f"    [yellow]{section}[/yellow]")
+                    for todo in sections[section]:
+                        console.print(f"      • {todo}")
 
-				# Show items grouped by section
-				for section in sorted([s for s in sections.keys() if s is not None]):
-					console.print(f"    [yellow]{section}[/yellow]")
-					for todo in sections[section]:
-						console.print(f"      • {todo}")
+            # Show items grouped by folder
+            for folder in sorted([f for f in folders.keys() if f != ""]):
+                console.print(f"    [magenta]{folder}[/magenta]")
+                sections = folders[folder]
 
-			# Show items grouped by folder
-			for folder in sorted([f for f in folders.keys() if f != ""]):
-				console.print(f"    [magenta]{folder}[/magenta]")
-				sections = folders[folder]
+                # Show items without a section
+                if None in sections:
+                    for todo in sections[None]:
+                        console.print(f"      • {todo}")
 
-				# Show items without a section
-				if None in sections:
-					for todo in sections[None]:
-						console.print(f"      • {todo}")
+                # Show items grouped by section within this folder
+                for section in sorted([s for s in sections.keys() if s is not None]):
+                    console.print(f"      [yellow]{section}[/yellow]")
+                    for todo in sections[section]:
+                        console.print(f"        • {todo}")
 
-				# Show items grouped by section within this folder
-				for section in sorted([s for s in sections.keys() if s is not None]):
-					console.print(f"      [yellow]{section}[/yellow]")
-					for todo in sections[section]:
-						console.print(f"        • {todo}")
 
 if __name__ == "__main__":
-	with suppress(KeyboardInterrupt):
-		main()
+    with suppress(KeyboardInterrupt):
+        main()

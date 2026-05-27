@@ -28,7 +28,7 @@ try:
     from rich.live import Live
 
     HAS_RICH_SUPPORT = True
-except ModuleNotFoundError as e:
+except ModuleNotFoundError:
     HAS_RICH_SUPPORT = False
 
 
@@ -128,13 +128,13 @@ def run_scan(cmd: list[str]) -> set[NetHost]:
     try:
         ret = run(cmd, capture_output=True, check=True, text=True)
     except CalledProcessError as e:
-        click.echo(f"Call to nmap failed.")
+        click.echo("Call to nmap failed.")
         click.echo(f"$ {e.cmd} -> {e.returncode}")
         click.echo(e.stderr)
         sys.exit(1)
 
     doc_root = ET.fromstring(ret.stdout)
-    hosts = set(NetHost.from_xml(x) for x in doc_root.findall("host"))
+    hosts = {NetHost.from_xml(x) for x in doc_root.findall("host")}
     return hosts
 
 
