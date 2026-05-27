@@ -8,6 +8,7 @@ build_with_rust() {
     cargo_home="$(build_dir)/cargo"
     cargo_bin="$cargo_home/bin/cargo"
 
+    # shellcheck disable=SC1007
     local repo= version= src= out= target=
 
     while [[ $# -gt 0 ]]; do
@@ -31,6 +32,16 @@ build_with_rust() {
 
     # shellcheck disable=SC2155
     export CARGO_HOME="$cargo_home"
+
+    # cc-rs looks for <triple>-gcc for musl targets; point it to musl-gcc instead.
+    # Requires musl-gcc (package msul-tools)
+    if [[ "$target" == *-linux-musl ]]; then
+        local target_upper
+        target_upper="${target//-/_}"
+        target_upper="${target_upper^^}"
+        export "CARGO_TARGET_${target_upper}_LINKER=musl-gcc"
+        export "CC_${target//-/_}=musl-gcc"
+    fi
 
     echo "==> build-rust: $out (version $version, $target)"
 
