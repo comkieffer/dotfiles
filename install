@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from installer.config import ProgramConfig, Recommends
+from installer.config import ProgramConfig, Recommends, Version
 from installer.run import install_dotfiles
 
 REQUIRED_DIRS = [
@@ -22,44 +22,24 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
         # Ensure that the list of plugins is up-to-date
         post_install=["fish -c 'fisher update'"],
         recommended_binaries=[
-            Recomends(
-                "atuin",
-            ),
-            Recomends(
+            Recommends("atuin"),
+            Recommends(
                 "bat",
                 (
                     "/usr/bin/bat",
                     "/usr/bin/batcat",
                 ),
             ),
-            Recomends(
-                "direnv",
-            ),
-            Recomends(
-                "exa",
-            ),
-            Recomends(
-                "fzf",
-            ),
-            Recomends(
+            Recommends("direnv"),
+            Recommends("exa"),
+            Recommends("fzf"),
+            Recommends(
                 "hx",
                 ("/usr/bin/helix",),
             ),
-            Recomends(
-                "jq",
-            ),
-            Recomends(
-                "just",
-
-                min_version="1.30.0",
-            ),
-            Recomends(
-                "starship",
-            ),
-            Recomends(
-                "zoxide",
-
-            ),
+            Recommends("jq"),
+            Recommends("starship"),
+            Recommends("zoxide"),
         ],
     ),
     "git": ProgramConfig(),
@@ -89,6 +69,11 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
     "tools": ProgramConfig(
         executable="uv",
         create_dirs=["~/.local/share/reminders"],
+        recommended_binaries=[
+            Recommends("poetry", min_version=Version.from_string("2.0.0")),
+            Recommends("uv"),
+            Recommends("just", min_version=Version.from_string("1.30.0")),
+        ],
     ),
 }
 
