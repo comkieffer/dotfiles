@@ -22,7 +22,6 @@ repos:
       # Exclude the bash folder since nothing in there passes shellcheck and,
       # in any case, I don't actually use it at the moment.
       - id: shellcheck
-        exclude: ^bash\/.*$
         args: [-x]
 
   - repo: https://github.com/adrienverge/yamllint
@@ -35,3 +34,60 @@ repos:
                 extends: default,
                 indentation: {spaces: 2, indent-sequences: false}
             }'
+
+  # Spell-check prose and code.
+  # See https://github.com/crate-ci/typos/blob/master/docs/reference.md
+  #
+  # To disable the check for a specific file or folder, use
+  #
+  #   args: ["--force-exclude", "--exclude", "relative-path-to-file"]
+  #
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.35.6
+    hooks:
+      - id: typos
+
+  #
+  # Python Linters and Formatters
+  #
+
+  # Create a [tool.ruff.lint] block in your `pyproject.toml` file to configure
+  # these checks. If you are not in a python package, create a `.flake8` file
+  # in the root of your repository.
+  #
+  # In the default configuration we ignore errors which make development of
+  # one-off scripts too painful. You should remove these rules if you have a
+  # `pyproject.toml` file
+  #
+  # - G004: Logging statement uses f-string
+  # - S***: subprocess call, use of assert, ...
+  # - T201: Print found
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.4
+    hooks:
+      - id: ruff-format
+      - id: ruff-check
+        types_or: [python, pyi, jupyter]
+        args: [
+          "--fix",
+          "--unsafe-fixes",
+          "--config",
+          "lint.ignore=['G004','S','T201']"
+        ]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: ["--py312-plus"]
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy --non-interactive --install-types
+        language: system
+        types: [python]
+        exclude: "tests/|pyinfra/|regolith/"
+        require_serial: true

@@ -3,7 +3,7 @@
 ssh/
 
 # Ignore python things
-venv/
+.venv/
 *.pyc
 
 # Ignore pyinfra logfiles

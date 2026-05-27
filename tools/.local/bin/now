@@ -344,7 +344,7 @@ def notify_user():
     entry_indented = textwrap.indent(entry_wrapped, "> ")
 
     # Id of the last notification of this type that we sent.
-    # This allows us to overwrite the notification and not display mutliple instances
+    # This allows us to overwrite the notification and not display multiple instances
     # of the same notification on screen.
     last_notification_id = 0
 

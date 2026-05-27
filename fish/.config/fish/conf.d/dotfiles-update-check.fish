@@ -4,7 +4,7 @@
 # slightly out of date. This script will show a warnibng if that is the case, to remind
 # me to pull and re-stow.
 #
-# It only checks if the repo is up-to-date, not if I ahve actually run the install
+# It only checks if the repo is up-to-date, not if I have actually run the install
 # script again.
 
 if status is-interactive

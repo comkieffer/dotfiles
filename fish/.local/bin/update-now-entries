@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore[import]
 
 NOW_FILE = Path("~/now.txt").expanduser()
 NOW_FILE_BACKUP = NOW_FILE.with_suffix(".txt.bak")
@@ -74,7 +74,7 @@ def split_entries_by_day(entries: list[LogEntry]) -> dict[date, list[LogEntry]]:
     if len(entries) == 0:
         return dict()
 
-    entries_by_day = {}
+    entries_by_day: dict[date, list[LogEntry]] = {}
 
     for entry in entries:
         entry_date = entry.timestamp.date()
@@ -125,9 +125,7 @@ def generate_markdown_table(entries: list[LogEntry]):
     # Add the last line to the table. This is a fallback if the last entry was not
     # actually the day's end.
     start_time = entries[-1].timestamp
-    table += (
-        f"| {start_time.strftime('%H:%M')} | | | | | {entries[-1].entry} |\n"
-    )
+    table += f"| {start_time.strftime('%H:%M')} | | | | | {entries[-1].entry} |\n"
 
     return table
 

@@ -57,7 +57,7 @@ symbol = "meson "
 
 [package]
 # If the directory builds a _package_, show the current version.
-# Not desireable since this is often redundant with git information.
+# Not desirable since this is often redundant with git information.
 disabled = true
 
 [python]

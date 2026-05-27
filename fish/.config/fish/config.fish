@@ -1,5 +1,5 @@
 
-# Add common excutable paths to $PATH
+# Add common executable paths to $PATH
 fish_add_path ~/.local/bin/
 
 
@@ -27,7 +27,7 @@ if status is-interactive
     alias mv 'mv --verbose'
     alias rm 'rm --verbose'
 
-    # Use `exa` insted of `ls` if it is installed.
+    # Use `exa` instead of `ls` if it is installed.
     if type -q exa
         alias ls "exa --icons --group"
 
@@ -35,7 +35,7 @@ if status is-interactive
             alias tree "exa --tree"
         end
     else
-        # Make ls more pretty by deafult
+        # Make ls more pretty by default
         #
         # -b use c-style escapes instead of quoting
         # -F classify entries with (*/=>@|)

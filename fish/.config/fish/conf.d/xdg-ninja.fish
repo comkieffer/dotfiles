@@ -3,7 +3,7 @@
 
 # First off, we make sure that the XDG variables are well defined, See
 # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-# for more infomration
+# for more information
 set -q XDG_CONFIG_HOME || set -gx XDG_CONFIG_HOME $HOME/.config
 set -q XDG_DATA_HOME || set -gx XDG_DATA_HOME $HOME/.local/share
 set -q XDG_STATE_HOME || set -gx XDG_STATE_HOME $HOME/.local/state

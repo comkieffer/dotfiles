@@ -11,10 +11,9 @@ import re
 from argparse import ArgumentParser, RawTextHelpFormatter
 from subprocess import run
 
-from pprint import pprint
 
-from i3ipc import Connection
-from i3ipc.con import Con
+from i3ipc import Connection  # type: ignore[import]
+from i3ipc.con import Con  # type: ignore[import]
 
 MARGIN_X_PCT = 0.2
 MARGIN_Y_PCT = 0.1
