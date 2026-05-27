@@ -1,5 +1,4 @@
-
-from pyinfra.operations import files, server
+from pyinfra.operations import files
 
 DOWNLOAD_DIR = "/tmp/jetbrains"
 

@@ -1,8 +1,6 @@
-from pyinfra import host
 from pyinfra.operations import apt, files
-from pyinfra.facts.server import Which
 
-# Note: pipx is installed by the boostrap script.
+# Note: pipx is installed by the bootstrap script.
 
 apt.update(name="Update apt repositories", cache_time=3600)
 
@@ -66,7 +64,7 @@ apt.packages(
     packages=[
         "libfuse2t64",
     ],
-    no_recommends = True,
+    no_recommends=True,
 )
 
 # Create symlinks for renamed binaries if they don't already exist

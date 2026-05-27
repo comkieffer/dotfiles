@@ -1,4 +1,3 @@
-
 from pyinfra.operations import files, apt
 
 DOWNLOAD_DIR = "/tmp/gitbutlerapp/"

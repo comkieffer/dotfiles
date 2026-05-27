@@ -12,7 +12,7 @@ pipx.packages(
         "ruff",
         "sphinx",
         "uv",
-    ]
+    ],
 )
 
 # Inject sphinx extensions into the sphinx pipx environment.
@@ -23,7 +23,7 @@ server.shell(
     commands=[
         "pipx inject --include-apps sphinx sphinx-autobuild",
         "pipx inject sphinx sphinx-copybutton sphinx-design sphinx-mermaid sphinx-subfigure 'myst-parser[linkify]' furo",
-    ]
+    ],
 )
 
 # If helix is installed, install the lsp

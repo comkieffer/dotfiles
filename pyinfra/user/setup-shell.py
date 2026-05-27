@@ -8,7 +8,7 @@ import requests
 
 from pyinfra import host, logger
 from pyinfra.api import OperationError
-from pyinfra.facts.server import Home, Which
+from pyinfra.facts.server import Home
 from pyinfra.operations import apt, files, server, python
 
 HOMEDIR = host.get_fact(Home)
@@ -45,9 +45,11 @@ def get_matched_release_asset(release_metadata, matcher: str) -> dict[str, str |
                 "Regular expression '{asset_matcher}'' matched multiple assets:"
             )
             for asset in matched_assets:
-                logger.error(f" - {asset["name"]}")
+                logger.error(f" - {asset['name']}")
 
-            raise OperationError(f"Multiple assets match the regular expression '{matcher}'.")
+            raise OperationError(
+                f"Multiple assets match the regular expression '{matcher}'."
+            )
 
 
 def download_and_install(
@@ -116,9 +118,9 @@ def download_and_install(
             # command name.
             command_version = None
             stdout_lines = version_command.stdout.split("\n")
-            for l in stdout_lines:
-                if l.strip().startswith(command):
-                    _, command_version = l.strip().split(" ", maxsplit=2)
+            for line in stdout_lines:
+                if line.strip().startswith(command):
+                    _, command_version = line.strip().split(" ", maxsplit=2)
 
             if version_str in version_command.stdout:
                 logger.info("{command} is already up-to-date.")
@@ -131,21 +133,20 @@ def download_and_install(
         # We need to download and install the package.
         asset_metadata = get_matched_release_asset(release_metadata, asset_matcher)
 
-        downloaded_file = Path(f"/tmp/{gh_group}/{gh_project}/{asset_metadata["name"]}")
+        downloaded_file = Path(f"/tmp/{gh_group}/{gh_project}/{asset_metadata['name']}")
 
         server.files.directory(
             name=f"Create download directory {downloaded_file.parent}",
             path=downloaded_file.parent,
         )
 
-        asset_downloaded = files.download(
+        files.download(
             name=f"Downloading release {version}",
             src=asset_metadata["browser_download_url"],
             dest=str(downloaded_file),
         )
 
         if post_install is None:
-
             logger.info(f"Executing pre-baked rules with {downloaded_file.suffixes=}")
             match downloaded_file.suffixes:
                 case [".deb"]:
@@ -153,7 +154,7 @@ def download_and_install(
                         name="Install downloaded poackage",
                         src=downloaded_file,
                     )
-                case [*rest, ".tar", ".gz"] | [*rest, ".tar", ".xz"]:
+                case [*_rest, ".tar", ".gz"] | [*_rest, ".tar", ".xz"]:
                     match downloaded_file.suffixes[-1]:
                         case ".xz":
                             compression_flag = "J"
@@ -170,7 +171,9 @@ def download_and_install(
                         ],
                     )
                 case _:
-                    logger.info(f"No handler for {downloaded_file} ({downloaded_file.suffixes})")
+                    logger.info(
+                        f"No handler for {downloaded_file} ({downloaded_file.suffixes})"
+                    )
         else:
             commands = [
                 Template(c).safe_substitute(file=downloaded_file) for c in post_install
@@ -200,7 +203,6 @@ def download_and_install(
     return
 
 
-
 download_and_install(
     "pythops",
     "bluetui",
@@ -213,7 +215,9 @@ download_and_install(
 
 # Note: helix will always be re-downloaded because the version in the in tag has
 # leading zeros
-download_and_install("helix-editor", "helix", command="hx", asset_matcher="x86_64-linux")
+download_and_install(
+    "helix-editor", "helix", command="hx", asset_matcher="x86_64-linux"
+)
 
 download_and_install("casey", "just", asset_matcher="x86_64-unknown-linux-musl")
 

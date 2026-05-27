@@ -10,8 +10,5 @@ file_downloaded = files.download(
 if file_downloaded:
     server.shell(
         name="Run install script",
-        commands=[
-            "/tmp/claude-install.sh",
-            "rm /tmp/claude-install.sh"
-        ],
+        commands=["/tmp/claude-install.sh", "rm /tmp/claude-install.sh"],
     )

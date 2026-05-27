@@ -15,7 +15,8 @@ if "firefox" in host.get_fact(SnapPackages):
 
     files.put(
         name="Use firefox from ppa",
-        src=StringIO(textwrap.dedent("""\
+        src=StringIO(
+            textwrap.dedent("""\
             Package: *
             Pin: release o=LP-PPA-mozillateam
             Pin-Priority: 1001
@@ -23,7 +24,8 @@ if "firefox" in host.get_fact(SnapPackages):
             Package: firefox
             Pin: version 1:1snap*
             Pin-Priority: -1
-            """)),
+            """)
+        ),
         dest="/etc/apt/preferences.d/mozilla-firefox",
     )
 
