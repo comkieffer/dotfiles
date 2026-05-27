@@ -15,7 +15,7 @@
 # Workflow
 
 - When making a change, explain the resoning for the change before asking to execute the change.
-- If the repository has a .pre-commit-config.yml file, run `pre-commit --show-diff-on-faliure --files CHANGED_FILES` to lint the code, and address any issues in sections you changed.
+- If the repository has a .pre-commit-config.yml file, run `pre-commit --show-diff-on-failure --files CHANGED_FILES` to lint the code, and address any issues in sections you changed.
 - If the repository has a `justfile`, use that to run common commands
 - If the repository has a `pyproject.toml` file read it to see if the it uses `poetry` or `uv`
 - If the project uses `pytest`, run tests (with `uv` or `poetry` after making changes)

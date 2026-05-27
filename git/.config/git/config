@@ -165,13 +165,13 @@ path = ~/.config/git/config-work
 	# - `current`  - push to a branch with the same name on the receiving end
 	# - `upstream` - push to the branch that is usually pulled into this one
 	# - `simple`   - push to the branch that is set as _upstream_ for this branch
-	# - `matching` - push all brnaches with the same name on both ends
+	# - `matching` - push all branches with the same name on both ends
 	default = simple
 
 	# Automatically create remote tracking branch if required
 	autoSetupRemote = true
 
-	# Should `git fetch`, and `git pull` recusrively fetch into submodules.
+	# Should `git fetch`, and `git pull` recursively fetch into submodules.
 	# `on-demand` updates the submodule if a commit updates the submodule ref.
 	recurseSubmodules = on-demand
 
