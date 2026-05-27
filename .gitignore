@@ -10,5 +10,5 @@ ssh/
 pyinfra-*
 
 # Ignore sources, and build outputs from build scripts
-tool-builder/tool-srcs/*
-tool-builder/build/*
+tool-builder/cache/*
+tool-builder/tools/*

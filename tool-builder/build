@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# shellcheck source=lib/stdlib
+# shellcheck source=tool-builder/lib/stdlib
 source "$(dirname "${BASH_SOURCE[0]}")/lib/stdlib"
 
 action="build"
@@ -10,6 +10,7 @@ pkg_file=
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --version) action="version"; shift ;;
+        --install) action="install"; shift ;;
         --*) echo "Unknown flag: $1" >&2; exit 1 ;;
         *)   pkg_file="$1"; shift ;;
     esac
@@ -20,6 +21,8 @@ if [[ -z "$pkg_file" ]]; then
     exit 1
 fi
 
+pkg_file="$(dirname "${BASH_SOURCE[0]}")/pkgs/$pkg_file"
+
 if [[ ! -f "$pkg_file" ]]; then
     echo "error: pkg file not found: $pkg_file" >&2
     exit 1
@@ -28,7 +31,14 @@ fi
 # shellcheck source=/dev/null
 source "$pkg_file"
 
+# shellcheck disable=SC2154
+do_install() {
+    cp "$(bin_dir)/$name" "$HOME/.local/bin/$name"
+    echo "==> Installed $name to $HOME/.local/bin/$name"
+}
+
 case "$action" in
     version) echo "$version" ;;
     build)   build ;;
+    install) build; do_install ;;
 esac
