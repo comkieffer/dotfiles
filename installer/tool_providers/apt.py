@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import re
 
-from ..utils import run_cmd, version_satisfies
+from ..utils import Version, run_cmd
 
 
-def install(package_name: str) -> bool:
-    ok, _ = run_cmd("apt-get", "-yqq", "install", package_name)
-    return ok
+def install(package_name: str) -> tuple[bool, str]:
+    return run_cmd("apt-get", "-yqq", "install", package_name)
 
 
 def find_package_for_file(file: str) -> str | None:
     packages = []
     _, output = run_cmd("apt-file", "find", file)
+    assert isinstance(output, str)
+
     for line in output.splitlines():
         package, _ = line.split(":")
         packages.append(package.strip())
@@ -26,12 +27,12 @@ def find_package_for_file(file: str) -> str | None:
     return None
 
 
-def package_satisfies(package_name: str, min_version: tuple[int, ...]) -> bool:
+def package_satisfies(package_name: str, min_version: Version) -> bool:
     ok, stdout = run_cmd("apt", "policy", package_name)
     assert ok, "apt policy failed."
 
     if m := re.search(r"Candidate:\s*(\d+\.\d+(?:\.\d+)?)", stdout):
-        package_version = tuple(int(x) for x in m.group(1).split("."))
-        return version_satisfies(package_version, min_version)
+        package_version = Version(tuple(int(x) for x in m.group(1).split(".")))
+        return package_version >= min_version
 
     assert False, "The regex should have matched."

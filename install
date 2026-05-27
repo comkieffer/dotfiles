@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from installer.config import ProgramConfig, Recomends
+from installer.config import ProgramConfig, Recommends
 from installer.run import install_dotfiles
 
 REQUIRED_DIRS = [
@@ -34,15 +34,12 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
             ),
             Recomends(
                 "direnv",
-                ("/usr/bin/direnv",),
             ),
             Recomends(
                 "exa",
-                ("/usr/bin/exa",),
             ),
             Recomends(
                 "fzf",
-                ("/usr/bin/fzf",),
             ),
             Recomends(
                 "hx",
@@ -50,26 +47,18 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
             ),
             Recomends(
                 "jq",
-                ("/usr/bin/jq",),
             ),
             Recomends(
                 "just",
-                (
-                    "/usr/bin/just",
-                    "ubi://casey/just",
-                ),
-                min_version=(1, 30),
+
+                min_version="1.30.0",
             ),
             Recomends(
                 "starship",
-                ("ubi://starship/starship",),
             ),
             Recomends(
                 "zoxide",
-                (
-                    "/usr/bin/zoxide",
-                    "ubi://ajeetdsouza/zoxide",
-                ),
+
             ),
         ],
     ),

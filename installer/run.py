@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import os
+import pwd
 import sys
 from pathlib import Path
 
 from .config import ProgramConfig
-from .packages import is_installed
+from .utils import is_installed
 from .action_context import action
 
 
@@ -14,7 +16,7 @@ def _parse_args(stowable_programs: list[str]) -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         description=(
-            "Installer for dotfiles, provides some porcelain around GNU stow invocations."
+            "Installer for dotfiles, porcelain around GNU stow invocations."
             + valid_targets_msg
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -47,6 +49,29 @@ def _parse_args(stowable_programs: list[str]) -> argparse.Namespace:
     return args
 
 
+def check_sudo_home_preserved():
+    sudo_user = os.environ.get("SUDO_USER")
+    if not sudo_user:
+        return  # not running under sudo
+
+    current_home = os.environ.get("HOME")
+    actual_home = pwd.getpwnam(sudo_user).pw_dir
+
+    if current_home != actual_home:
+        print(
+            "\033[31mERROR Detected sudo. $HOME ({current_home}) does not match "
+            "{sudo_user}'s home {actual_home}.\033[0m"
+        )
+        print(
+            "\033[31mERROR Run with `sudo --preserver-env PATH,HOME` to preserve your "
+            "home directory.\033[0m"
+        )
+
+        return False
+
+    return True
+
+
 def install_dotfiles(
     required_dirs: list[str],
     stowable_programs: dict[str, ProgramConfig],
@@ -55,6 +80,9 @@ def install_dotfiles(
 
     if not is_installed("stow"):
         print("Error: `stow` is not installed. Install `stow` to continue.")
+        sys.exit(1)
+
+    if args.install_recommends and not check_sudo_home_preserved():
         sys.exit(1)
 
     valid_targets = []
