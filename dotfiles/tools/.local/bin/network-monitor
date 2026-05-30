@@ -25,7 +25,8 @@ import click
 DEFAULT_NETWORK = "192.168.1.0/24"
 
 try:
-    from rich.live import Live
+    # Dummy import to check if we can import rich
+    from rich import print
 
     HAS_RICH_SUPPORT = True
 except ModuleNotFoundError:

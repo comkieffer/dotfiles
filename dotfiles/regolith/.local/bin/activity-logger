@@ -1,0 +1,522 @@
+#!/usr/bin/env python3
+#
+# jq snippets to ease debugging:
+#
+# Print unique firfox window titles:
+#
+#   $ cat ~/focused-windows.jsonl \
+#       | jq 'select(.window_class == "firefox") | .window_title' \
+#       | sort | uniq
+#
+
+# TODO: instead of a timer, just subscribe to the i3ipc events for focus change and title change
+# TODO: refactor activity handling
+# Desired end result
+#
+# Summary View
+#
+# Development > Hyperion Protocol 5 h 26 min
+#   - clion: this_file.c (3 minutes)
+#   - smerge: 12 min
+#   - ...
+#
+# Agenda view
+#
+# 9:00 -> 9:12 Development > Hyperion Protocol
+#   - clion: this_file.c (3 minutes)
+#   - smerge: 12 min
+# 9:13 -> 9:14 Research > Firefox
+#   - url 1
+#   - url 2
+# ...
+
+import sys
+import json
+
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+from subprocess import run
+
+import click
+import i3ipc
+
+PROJECT_TO_DIR = {
+    "Hyperion Protocol": Path("~/dev/hyperion/hyperion-protocol").expanduser()
+}
+
+DIR_TO_PROJECT = {v: k for k, v in PROJECT_TO_DIR.items()}
+
+WINDOW_LOG_PATH = Path("~/focused-windows.jsonl").expanduser()
+
+
+@click.group()
+def main() -> None:
+    pass
+
+
+# region Service Management
+
+SERVICE_NAME = "activity-logger"
+
+SYSTEMD_USER_FOLDER = Path("~/.config/systemd/user/").expanduser()
+SYSTEMD_TIMER_FILE_PATH = SYSTEMD_USER_FOLDER / "activity-logger.timer"
+SYSTEMD_SERVICE_FILE_PATH = SYSTEMD_USER_FOLDER / "activity-logger.service"
+
+SYSTEMD_TIMER_FILE = """
+[Unit]
+Description=Run activity logger regularly
+
+[Timer]
+# Activate the timer 1 minute after startup and run every minute after that
+OnStartupSec=1min
+OnUnitActiveSec=1min
+
+[Install]
+WantedBy=timers.target
+"""
+
+SYSTEMD_SERVICE_FILE = """
+[Unit]
+Description=Activity logger - Collect focused window titles
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/activity-logger collect
+
+[Install]
+WantedBy=default.target
+"""
+
+
+@main.group()
+@click.pass_context
+def service(ctx):
+    """
+    Manage the activity-logger service
+    """
+    if ctx.invoked_subcommand is None:
+        service_status()
+
+
+@service.command()
+def install_service() -> None:
+    """
+    Install a systemd user service and timer to collect metrics every minute
+    """
+    if SYSTEMD_TIMER_FILE_PATH.exists():
+        click.echo(f"Unable to install timer: {SYSTEMD_TIMER_FILE_PATH} exists")
+        sys.exit(1)
+
+    if SYSTEMD_SERVICE_FILE_PATH.exists():
+        click.echo(f"Unable to install service: {SYSTEMD_SERVICE_FILE_PATH} exists")
+        sys.exit(1)
+
+    if not SYSTEMD_USER_FOLDER.exists():
+        click.echo("Creating systemd user-units folder {SYSTEM_DUSER_FOLDER}")
+        SYSTEMD_USER_FOLDER.mkdir(parents=True)
+
+    with SYSTEMD_TIMER_FILE_PATH.open("w+") as timer:
+        timer.write(SYSTEMD_TIMER_FILE)
+
+    with SYSTEMD_SERVICE_FILE_PATH.open("w+") as service:
+        service.write(SYSTEMD_SERVICE_FILE)
+
+    click.echo(f"Installed {SYSTEMD_TIMER_FILE_PATH}")
+    click.echo(f"Installed {SYSTEMD_SERVICE_FILE_PATH}")
+
+    run_opts = {"text": True, "check": True}
+    run(["systemctl", "--user", "daemon-reload"], **run_opts)
+    run(["systemctl", "--user", "enable", f"{SERVICE_NAME}.service"], **run_opts)
+    run(["systemctl", "--user", "enable", f"{SERVICE_NAME}.timer"], **run_opts)
+    run(["systemctl", "--user", "start", f"{SERVICE_NAME}.timer"], **run_opts)
+
+    click.echo(
+        "Enabled timer service. Use 'journalctl --user-unit activity-logger' to check logs"
+    )
+
+
+@service.command()
+def service_status() -> None:
+    run_opts = {"text": True}
+    run(["systemctl", "--user", "status", f"{SERVICE_NAME}.timer"], **run_opts)
+    run(["systemctl", "--user", "status", f"{SERVICE_NAME}.service"], **run_opts)
+
+
+@service.command()
+def uninstall_service() -> None:
+    """
+    Remove the systemd service and timer
+    """
+
+    if SYSTEMD_TIMER_FILE_PATH.exists():
+        SYSTEMD_TIMER_FILE_PATH.unlink()
+        click.echo(f"Removed {SYSTEMD_TIMER_FILE_PATH}")
+
+    if SYSTEMD_SERVICE_FILE_PATH.exists():
+        SYSTEMD_SERVICE_FILE_PATH.unlink()
+        click.echo(f"Removed {SYSTEMD_SERVICE_FILE_PATH}")
+
+
+def extract_valid_path(input: str) -> Path:
+    fragments = input.split(" ")
+    for fragment in fragments:
+        fragment = Path(fragment).expanduser()
+        if fragment.is_absolute() and fragment.exists():
+            return fragment
+
+    return None
+
+
+def get_git_branch(workdir: Path) -> str:
+    if not workdir.is_dir():
+        workdir = workdir.parent
+
+    run_opts = {"text": True, "capture_output": True}
+    ret = run(["git", "-C", workdir, "branch", "--show-current"], **run_opts)
+
+    if ret.returncode == 0:
+        return ret.stdout.strip()
+    elif ret.returncode == 128:
+        return None
+    else:
+        raise RuntimeError(f"Call to git ('{ret.args}') returned {ret.returncode}.")
+
+
+@main.command()
+def collect() -> None:
+    """
+    Collect activity metrics and save them to file
+    """
+    i3 = i3ipc.Connection()
+    tree = i3.get_tree()
+    focused = tree.find_focused()
+
+    if focused is None:
+        return
+
+    log_entry = {
+        "window_class": focused.window_class,
+        "window_instance": focused.window_instance,
+        "window_role": focused.window_role,
+        "window_title": focused.window_title,
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+    if workdir := extract_valid_path(focused.window_title):
+        if git_branch := get_git_branch(workdir):
+            log_entry["git-branch"] = git_branch
+
+    with WINDOW_LOG_PATH.open("a+") as f:
+        f.write(json.dumps(log_entry) + "\n")
+
+    click.echo(f"Focused window: {focused.window_class} ({focused.window_title})")
+
+
+@dataclass
+class ActivityEntry:
+    type: str = "Other"
+    project: str = "N/A"
+    feature: str = ""
+
+    tool: str = "Unknown"
+
+    context: dict = field(default_factory=dict)
+
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+
+    @property
+    def duration(self) -> timedelta:
+        if self.started_at is None or self.finished_at is None:
+            return timedelta()
+
+        return self.finished_at - self.started_at
+
+    def __str__(self) -> str:
+        context_strings = "\n".join(f"  - {k}: {v}" for k, v in self.context.items())
+
+        return (
+            f"[{self.started_at.strftime('%H:%M')} -> {(self.finished_at or datetime.now()).strftime('%H:%M')}  ({self.duration})]\n"
+            f"{self.type} > {self.project}\n"
+            f"{context_strings}"
+        )
+
+
+@dataclass
+class TimeSpend:
+    type: str
+    project: str
+    tool: str
+
+    entries: list[ActivityEntry] = field(default_factory=list)
+
+    @property
+    def duration(self) -> timedelta:
+        return sum((e.duration for e in self.entries), start=timedelta())
+
+
+def find_repository_root(filepath: Path) -> Path:
+    cmd_status = run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=filepath.parent,
+        text=True,
+        capture_output=True,
+    )
+
+    if cmd_status.returncode != 0:
+        return filepath
+
+    return cmd_status.stdout.strip()
+
+
+def process_firefox_activity(log_entry) -> ActivityEntry:
+    # The window title looks like
+    #    page title \u2014 Mozilla Firefox
+    # We want to discard everything after the \u2014
+    page_title = log_entry["window_title"].rsplit(" \u2014 ", maxsplit=1)[0].strip()
+
+    activity = ActivityEntry(tool="firefox")
+    if page_title.endswith("Hyperion Technologies B.V.'s Workspace"):
+        activity.type = "Clickup"
+
+    elif page_title.endswith("Microsoft Teams classic"):
+        activity.type = "Teams Chat/Meeting"
+        chatting_with = page_title.split(" | ", maxsplit=1)[0].strip()
+        activity.context = {"chatting_with": chatting_with}
+
+    else:
+        activity.type = "Research"
+        activity.context = {"page title": page_title}
+
+    return activity
+
+
+def process_gnome_terminal_activity(log_entry) -> ActivityEntry:
+    activity = ActivityEntry(type="Development", tool="Gnome Terminal")
+
+    try:
+        running_command, work_dir = log_entry["window_title"].rsplit(maxsplit=1)
+    except ValueError:
+        # Not enough values to unpack
+        running_command = log_entry["window_title"]
+        work_dir = ""
+
+    work_dir = find_repository_root(Path(work_dir))
+    activity.project = DIR_TO_PROJECT.get(work_dir, str(work_dir))
+
+    activity.context = {"command": running_command}
+
+    return activity
+
+
+def process_obsidian_activity(log_entry) -> ActivityEntry:
+    activity = ActivityEntry(type="Research", tool="Obsidian")
+
+    # The title structure is
+    #   Catch2 CMake Integration - The Sum Of All Knowledge - Obsidian v1.5.8
+    # The first part is the page name, that's the only bit we care about
+    page = log_entry["window_title"].split(" - ", maxsplit=1)[0]
+
+    activity.context = {"topic": page}
+
+    return activity
+
+
+def process_clion_activity(log_entry) -> ActivityEntry:
+    activity = ActivityEntry(type="Development", tool="Clion")
+
+    # The title structure is
+    #   Hyperion Protocol \u2013 arena.h
+    # The project name is that part before the \u2013
+    project = log_entry["window_title"].split(" \u2013 ", maxsplit=1)[0].strip()
+    activity.project = project
+    activity.work_dir = PROJECT_TO_DIR.get(project, None)
+
+    return activity
+
+
+def process_sublime_merge_activity(log_entry) -> ActivityEntry:
+    activity = ActivityEntry(type="Development", tool="Sublime Merge")
+
+    # The title structure is
+    #    ~/dev/hyperion/hyperion-protocol - Sublime Merge (UNREGISTERED)
+    # The first part is the page name, that's the only bit we care about
+    work_dir = log_entry["window_title"].split(" - ", maxsplit=1)[0]
+    work_dir = Path(work_dir).expanduser().resolve()
+    work_dir = find_repository_root(work_dir)
+
+    activity.project = DIR_TO_PROJECT.get(work_dir, str(work_dir))
+
+    return activity
+
+
+def process_vscode_activity(log_entry) -> ActivityEntry:
+    activity = ActivityEntry(type="Development", tool="VS Code")
+
+    # The structure of the VS Code title, if the file is unsaved, is
+    #   \u25cf CURRENT_WORK_DIR - CURRENT_FILE - Visual Studio Code",
+    # We want to extract the working directory and the current file
+    window_title = log_entry["window_title"][2:]
+    if window_title[0] == "\u25cf":
+        window_title = window_title[1:]
+
+    work_dir, work_file, _ = window_title.split(" - ", maxsplit=2)
+    if work_dir[0] != "~":
+        work_dir = Path("~") / work_dir
+
+    work_dir = Path(work_dir).expanduser().resolve()
+    work_dir = find_repository_root(work_dir)
+    activity.project = DIR_TO_PROJECT.get(work_dir, str(work_dir))
+
+    activity.context = {"file": work_file}
+
+    return activity
+
+
+def process_log_entry(log_entry) -> ActivityEntry:
+    match log_entry["window_class"]:
+        case "Code":
+            new_activity = process_vscode_activity(log_entry)
+        case "firefox":
+            new_activity = process_firefox_activity(log_entry)
+        case "Gnome-terminal":
+            new_activity = process_gnome_terminal_activity(log_entry)
+        case "obsidian":
+            new_activity = process_obsidian_activity(log_entry)
+        case "jetbrains-clion":
+            new_activity = process_clion_activity(log_entry)
+        case "Sublime_merge":
+            new_activity = process_sublime_merge_activity(log_entry)
+        case _:
+            new_activity = ActivityEntry(type="Other", context=log_entry)
+
+    if new_activity.started_at is None:
+        new_activity.started_at = datetime.fromisoformat(log_entry["time"])
+
+    new_activity.feature = log_entry.get("git-branch", None)
+
+    return new_activity
+
+
+def merge_activities(activities: list[ActivityEntry]) -> list[ActivityEntry]:
+    merged_activities = []
+
+    for new in activities:
+        if len(merged_activities) == 0:
+            merged_activities.append(new)
+            continue
+
+        previous = merged_activities[-1]
+
+        if new.tool == "Sublime Merge":
+            print()
+
+        # If we have an unreasonably large gap between activities then the computer was probably sleeping
+        if (
+            previous.finished_at is None
+            and new.started_at - previous.started_at > timedelta(minutes=5)
+        ):
+            previous.finished_at = previous.started_at + timedelta(minutes=1)
+
+        # If we have moved to a new day, start fresh
+        if new.started_at.day != previous.started_at.day:
+            if previous.finished_at is None:
+                previous.finished_at = previous.started_at + timedelta(minutes=1)
+            merged_activities.append(new)
+            continue
+
+        # If the new activity is on the same project as the old one, then we have nothing to do
+        if (
+            new.type == previous.type
+            and new.project == previous.project
+            and new.feature == previous.feature
+            and new.tool == previous.tool
+        ):
+            continue
+
+        # If we have started something new, add the activity and close out the old one.
+        previous.finished_at = new.started_at
+        merged_activities.append(new)
+
+    merged_activities[-1].finished_at = activities[-1].finished_at
+    return merged_activities
+
+
+def group_activities_by_day(
+    activities: list[ActivityEntry],
+) -> dict[datetime, list[ActivityEntry]]:
+    days: dict[datetime, list[ActivityEntry]] = {}
+
+    for a in activities:
+        activity_day = a.started_at.replace(hour=1, minute=0, second=0)
+        if activity_day not in days:
+            days[activity_day] = []
+
+        days[activity_day].append(a)
+
+    return days
+
+
+def group_activities_by_project(
+    activities: list[ActivityEntry],
+) -> dict[str, ActivityEntry]:
+    projects: dict[str, TimeSpend] = {}
+
+    for a in activities:
+        qualified_project = f"{a.project} > {a.feature} > {a.tool}"
+        if qualified_project not in projects:
+            projects[qualified_project] = TimeSpend(
+                type=a.type, project=a.project, tool=a.tool
+            )
+
+        projects[qualified_project].entries.append(a)
+
+    return projects
+
+
+@main.command()
+def coalesce_activities() -> None:
+    activities = []
+
+    with WINDOW_LOG_PATH.open() as log_lines:
+        # with Path("/home/tch/focused-windows-snippet.jsonl").open() as log_lines:
+
+        for line in log_lines:
+            log_entry = json.loads(line)
+            activities.append(process_log_entry(log_entry))
+
+    activities = merge_activities(activities)
+    activities_by_day = group_activities_by_day(activities)
+
+    activities_by_day_by_project = {}
+    for day, activities_today in activities_by_day.items():
+        activities_by_day_by_project[day] = group_activities_by_project(
+            activities_today
+        )
+
+        print(f"\n## {day}")
+        total_time = timedelta()
+        activities_this_day = sorted(
+            activities_by_day_by_project[day].values(),
+            key=lambda x: (x.type, x.project, x.tool),
+        )
+        for project in activities_this_day:
+            print(
+                f"[{project.type: <11}] {project.project: <35} > {project.tool: <15}] : {project.duration}"
+            )
+            total_time += project.duration
+
+        print(f"Total: {total_time}")
+
+    print("helllo")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+
+    sys.exit(0)

@@ -1,0 +1,719 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "click",
+#     "python-gitlab",
+#     "rich",
+#     "StrEnum",
+# ]
+# ///
+from __future__ import annotations
+
+import math
+import re
+import sys
+import time
+import tempfile
+from datetime import datetime
+from pathlib import Path
+from subprocess import run, PIPE, CalledProcessError
+from urllib.parse import urlparse, urljoin
+from requests.exceptions import ConnectionError
+
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
+
+import click
+import gitlab
+
+from rich import print
+from rich.console import Console, Group, group
+from rich.live import Live
+from rich.panel import Panel
+from rich.syntax import Syntax
+from rich.table import Table, Column
+from rich.text import Text
+
+# region Entrypoints
+
+
+@click.group()
+def main() -> None:
+    pass
+
+
+@main.command()
+def sync() -> None:
+    """Pull the default branch and rebase the current branch onto it"""
+
+    _, starting_branch = git("branch --show-current")
+    print(f"Initial branch is {starting_branch}")
+
+    git("fetch --tags --prune --prune-tags")
+
+    is_dirty, _ = git("diff --quiet", check=False)
+    if is_dirty:
+        print("Workspace is dirty. Stashing changes ...")
+        git("stash save --include-untracked before-sync")
+
+    _, default_on_remote = git("symbolic-ref refs/remotes/origin/HEAD --short")
+    default_branch = default_on_remote.split("/")[1]
+
+    if starting_branch != default_branch:
+        print(f"Switching to {default_branch} ...")
+        git(f"switch {default_branch}")
+
+    print(f"Pulling changes on {default_branch} ...")
+    git("pull origin")
+
+    if starting_branch != default_branch:
+        print(f"Switching to {starting_branch} and rebasing onto {default_branch} ...")
+        git(f"switch {starting_branch}")
+        git(f"rebase {default_branch}")
+
+    if is_dirty:
+        print("Popping stash ...")
+        git("pop stash")
+
+
+@main.command()
+@click.argument("url", type=str)
+@click.argument("token", type=str)
+def store_gitlab_token(url, token):
+    """
+    Save a personal access token for a gitlab instance
+
+    - Url of the gitlab instance
+    - Personal access token for the instance
+    """
+
+    cmd = [
+        "secret-tool",
+        "store",
+        "--label",
+        f"Personal Access token for '{url}'",
+        "service",
+        url,
+        "username",
+        "personal-access-token",
+    ]
+
+    result = run(cmd, text=True, input=token)
+    if result.returncode != 0:
+        print("Unable to save access token to keyring.")
+        sys.exit(1)
+
+    print(f"Access token saved. Use '{sys.argv[0]} read-gitlab-token' to read it.")
+
+
+@main.group("open")
+@click.pass_context
+def command_open(ctx: click.Context):
+    """Open the merge request associated with this branch"""
+    ctx.obj = Repository()
+
+
+@command_open.command()
+@click.pass_obj
+def repo(obj: Repository):
+    """Open the repossitory in Gitlab"""
+    print(f"Opening {obj.url_for_repository} ...")
+    exec(["xdg-open", obj.url_for_repository])
+
+
+@command_open.command()
+@click.pass_obj
+def issues(obj: Repository):
+    """Open the issues page repossitory in Gitlab"""
+    print(f"Opening issues page for {obj.url_for_repository()} ...")
+    exec(["xdg-open", obj.url_for_issues()])
+
+
+@command_open.command()
+@click.pass_obj
+def mr(repo: Repository):
+    """Open the merge request associated with this branch"""
+
+    console = Console()
+    with console.status("Fetching merge requests ..."):
+        merge_request_url = repo.url_for_merge_request(branch=repo.branch)
+
+    if not merge_request_url:
+        print("No open merge requests found for this branch.")
+        raise SystemError(2)
+
+    print(f"Opening {merge_request_url} ...")
+    exec(["xdg-open", merge_request_url])
+
+
+@main.group()
+@click.pass_context
+def ci(ctx):
+    ctx.obj = Repository()
+
+
+# TODO
+# latest should show a snapshot of the state of the latest pipeline like watch
+#
+
+
+@ci.command()
+@click.option("-l", "--latest", is_flag=True, help="Only show the most recent pipeline")
+@click.pass_obj
+def show(repo: Repository, latest: bool):
+    """Get the state of the CI pipelines associated with this MR"""
+
+    _, current_branch = git("rev-parse --abbrev-ref HEAD")
+
+    console = Console()
+    try:
+        with console.status("Fetching merge request pipelines ...") as s:
+            merge_request = repo.merge_requests(
+                source_branch=current_branch, state="opened"
+            )[0]
+
+            extra_args = {"get_all": True}
+            if latest:
+                extra_args = {"order_by": "updated_at", "sort": "desc", "page": 1}
+
+            pipelines = repo.pipelines(merge_request_id=merge_request.id, **extra_args)
+
+            if latest:
+                pipelines = [pipelines[0]]
+
+            commits = {}
+            for pipeline in pipelines:
+                commits[pipeline.sha] = repo.commit(pipeline.sha)
+
+    except (gitlab.GitlabGetError, gitlab.GitlabAuthenticationError) as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(2)
+
+    grid = Table.grid("Status", "", "When", "", Column("What", min_width=60), "Who")
+
+    def format_status(status: str) -> str:
+        def get_color_emoji(status):
+            match status.lower():
+                case "success":
+                    return "✅", "green"
+                case "failed":
+                    return "❌", "red"
+                case "running":
+                    return "🔄", "blue"
+                case "pending":
+                    return "⏳", "yellow"
+                case _:
+                    return "", "dim"
+
+        emoji, color = get_color_emoji(status)
+        return f"{emoji:>3} [{color} bold]{status.title()}[/]"
+
+    for pipeline in pipelines:
+        if pipeline.sha in commits:
+            commit = commits[pipeline.sha]
+            commit_title = commit.message.split("\n")[0]
+            author = commit.author_name
+        else:
+            commit_title = f"[dim]Missing commit ({pipeline.sha[:7]})[/]"
+            author = ""
+
+        commit_url = repo.url_for_commit(pipeline.sha)
+        what = (
+            f"[bold]{commit_title}[/]\n"
+            f"  Pipeline: [link={pipeline.web_url}]#{pipeline.id}[/], Commit: [link={commit_url}]{pipeline.sha[:7]}[/]"
+        )
+
+        grid.add_row(
+            format_status(pipeline.status),
+            "",
+            time_ago(pipeline.created_at),
+            "",
+            what,
+            "",
+            author,
+        )
+
+    branch_url = repo.url_for_branch(current_branch)
+
+    print(
+        f"Pipelines for [blue bold]{merge_request.title}[/] ([link={merge_request.web_url}][blue]!{merge_request.iid}[/][/link]) "
+        f"on branch [link={branch_url}][blue bold]{current_branch}[/]"
+    )
+    print()
+    print(grid)
+
+
+# TODO use a live layout to stream logs of the running job
+
+
+@ci.command()
+@click.pass_obj
+def watch(project: GitlabProject):
+    """
+    Show the state of the latest pipeline associated with this branch
+    """
+
+    _, current_branch = git("rev-parse --abbrev-ref HEAD")
+
+    console = Console()
+    try:
+        with console.status("Fetching merge request pipelines ...") as s:
+            print(project)
+            merge_request = project.merge_requests(
+                source_branch=current_branch, state="opened"
+            )[0]
+
+            pipelines = project.pipelines(
+                merge_request_id=merge_request.id,
+                order_by="updated_at",
+                sort="desc",
+                page=1,
+            )
+            print(pipelines)
+            pipeline = pipelines[0]
+
+            commit = project.commit(pipeline.sha)
+
+            if not (pipelines and len(pipelines) > 0):
+                click.echo("Not pipelines for this branch")
+                raise SystemExit(3)
+
+    except (gitlab.GitlabGetError, gitlab.GitlabAuthenticationError) as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(2)
+
+    pipeline_jobs = []
+
+    @group()
+    def show_job_state(
+        job,
+        show_logs_for_running: bool = False, show_logs_for_failed: bool = False,
+        save_logs_for_failed: bool = False
+    ):
+        job_status = GitlabJobStatus(job.status)
+
+        duration_str = (
+            f" (in {pretty_duration(job.duration)})" if job_status.is_finished else ""
+        )
+        yield (
+            f" - [link={job.web_url}]{job.name.replace('-', ' ').title()}[/] "
+            f"{'.' * (70 - len(job.name) - len(job_status.value))} "
+            f"[bold]{job_status.__rich__()}[/]{duration_str}"
+        )
+
+        if (show_logs_for_running and job_status.is_running) or (
+            show_logs_for_failed and job_status == GitlabJobStatus.Failed
+        ):
+            full_job = project.job(job.id)
+            full_log = full_job.trace()
+
+            log_lines = full_log.decode("utf-8").split("\n")
+
+            num_lines = min(len(log_lines), 30)
+            start_line = len(log_lines) - num_lines
+            end_line = start_line + num_lines
+
+            grid = Table.grid("line_no", "line")
+            grid.add_row("", "")
+
+            for line_no, line in enumerate(log_lines[-num_lines:], start=start_line):
+                grid.add_row(f"[dim]{line_no:>5}[/] ", Text.from_ansi(line))
+
+            grid.add_row("", "")
+
+            yield ""
+            yield Panel(
+                grid,
+                title=f"Log for failed job [bold]{job.name}[/] (lines [bold]{start_line}[/] to [bold]{end_line}[/] of [bold]{len(log_lines)}[/])",
+            )
+
+        if save_logs_for_failed and job_status == GitlabJobStatus.Failed:
+            with tempfile.NamedTemporaryFile(dir="/tmp", delete=False) as f:
+                f.write(full_log)
+                yield(f"    Full log saved to {f.name}")
+
+    @group()
+    def show_pipeline_state(
+        show_logs_for_running: bool = False,
+        show_logs_for_failed: bool = False,
+        save_logs_for_failed: bool = False
+    ):
+        yield (
+            f"Pipeline [link={pipeline.web_url}]#{pipeline.id}[/] "
+            f"for '{commit.title}' ([link={commit.web_url}]{pipeline.sha[:7]}[/]) "
+            f"(MR [link={merge_request.web_url}]!{merge_request.iid}[/])"
+        )
+
+        commit_message_lines = commit.message.split("/n")
+        if len(commit_message_lines) > 1:
+            yield ""
+            for line in commit_message_lines[1:]:
+                yield f"[dim]>[/] {line}"
+            yield ""
+
+        yield (
+            f"Created {time_ago(pipeline.created_at)}. "
+            f"Last updated {time_ago(pipeline.updated_at)}"
+        )
+
+        nonlocal pipeline_jobs
+        pipeline_jobs = pipeline.jobs.list()
+        pipeline_jobs.reverse()
+
+        yield "\nJobs:"
+        for job in pipeline_jobs:
+            yield show_job_state(job, show_logs_for_running=True)
+
+    with Live(show_pipeline_state(), transient=True, refresh_per_second=1) as live:
+        while True:
+            if all((GitlabJobStatus(j.status).is_finished for j in pipeline_jobs)):
+                break
+
+            live.update(show_pipeline_state())
+            time.sleep(1)
+
+    print(show_pipeline_state(show_logs_for_failed=True, save_logs_for_failed=True))
+
+@main.command()
+def merge_requests():
+    """Show open merge requests for this project"""
+
+    repo = Repository()
+
+    for mr in repo.merge_requests(state="opened", order_by="updated_at"):
+        mr_state = mr.detailed_merge_status.replace('_', ' ').title()
+        if mr_state == "Mergeable":
+            mr_state = f"[green]{mr_state}[/]"
+
+        print("")
+        print(
+            f"[link={mr.web_url}][bold]{mr.reference:>3} {mr.title}[/][/]    "
+            f"({mr.target_branch}) ← ({mr.source_branch}) "
+            f"(updated {time_ago(mr.updated_at)})"
+        )
+        if mr.assignee is not None:
+            print(f"     Author: {mr.assignee['name']}")
+
+        if len(mr.reviewers) > 0:
+            print(f"     Reviewer: {mr.reviewers[0]['name']}")
+
+        print(f"     State: {mr_state}")
+
+
+@main.command()
+def issues():
+    """Show issues for this project"""
+
+    repo = Repository()
+
+    for issue in repo.issues():
+        print("")
+        print(
+            f"{issue.references['short']} {issue.title} "
+            f"(updated {time_ago(issue.updated_at)})"
+        )
+
+        # TODO: Pull label color from gitlab?
+        if len(issue.labels):
+            print(f"    {' '.join(issue.labels)}")
+
+        if issue.milestone:
+            ms = issue.milestone
+            expired_warning = "[yellow]Expired[/]" if ms['expired'] else ""
+            print(f"    [link={ms['web_url']}]{ms['title']}[/] ({ms['state'].title()}) {expired_warning}")
+
+
+        print(f"    Author: [bold]{issue.author['name']}[/]")
+
+        if issue.assignees:
+            assignees = (f"[bold]{a['name']}[/]" for a in issue.assignees)
+            print(f"    Assignees: {', '.join(assignees)}")
+
+# endregion Entrypoints
+
+# region Support Methods
+
+
+def exec(
+    command: str | list[str],
+    *,
+    check: bool = True,
+    shell: bool = False,
+    capture_output: bool = True,
+    **kwargs,
+) -> tuple[int, str]:
+    if isinstance(command, str) and not shell:
+        command = command.split(" ")
+
+    try:
+        ret = run(
+            command,
+            text=True,
+            capture_output=capture_output,
+            shell=shell,
+            check=check,
+            **kwargs,
+        )
+        return ret.returncode, ret.stdout.strip()
+    except CalledProcessError as ex:
+        print(
+            f"Call to {ex.cmd} failed. Returned {ex.returncode}. Standard Error was: '{ex.stderr}'"
+        )
+        raise SystemExit(1)
+
+
+def git(command: str | list[str], *, check: bool = True) -> tuple[int, str]:
+
+    if isinstance(command, str):
+        command = command.split(" ")
+
+    command = ["git", *command]
+
+    return exec(command)
+
+
+def read_token(url) -> str:
+    cmd = ["secret-tool", "lookup", "service", url]
+
+    result = run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    if result.returncode != 0:
+        print(f"Cannot find '{url}' in keyring")
+        sys.exit(1)
+
+    return result.stdout.strip()
+
+
+# endregion Support Methods
+
+# region Date / Time Methods
+
+
+def count_digits(n):
+    if n == 0:
+        return 1
+    return math.floor(math.log10(abs(n))) + 1
+
+
+def time_ago(date_time):
+    now = datetime.now()
+
+    if isinstance(date_time, str):
+        date_time = datetime.fromisoformat(date_time.replace("Z", ""))
+
+    delta = now - date_time
+
+    if delta.days == 0:
+        return "at " + date_time.strftime("%I:%M %p")
+    elif delta.days == 1:
+        return "1 day ago"
+    elif delta.days < 7:
+        return f"{delta.days} days ago"
+    elif delta.days < 30:
+        weeks = delta.days // 7
+        return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+    elif delta.days == 30:
+        return "1 month ago"
+    elif delta.days < 365:
+        return f"{delta.days // 30} months ago"
+    else:
+        return f"{delta.days // 365} years ago"
+
+
+def pretty_duration(seconds):
+    intervals = (
+        ("h", 3600),
+        ("min", 60),
+        ("sec", 1),
+    )
+    result = []
+    for name, count in intervals:
+        value = seconds // count
+        if value:
+            seconds -= value * count
+            result.append(f'{int(value)} {name}{"s" if value != 1 else ""}')
+    return " ".join(result)
+
+
+# endregion
+
+# region Repository Class & Support Methods
+
+
+def ssh_url_to_https(remote_url: str) -> str:
+    if remote_url.startswith("git@"):
+        http_url = remote_url.replace(":", "/")
+        http_url = re.sub(r"^git@", "https://", http_url)
+    elif remote_url.startswith("git://"):
+        http_url = re.sub(r"^git:", "https:", remote_url)
+    else:
+        http_url = remote_url  # If it's already an HTTP URL
+
+    return http_url.strip("/").replace(".git", "")
+
+
+class Repository:
+
+    def __init__(self) -> None:
+        _, remote_url = git("remote get-url origin")
+
+        if "gitlab" not in remote_url:
+            print("Error: Only gitlab remotes are supported.")
+            sys.exit(1)
+
+        self._http_remote = ssh_url_to_https(remote_url)
+
+        url_parts = urlparse(self._http_remote)
+        token = read_token(url_parts.hostname)
+
+        self._instance_url = f"{url_parts.scheme}://{url_parts.netloc}"
+        self._project_namespace = url_parts.path[1:]
+
+        try:
+            self._gl = gitlab.Gitlab(self._instance_url, private_token=token)
+            self._gl.auth()
+
+            self._project = self._gl.projects.get(self._project_namespace)
+
+        except ConnectionError as e:
+            click.echo("Unable to resolve instance. Is your VPN enabled?", err=True)
+            raise SystemExit(1)
+
+        except (gitlab.GitlabGetError, gitlab.GitlabAuthenticationError) as e:
+            click.echo(f"Error: {e}", err=True)
+            raise SystemExit(1)
+
+    @property
+    def branch(self) -> str:
+        return git("rev-parse --abbrev-ref HEAD")
+
+    def url_for_repository(self) -> str:
+        return self._http_remote
+
+    def url_for_commit(self, hash):
+        return f"{self._http_remote}/-/commit/{hash}"
+
+    def commit(self, hash):
+        return self._project.commits.get(hash)
+
+    def url_for_branch(self, branch):
+        return f"{self._http_remote}/-/branch/{branch}"
+
+    def url_for_issues(self):
+        return f"{self._http_remote}/-/issues/"
+
+    def issues(self, *args, **kwargs):
+        return self._project.issues.list(*args, **kwargs)
+
+    def url_for_merge_request(self, mr: int | None, branch=str | None) -> str | None:
+        if (mr is not None and branch is not None) or (mr is None and branch is None):
+            raise ValueError("Only one of `mr` and `branch` may be specified")
+
+        if mr:
+            return f"{self._http_remote}/-/merge_requests/{mr}"
+
+        try:
+            project = self._gl.projects.get(self._project_namespace)
+            merge_requests = project.mergerequests.list(
+                source_branch=branch,
+                state="opened",
+            )
+
+            if len(merge_requests) > 0:
+                return merge_requests[0].web_url
+
+            return None
+
+        except (gitlab.GitlabGetError, gitlab.GitlabAuthenticationError) as e:
+            click.echo(f"Error: {e}", err=True)
+            raise SystemExit(2)
+
+    def merge_request(self, id: int):
+        return self._project.merge_requests.get(id)
+
+    # See https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
+    def merge_requests(self, *args, **kwargs):
+        merge_requests = self._project.mergerequests.list(*args, **kwargs)
+
+        if not merge_requests:
+            print("No open merge requests found for this branch.")
+            raise SystemError(2)
+
+        return merge_requests
+
+    def pipelines(self, *args, **kwargs):
+        return self._project.pipelines.list(*args, **kwargs)
+
+    def job(self, job_id):
+        return self._project.jobs.get(job_id)
+
+
+# endregion Repository Class & Support Methods
+
+# region Gitlab Project Class & Support Methods
+
+
+class GitlabJobStatus(StrEnum):
+
+    Created = "created"
+
+    Pending = "pending"
+
+    Running = "running"
+
+    Success = "success"
+
+    Failed = "failed"
+
+    Skipped = "skipped"
+
+    @property
+    def not_started(self):
+        return self in [
+            GitlabJobStatus.Created,
+            GitlabJobStatus.Pending,
+            GitlabJobStatus.Skipped,
+        ]
+
+    @property
+    def is_running(self):
+        """
+        Jobs that have started running but not finished.
+        """
+
+        return self in (GitlabJobStatus.Running,)
+
+    @property
+    def is_finished(self) -> bool:
+        """
+        Jobs that started and ran
+        """
+        return self in (
+            GitlabJobStatus.Success,
+            GitlabJobStatus.Failed,
+            GitlabJobStatus.Skipped,
+        )
+
+    @property
+    def is_success(self):
+        return self in (GitlabJobStatus.Success,)
+
+    def __rich__(self):
+        if self.is_finished:
+            if self.is_success:
+                return Text(f"[green]{self.name}[/]")
+            else:
+                return Text(f"[red]{self.name}[/]")
+
+        if self.not_started:
+            return Text(f"[dim]{self.name}[/]")
+
+        return Text(self.name)
+
+
+# endregion Gitlab Project Class & Support Methods
+
+if __name__ == "__main__":
+    main()
