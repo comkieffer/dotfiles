@@ -1,0 +1,9 @@
+name="mergiraf"
+version="0.17.0"
+
+build() {
+    build_with_rust \
+        --repo    "https://codeberg.org/mergiraf/mergiraf" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}

@@ -1,0 +1,9 @@
+name="diffr"
+version="v0.1.5"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/mookid/diffr" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}

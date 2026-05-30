@@ -1,0 +1,9 @@
+name="difft"
+version="0.69.0"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/wilfred/difftastic" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}
