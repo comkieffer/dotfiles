@@ -13,3 +13,9 @@ git:
     # because they need access to the entire diff, so just post-processing
     # git's diff is not enough for them.
     - externalDiffCommand: difft --color=always
+
+    # Show changes in a single column - helpful in narrower windows
+    - externalDiffCommand: difft --color=always --display=inline
+
+    # Git default pager
+    - {}
