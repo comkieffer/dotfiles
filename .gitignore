@@ -11,4 +11,4 @@ pyinfra-*
 
 # Ignore sources, and build outputs from build scripts
 tool-builder/cache/*
-tool-builder/tools/*
+tool-builder/bin/*

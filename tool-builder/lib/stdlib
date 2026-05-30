@@ -4,7 +4,7 @@
 TOOL_BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 build_dir() { echo "$TOOL_BUILDER_DIR/cache"; }
-bin_dir()   { echo "$TOOL_BUILDER_DIR/tools"; }
+bin_dir()   { echo "$TOOL_BUILDER_DIR/bin"; }
 src_dir()   { echo "$TOOL_BUILDER_DIR/cache/srcs/$1"; }
 
 # Sets ARCH to uname -m form (x86_64, aarch64).
