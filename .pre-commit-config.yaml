@@ -86,7 +86,7 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: mypy --non-interactive --install-types
+        entry: mypy --non-interactive --install-types --scripts-are-modules
         language: system
         types: [python]
         exclude: "tests/|pyinfra/|regolith/"
