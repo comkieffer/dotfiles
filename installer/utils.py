@@ -51,7 +51,7 @@ def parse_version_for_executable(executable: str) -> Version | None:
     status = subprocess.run(
         f"{executable} --version", capture_output=True, text=True, shell=True
     )
-    if m := re.search(r"\d+\.\d+(?:\.\d+)?", status.stdout or ""):
+    if m := re.search(r"\d+\.\d+(?:\.\d+)?", status.stdout or status.stderr or ""):
         return Version(tuple(int(x) for x in m.group().split(".")))
 
     return None
