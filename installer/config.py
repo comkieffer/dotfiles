@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from collections.abc import Sequence
 from pathlib import Path
 
 from .packages import install_binary, package_satisfies
@@ -10,21 +11,35 @@ from .utils import is_installed, run_cmd, parse_version_for_executable, Version
 DEFAULT_BIN_PATH = Path("/usr/bin/")
 
 
-@dataclass
 class Recommends:
-    name: str
+    """A binary recommended by a program configuration.
 
-    # Candidates are either bare file paths (implicit file://) or ubi:// URIs.
-    candidates: tuple[str, ...] = ()
-    min_version: Version | None = None
+    Attributes:
+        name: The name of the tool.
+        binary:
+            The name of the actual binary. Defaults to name, but can be overridden when
+            the tool provides a binary with a different name (e.g. difftastic -> difft).
+        candidates: Paths at which the binary might be found.
+        min_version: Minimum required version, if any.
+    """
 
-    def __post_init__(self) -> None:
-        if isinstance(self.min_version, str):
-            self.min_version = Version.from_string(self.min_version)
-
-        # Guess the path to the binary if we have no hints
-        if len(self.candidates) == 0:
-            self.candidates = (str(DEFAULT_BIN_PATH / self.name),)
+    def __init__(
+        self,
+        name: str,
+        candidates: Sequence[str] = (),
+        min_version: str | Version | None = None,
+        binary: str | None = None,
+    ) -> None:
+        self.name = name
+        self.binary = binary if binary is not None else name
+        self.min_version = (
+            Version.from_string(min_version)
+            if isinstance(min_version, str)
+            else min_version
+        )
+        self.candidates = (
+            tuple(candidates) if candidates else (str(DEFAULT_BIN_PATH / self.binary),)
+        )
 
 
 @dataclass
@@ -75,7 +90,7 @@ class ProgramConfig:
         ) as install_ctx:
             for rec_binary in recommended_binaries:
                 with action(f"Installing {rec_binary.name}", parent=install_ctx) as ctx:
-                    if is_installed(rec_binary.name):
+                    if is_installed(rec_binary.binary):
                         ctx.set_status("SKIPPED", color="\033[32m", reason="(PRESENT)")
                     else:
                         install_binary(ctx, rec_binary)
