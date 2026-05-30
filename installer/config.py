@@ -104,37 +104,25 @@ class ProgramConfig:
                 msg = f"Checking {rec_binary.name}"
                 if rec_binary.min_version:
                     msg += f" (> {str(rec_binary.min_version)})"
-
                 with action(msg, parent=install_ctx) as ctx:
-                    if not is_installed(rec_binary.name):
-                        ctx.set_status("MISSING", "\033[31m")
-                    else:
-                        installed_version = parse_version_for_executable(
-                            rec_binary.name
-                        )
-                        _, binary_path = run_cmd(f"which {rec_binary.name}", shell=True)
+                    self._check_one_recommend(ctx, rec_binary)
 
-                        # If there is a min version check, check if it was installed by
-                        # the package manager. We assume that things under `~` are not
-                        # managed by the package manager, and that everything else is.
+    def _check_one_recommend(self, ctx: ActionContext, rec: Recommends) -> None:
+        if not is_installed(rec.binary):
+            ctx.set_status("MISSING", "\033[31m")
+            return
 
-                        if (
-                            rec_binary.min_version is not None
-                            and not Path(binary_path).is_relative_to(
-                                Path("~").expanduser()
-                            )
-                            and not package_satisfies(
-                                rec_binary.name, rec_binary.min_version
-                            )
-                        ):
-                            ctx.set_status(
-                                "WRONG VER",
-                                "\033[33m",
-                                reason=f" ver {installed_version!s}",
-                            )
-                        else:
-                            ctx.set_status(
-                                "FOUND",
-                                "\033[32m",
-                                reason=f" ver {installed_version!s}",
-                            )
+        installed_version = parse_version_for_executable(rec.binary)
+        _, binary_path = run_cmd(f"which {rec.binary}", shell=True)
+
+        # Things under `~` are assumed to be user-installed, not package-managed.
+        if (
+            rec.min_version is not None
+            and not Path(binary_path).is_relative_to(Path("~").expanduser())
+            and not package_satisfies(rec.name, rec.min_version)
+        ):
+            ctx.set_status(
+                "WRONG VER", "\033[33m", reason=f" ver {installed_version!s}"
+            )
+        else:
+            ctx.set_status("FOUND", "\033[32m", reason=f" ver {installed_version!s}")
