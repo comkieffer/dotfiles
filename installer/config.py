@@ -90,18 +90,14 @@ class ProgramConfig:
                         _, stdout = run_cmd(post_install_cmd, shell=True)
                         ctx.log_info(stdout)
 
-            if self.recommended_binaries:
-                if install_recommends:
-                    self._install_recommends(postinst_ctx, self.recommended_binaries)
-                else:
-                    self._check_recommends(postinst_ctx, self.recommended_binaries)
+        if self.recommended_binaries:
+            if install_recommends:
+                self._install_recommends(self.recommended_binaries)
+            else:
+                self._check_recommends(self.recommended_binaries)
 
-    def _install_recommends(
-        self, parent_ctx: ActionContext, recommended_binaries: list[Recommends]
-    ) -> None:
-        with action(
-            "Installing recommended binaries", parent=parent_ctx, container=True
-        ) as install_ctx:
+    def _install_recommends(self, recommended_binaries: list[Recommends]) -> None:
+        with action("Installing recommended binaries", container=True) as install_ctx:
             for rec_binary in recommended_binaries:
                 with action(f"Installing {rec_binary.name}", parent=install_ctx) as ctx:
                     if is_installed(rec_binary.binary):
@@ -109,11 +105,9 @@ class ProgramConfig:
                     else:
                         install_binary(ctx, rec_binary)
 
-    def _check_recommends(
-        self, parent_ctx: ActionContext, recommended_binaries: list[Recommends]
-    ) -> None:
+    def _check_recommends(self, recommended_binaries: list[Recommends]) -> None:
         msg = "Checking status of recommended binaries"
-        with action(msg, parent=parent_ctx, container=True) as install_ctx:
+        with action(msg, container=True) as install_ctx:
             for rec_binary in recommended_binaries:
                 msg = f"Checking {rec_binary.name}"
                 if rec_binary.min_version:
