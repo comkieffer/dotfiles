@@ -2,18 +2,77 @@
 
 set -e
 
+header() {
+    echo ""
+    echo "#"
+    echo "# $*"
+    echo "#"
+    echo ""
+}
+
+info() {
+    echo "  -> $*"
+}
+
 DOTFILES_REPO="https://github.com/comkieffer/dotfiles.git"
 DOTFILES_DIR="${HOME}/dev/personal/dotfiles"
 
-if ! command -v git > /dev/null || ! command -v stow > /dev/null || ! command -v python3 > /dev/null; then
-    sudo apt-get update -qq
-    sudo apt-get install -yqq git stow python3
+# --- Distro detection ---
+
+if [ ! -f /etc/os-release ]; then
+    echo "ERROR: Cannot detect distribution — /etc/os-release not found."
+    exit 1
 fi
+
+# shellcheck source=/dev/null
+. /etc/os-release
+DISTRO="${ID}"
+info "Detected distribution: ${DISTRO}"
+
+case "${DISTRO}" in
+    ubuntu | debian)
+        PKG_UPDATE="sudo apt-get update -qq"
+        PKG_INSTALL="sudo apt-get install -yqq"
+        ;;
+    arch | archlinux | manjaro)
+        PKG_UPDATE="sudo pacman -Sy --noconfirm"
+        PKG_INSTALL="sudo pacman -S --noconfirm --needed"
+        ;;
+    *)
+        echo "ERROR: Unsupported distribution '${DISTRO}'."
+        echo "       Supported: Ubuntu, Debian, Arch Linux, Manjaro."
+        exit 1
+        ;;
+esac
+
+# --- Bootstrap dependencies ---
+
+MISSING_PKGS=""
+command -v git     > /dev/null || MISSING_PKGS="${MISSING_PKGS} git"
+command -v stow    > /dev/null || MISSING_PKGS="${MISSING_PKGS} stow"
+command -v python3 > /dev/null || MISSING_PKGS="${MISSING_PKGS} python3"
+
+if [ -n "${MISSING_PKGS}" ]; then
+    header "Installing missing dependencies:${MISSING_PKGS} ..."
+    info "Updating package index ..."
+    ${PKG_UPDATE}
+    # shellcheck disable=SC2086
+    ${PKG_INSTALL} ${MISSING_PKGS}
+else
+    info "git, stow, and python3 already installed."
+fi
+
+# --- Clone and install dotfiles ---
 
 if [ ! -d "$DOTFILES_DIR" ]; then
+    header "Cloning dotfiles ..."
+    info "Target: ${DOTFILES_DIR}"
     mkdir -p "$(dirname "$DOTFILES_DIR")"
     git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+else
+    info "Dotfiles already cloned at ${DOTFILES_DIR}."
 fi
 
+header "Running installer ..."
 cd "$DOTFILES_DIR"
 ./install all
