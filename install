@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+from pathlib import Path
+
 from installer.config import ProgramConfig, Recommends, Version
 from installer.run import install_dotfiles
 
@@ -76,5 +78,8 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
     ),
 }
 
+repo_root = Path(__file__).resolve().parent
+assert (repo_root / ".git").is_dir()
+
 if __name__ == "__main__":
-    install_dotfiles(REQUIRED_DIRS, STOWED_PROGRAMS)
+    install_dotfiles(REQUIRED_DIRS, STOWED_PROGRAMS, repo_root)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from .packages import install_binary, package_satisfies
 from .action_context import ActionContext, action
@@ -42,6 +43,10 @@ class Recommends:
         )
 
 
+def _flatten_dict(d: dict[Any, Any]) -> list[Any]:
+    return [x for pair in d.items() for x in pair]
+
+
 @dataclass
 class ProgramConfig:
     # Before installing a configuration, the tool checks that the associated binary is
@@ -59,14 +64,23 @@ class ProgramConfig:
     # Binaries recommended for this configuration to work well.
     recommended_binaries: list[Recommends] = field(default_factory=list)
 
-    def install(self, target: str, install_recommends: bool) -> None:
+    def install(self, target: str, install_recommends: bool, repo_root: Path) -> None:
         for dir in [Path(p) for p in self.create_dirs]:
             if not dir.expanduser().is_dir():
                 with action(f"Creating {dir}"):
                     dir.expanduser().mkdir(exist_ok=True, parents=True)
 
-        with action(f"Installing configurations for {target}"):
-            run_cmd("stow", "--target", str(Path.home()), "--restow", target)
+        with action(f"Installing configurations for {target}") as ctx:
+            stow_args = {
+                "--dir": str(repo_root / "dotfiles"),
+                "--target": str(Path.home()),
+                "--restow": target,
+            }
+
+            ret, stdout = run_cmd("stow", *_flatten_dict(stow_args))
+            if not ret:
+                ctx.log_error(f"Unable to stow target {target}.")
+                ctx.log_error(stdout)
 
         if self.post_install:
             with action("Running post-install scripts", container=True) as postinst_ctx:

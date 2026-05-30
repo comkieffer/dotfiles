@@ -75,6 +75,7 @@ def check_sudo_home_preserved():
 def install_dotfiles(
     required_dirs: list[str],
     stowable_programs: dict[str, ProgramConfig],
+    repo_root: Path,
 ) -> None:
     args = _parse_args(list(stowable_programs.keys()))
 
@@ -108,6 +109,6 @@ def install_dotfiles(
                 dir.expanduser().mkdir(parents=True)
 
     for target in valid_targets:
-        stowable_programs[target].install(target, args.install_recommends)
+        stowable_programs[target].install(target, args.install_recommends, repo_root)
 
     sys.exit(0)
