@@ -40,14 +40,22 @@ def _parse_args(stowable_programs: list[str]) -> argparse.Namespace:
         help="Remove configuration symlinks instead of installing them.",
     )
     parser.add_argument(
+        "--lint",
+        action="store_true",
+        help="Check that every configured program has a corresponding dotfiles directory.",
+    )
+    parser.add_argument(
         "targets",
         metavar="TARGET",
         choices=[*stowable_programs, "all"],
         type=str,
-        nargs="+",
+        nargs="*",
         help="The configurations to install",
     )
     args = parser.parse_args()
+
+    if not args.lint and not args.targets:
+        parser.error("TARGET is required unless --lint is specified")
 
     if "all" in args.targets:
         args.targets = [*stowable_programs]
@@ -84,6 +92,23 @@ def install_dotfiles(
     repo_root: Path,
 ) -> None:
     args = _parse_args(list(stowable_programs.keys()))
+
+    if args.lint:
+        dotfiles_dir = repo_root / "dotfiles"
+        missing = [
+            name for name in stowable_programs if not (dotfiles_dir / name).is_dir()
+        ]
+        if missing:
+            for name in missing:
+                print(
+                    f"\033[31mMISSING\033[0m: no dotfiles/{name}/ directory for configured program <{name}>"
+                )
+            sys.exit(1)
+        else:
+            print(
+                "OK: all configured programs have a corresponding dotfiles directory."
+            )
+            sys.exit(0)
 
     if not is_installed("stow"):
         print("Error: `stow` is not installed. Install `stow` to continue.")
