@@ -12,13 +12,13 @@ REQUIRED_DIRS = [
 ]
 
 STOWED_PROGRAMS: dict[str, ProgramConfig] = {
-    "bash": ProgramConfig(),
     "fish": ProgramConfig(
         # We use `fisher` to install plugins, this will put the installed functions in
         # `functions`. This is also where we put our own functions. If we do not create
         # the directory, all of the plugin-installed functions will appear in our diff.
         create_dirs=[
             "~/.config/fish/completions/",
+            "~/.config/fish/conf.d/",
             "~/.config/fish/functions/",
         ],
         # Ensure that the list of plugins is up-to-date
@@ -48,7 +48,6 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
     "helix": ProgramConfig(
         executable="hx",
     ),
-    "jrnl": ProgramConfig(),
     "matlab": ProgramConfig(),
     "vim": ProgramConfig(),
     "sublime-text-3": ProgramConfig(
@@ -68,7 +67,7 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
         create_dirs=["~/.config/Code/User"],
     ),
     "tools": ProgramConfig(
-        executable="uv",
+        executable="pipx",
         create_dirs=["~/.local/share/reminders"],
         recommended_binaries=[
             Recommends("poetry", min_version=Version.from_string("2.0.0")),
