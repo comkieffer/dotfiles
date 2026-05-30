@@ -34,6 +34,12 @@ def _parse_args(stowable_programs: list[str]) -> argparse.Namespace:
         help="Attempt to install recommended tools.",
     )
     parser.add_argument(
+        "-u",
+        "--unstow",
+        action="store_true",
+        help="Remove configuration symlinks instead of installing them.",
+    )
+    parser.add_argument(
         "targets",
         metavar="TARGET",
         choices=[*stowable_programs, "all"],
@@ -92,23 +98,32 @@ def install_dotfiles(
             print(f"\033[31mERROR\033[0m: unknown target <{target}>.")
             continue
 
-        with action(f"Checking if {target} needs to be installed") as ctx:
-            config = stowable_programs[target]
-            executable_name = config.executable or target
-            if is_installed(executable_name) or args.force:
-                valid_targets.append(target)
-            else:
-                ctx.log_info(
-                    f"Skipping <{target}>, <{executable_name}> is not in $PATH"
-                )
-                ctx.set_status("SKIP", color="\033[34m")
+        if args.unstow:
+            valid_targets.append(target)
+        else:
+            with action(f"Checking if {target} needs to be installed") as ctx:
+                config = stowable_programs[target]
+                executable_name = config.executable or target
+                if is_installed(executable_name) or args.force:
+                    valid_targets.append(target)
+                else:
+                    ctx.log_info(
+                        f"Skipping <{target}>, <{executable_name}> is not in $PATH"
+                    )
+                    ctx.set_status("SKIP", color="\033[34m")
 
-    for dir in [Path(p) for p in required_dirs]:
-        if not dir.expanduser().is_dir():
-            with action(f"Creating {dir}"):
-                dir.expanduser().mkdir(parents=True)
+    if not args.unstow:
+        for dir in [Path(p) for p in required_dirs]:
+            if not dir.expanduser().is_dir():
+                with action(f"Creating {dir}"):
+                    dir.expanduser().mkdir(parents=True)
 
     for target in valid_targets:
-        stowable_programs[target].install(target, args.install_recommends, repo_root)
+        if args.unstow:
+            stowable_programs[target].unstow(target, repo_root)
+        else:
+            stowable_programs[target].install(
+                target, args.install_recommends, repo_root
+            )
 
     sys.exit(0)

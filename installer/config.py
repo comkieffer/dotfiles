@@ -64,6 +64,19 @@ class ProgramConfig:
     # Binaries recommended for this configuration to work well.
     recommended_binaries: list[Recommends] = field(default_factory=list)
 
+    def unstow(self, target: str, repo_root: Path) -> None:
+        with action(f"Unstowing configurations for {target}") as ctx:
+            stow_args = {
+                "--dir": str(repo_root / "dotfiles"),
+                "--target": str(Path.home()),
+                "--delete": target,
+            }
+
+            ret, stdout = run_cmd("stow", *_flatten_dict(stow_args))
+            if not ret:
+                ctx.log_error(f"Unable to unstow target {target}.")
+                ctx.log_error(stdout)
+
     def install(self, target: str, install_recommends: bool, repo_root: Path) -> None:
         for dir in [Path(p) for p in self.create_dirs]:
             if not dir.expanduser().is_dir():
