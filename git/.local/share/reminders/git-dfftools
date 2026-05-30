@@ -1,0 +1,11 @@
+Git Diff Tools
+
+Use [prgm]git diff[/prgm] to view all changes (content, whitespace, and permissions).
+
+Use [prgm]difftastic[/prgm] to view [bold]syntax aware[/bold] diffs. It hides foramtting-only changes.
+
+Use [prgm]delta[/prgm] for [bold]syntax-highlighted[/bold] diffs, without hiding formatting changes.
+
+Use [prgm]diffr[/prgm] for [bold]word-by-word[/bold] diffs (good for prose, comments, ...).
+
+Use [prgm]difftastic[/prgm] to understand the structure of the change, [prgm]delta[/prgm] to see what actually changed.

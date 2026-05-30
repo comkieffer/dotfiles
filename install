@@ -23,26 +23,25 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
         post_install=["fish -c 'fisher update'"],
         recommended_binaries=[
             Recommends("atuin"),
-            Recommends(
-                "bat",
-                (
-                    "/usr/bin/bat",
-                    "/usr/bin/batcat",
-                ),
-            ),
+            Recommends("bat", ("/usr/bin/batcat",)),
             Recommends("direnv"),
             Recommends("exa"),
             Recommends("fzf"),
-            Recommends(
-                "hx",
-                ("/usr/bin/helix",),
-            ),
+            Recommends("hx", ("/usr/bin/helix",)),
             Recommends("jq"),
             Recommends("starship"),
             Recommends("zoxide"),
         ],
     ),
-    "git": ProgramConfig(),
+    "git": ProgramConfig(
+        recommended_binaries=[
+            Recommends("difftastic", binary="difft"),
+            Recommends("diffr"),
+            Recommends("delta"),
+            Recommends("lazygit"),
+            Recommends("mergiraf"),
+        ]
+    ),
     "gdb": ProgramConfig(),
     "helix": ProgramConfig(
         executable="hx",

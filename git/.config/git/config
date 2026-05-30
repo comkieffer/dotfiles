@@ -9,6 +9,7 @@ path = ~/.config/git/config-work
 [core]
 	# Ignore file permission changes (useful when working across different filesystems)
 	fileMode = false
+
 	# Normalize line endings to LF in repository, keep as-is on checkout
 	autocrlf = input
 
@@ -117,6 +118,32 @@ path = ~/.config/git/config-work
 	# Helpers for Sublime Merge
 	open-terminal = "!f() { x-terminal-emulator; }; f"
 
+    # `git log` with patches shown with difftastic.
+    dlt = -c diff.external=difft log -p --ext-diff
+
+    # Show the most recent commit with difftastic.
+    dst = -c diff.external=difft show --ext-diff
+
+    # `git diff` with difftastic.
+    ddt = -c diff.external=difft diff
+
+    # `git log` with patches shown with delta.
+    dld = -c core.pager=delta log -p
+
+    # Show the most recent commit with delta.
+    dsd = -c core.pager=delta show
+
+    # `git diff` with delta.
+    ddd = -c core.pager=delta diff
+
+    # `git log` with patches shown with diffr.
+    dlr = -c core.pager=diffr log -p
+
+    # Show the most recent commit with diffr.
+    dsr = -c core.pager=diffr show
+
+    # `git diff` with diffr.
+    ddr = -c core.pager=diffr diff
 
 [init]
 	# Use 'master' as the default branch name for new repositories
@@ -148,15 +175,25 @@ path = ~/.config/git/config-work
 	# Show whitespace changes in diffs
 	wsErrorHighlight = all
 
-	# Use difftastic as the default diff tool.
-	external = difft
-
 [fetch]
 	prune = true
 	pruneTags = true
 
 [help]
 	autocorrect = prompt
+
+[merge]
+	# Display merge conflicts with the contents of the merge base as well
+	conflictStyle = zdiff3
+
+# Add mergiraf as a custom merge driver
+# Needs to also be defined in ~/.config/git/attributes
+[merge "mergiraf"]
+    name = mergiraf
+    driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
+
+[pager]
+	blame = delta
 
 [push]
 	# What should `git push` do if no refspec is given.
@@ -188,6 +225,16 @@ path = ~/.config/git/config-work
 	# Treat dotted version numbers as a series of integer values.
 	# This makes them sort in the expected order (0.5.101 < 0.5.1000)
 	sort = version:refname
+
+[delta]
+	# Use n and N to move between diff sections
+    navigate = true
+
+	# Make commit hashes into hyperlinks to the commit in the forge
+	hyperlinks = true
+
+	# Make line numbers hyperlinks to open the file inside the code editor
+	hyperlinks-file-link-format = "vscode://file/{path}:{line}"
 
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f

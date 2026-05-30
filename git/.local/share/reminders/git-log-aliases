@@ -5,3 +5,7 @@ View commit history in various formats.
 $ [prgm]git ls[/prgm]                    # List recent commits (oneline, colored)
 $ [prgm]git ll[/prgm]                    # List commits with file changes
 $ [prgm]git lsd[/prgm]                   # Graph view with stats
+
+$ [prgm]git dlt[/prgm]                   # Git log, using difftastic
+$ [prgm]git dld[/prgm]                   # Git log, using delta
+$ [prgm]git dlr[/prgm]                   # Git log, using diffr
