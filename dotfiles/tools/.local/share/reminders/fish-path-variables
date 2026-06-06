@@ -1,3 +1,5 @@
+% if: executable(fish)
+
 Fish - Path Variables
 
 Use the [prgm]set[/prgm] command in fish to create a path variable (colon-delimited).

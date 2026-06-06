@@ -1,3 +1,5 @@
+% if: executable(zoxide)
+
 Zq - Quickly jump to a directory
 
 $ [prgm]zq[/prgm] [arg-value]dot[/arg-value]  # Open fzf, pre-populated with zoxide query results

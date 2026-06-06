@@ -1,3 +1,5 @@
+% if: executable(now)
+
 Activity Logger
 
 The [prgm]now[/prgm] command tracks what you're working on throughout the day.

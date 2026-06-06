@@ -1,3 +1,5 @@
+% if: executable(apt)
+
 APT - Package Information
 
 Use [prgm]apt show[/prgm] and [prgm]apt-cache[/prgm] to inspect packages.

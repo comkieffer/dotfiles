@@ -1,3 +1,5 @@
+% if: executable(poetry)
+
 Poetry - Project Setup
 
 Manage dependencies in your Python project with [prgm]poetry[/prgm]. Use the [prgm]add[/prgm] subcommand to add new dependencies.

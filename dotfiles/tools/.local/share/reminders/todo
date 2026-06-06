@@ -1,3 +1,5 @@
+% if: executable(todo)
+
 List ToDo
 
 The [prgm]todo[/prgm] command lists ToDo entries found in [bold]ToDo.md[/bold] files in child directories.

@@ -1,3 +1,5 @@
+% if: executable(apt-file)
+
 APT - Finding Files in Packages
 
 Use [prgm]apt-file[/prgm] to search for files across packages.

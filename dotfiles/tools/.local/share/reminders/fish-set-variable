@@ -1,3 +1,5 @@
+% if: executable(fish)
+
 Fish - Set Variable
 
 Use the [prgm]set[/prgm] command in fish to set, or clear, a variable.

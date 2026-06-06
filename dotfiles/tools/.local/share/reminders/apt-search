@@ -1,3 +1,5 @@
+% if: executable(apt)
+
 APT - Searching Packages
 
 Use [prgm]apt search[/prgm] to find packages by name or description.
