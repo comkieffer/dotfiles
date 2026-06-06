@@ -8,6 +8,7 @@
 # ///
 
 import asyncio
+import subprocess
 
 import click
 
@@ -19,6 +20,20 @@ def active_sinks(pulse: Pulse):
             continue
 
         yield sink
+
+
+def fzf_select_sink(sinks):
+    choices = "\n".join(f"{s.index}\t{s.description}" for s in sinks)
+    result = subprocess.run(
+        ["fzf", "--with-nth=2", "--delimiter=\t"],
+        input=choices,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return None
+    selected_index = int(result.stdout.strip().split("\t")[0])
+    return next((s for s in sinks if s.index == selected_index), None)
 
 @click.group()
 def main():
@@ -70,28 +85,36 @@ def set_default_sink(sink_pattern):
     Change the default sink.
 
     The default sink is selected with the `sink-pattern`. This should be a sub-string
-    match for the name of the desired sink.
+    match for the name of the desired sink. If omitted, fzf is used to select interactively.
     """
 
     with Pulse() as pulse:
-        for sink in active_sinks(pulse):
-            if sink_pattern in sink.name or sink_pattern in sink.description:
-                print(f"Setting default sink to {sink.index} ({sink.description}) ...")
-                pulse.sink_default_set(sink)
+        sinks = list(active_sinks(pulse))
 
-                # Make sure that all the sin-inputs use the default sink
-                # This isn't required if all the sinks were moved when we set the default
-
-                for sink_input in pulse.sink_input_list():
-                    if sink_input.sink != sink.index:
-                        print(
-                            f"Moving '{sink_input.name}' from sink {sink_input.sink} to sink {sink.index} ({sink.description}) ..."
-                        )
-                        pulse.sink_input_move(sink_input.index, sink.index)
-
-                break
+        if sink_pattern is None:
+            target_sink = fzf_select_sink(sinks)
         else:
+            target_sink = next(
+                (s for s in sinks if sink_pattern in s.name or sink_pattern in s.description),
+                None,
+            )
+
+        if target_sink is None:
             print("Pattern does not match any sinks")
+            return
+
+        print(f"Setting default sink to {target_sink.index} ({target_sink.description}) ...")
+        pulse.sink_default_set(target_sink)
+
+        # Make sure that all the sin-inputs use the default sink
+        # This isn't required if all the sinks were moved when we set the default
+
+        for sink_input in pulse.sink_input_list():
+            if sink_input.sink != target_sink.index:
+                print(
+                    f"Moving '{sink_input.name}' from sink {sink_input.sink} to sink {target_sink.index} ({target_sink.description}) ..."
+                )
+                pulse.sink_input_move(sink_input.index, target_sink.index)
 
 
 if __name__ == "__main__":
