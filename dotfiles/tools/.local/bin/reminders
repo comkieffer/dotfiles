@@ -38,23 +38,24 @@ Use color codes directly to format content.
 import argparse
 import random
 import re
+import shutil
 import sys
 from contextlib import suppress
 from pathlib import Path
 from typing import TextIO
 
 try:
-    import platformdirs
+    import platformdirs  # type: ignore[import-not-found]
 
     HAS_PLATFORMDIRS = True
 except ImportError:
     HAS_PLATFORMDIRS = False
 
 try:
-    from rich.console import Console
-    from rich.errors import MarkupError
-    from rich.padding import Padding
-    from rich.panel import Panel
+    from rich.console import Console  # type: ignore[import-not-found]
+    from rich.errors import MarkupError  # type: ignore[import-not-found]
+    from rich.padding import Padding  # type: ignore[import-not-found]
+    from rich.panel import Panel  # type: ignore[import-not-found]
 
     HAS_RICH = True
 except ImportError:
@@ -68,11 +69,68 @@ else:
     REMINDERS_DIR = Path.home() / ".local" / "share" / PROGNAME
 
 
+# --- Parse Reminder File -----------------------------------------------------
+
+
+def consume_directives(f: TextIO) -> dict[str, str]:
+    """Read % directive lines from the top of the file, leaving f positioned at the title."""
+    directives: dict[str, str] = {}
+    while True:
+        pos = f.tell()
+        line = f.readline()
+        if not line:
+            break
+        stripped = line.strip()
+        if stripped.startswith("%"):
+            content = stripped[1:].strip()
+            key, _, value = content.partition(":")
+            directives[key.strip()] = value.strip()
+        else:
+            f.seek(pos)
+            break
+    return directives
+
+
 def read_non_empty_line(f: TextIO) -> str:
     while line := f.readline():
         if line.strip():
             return line
     return ""
+
+
+# --- Directives --------------------------------------------------------------
+
+
+def _cond_executable(name: str) -> bool:
+    return shutil.which(name.strip()) is not None
+
+
+_CONDITION_FUNCTIONS = {
+    "executable": _cond_executable,
+}
+
+
+def evaluate_condition(condition: str) -> bool:
+    match = re.fullmatch(r"(\w+)\(([^)]*)\)", condition.strip())
+    if not match:
+        print(f"Warning: unrecognised condition syntax: {condition!r}", file=sys.stderr)
+        return True
+    func_name, arg = match.group(1), match.group(2)
+    fn = _CONDITION_FUNCTIONS.get(func_name)
+    if fn is None:
+        print(f"Warning: unknown condition function: {func_name!r}", file=sys.stderr)
+        return True
+    return fn(arg)
+
+
+def check_directives(directives: dict[str, str]) -> bool:
+    """Return False if any directive says the reminder should be skipped."""
+    if "if" in directives:
+        return evaluate_condition(directives["if"])
+    return True
+
+
+# --- Display Reminder --------------------------------------------------------
 
 
 def strip_rich_tags(text: str) -> str:
@@ -109,12 +167,36 @@ def format_shell_lines(text: str) -> str:
     )
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse command line arguments.
+def show_reminder(path: Path) -> None:
+    with path.open("r") as f:
+        consume_directives(f)
+        reminder_title = read_non_empty_line(f)
+        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip("\n")
 
-    Returns:
-        Parsed arguments including optional reminder file to display.
-    """
+    reminder_contents = expand_pseudo_styles(
+        format_shell_lines(format_comments(reminder_contents))
+    )
+
+    if HAS_RICH:
+        console = Console()
+        try:
+            panel = Panel(
+                reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1
+            )
+            padded_panel = Padding(panel, (1, 1))
+            console.print(padded_panel)
+        except MarkupError as e:
+            print(f"Markup error in {path.name}: {e}", file=sys.stderr)
+    else:
+        clean_title = strip_rich_tags(reminder_title)
+        clean_contents = strip_rich_tags(reminder_contents)
+        print(clean_title + "\n\n" + clean_contents)
+
+
+# --- Entry Point -------------------------------------------------------------
+
+
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Display reminder messages from the reminders directory"
     )
@@ -133,45 +215,36 @@ def main() -> None:
         sys.exit(0)
 
     reminder_files = [f for f in REMINDERS_DIR.iterdir() if f.is_file()]
-    if len(reminder_files) == 0:
+    if not reminder_files:
+        print(f"No reminders found in '{REMINDERS_DIR}'.")
         sys.exit(0)
 
-    # Select reminder based on argument or randomly
     if args.file:
         file_as_path = Path(args.file)
         if file_as_path.exists():
-            selected_reminder = file_as_path
+            selected = file_as_path
         else:
-            selected_reminder = REMINDERS_DIR / args.file
-            if not selected_reminder.is_file():
+            selected = REMINDERS_DIR / args.file
+            if not selected.is_file():
                 print(f"Error: Reminder file '{args.file}' not found", file=sys.stderr)
                 sys.exit(1)
-    else:
-        selected_reminder = random.choice(reminder_files)
 
-    with selected_reminder.open("r") as f:
-        reminder_title = read_non_empty_line(f)
-        reminder_contents = read_non_empty_line(f) + "\n" + f.read().strip("\n")
+        # If we pass in the file directly, do not check the directives
+        with selected.open("r") as f:
+            _ = consume_directives(f)
+            show_reminder(selected)
 
-    reminder_contents = expand_pseudo_styles(
-        format_shell_lines(format_comments(reminder_contents))
-    )
+        sys.exit(0)
 
-    if HAS_RICH:
-        console = Console()
-        try:
-            panel = Panel(
-                reminder_contents, title=f"[bold]{reminder_title}[/]", padding=1
-            )
-            padded_panel = Padding(panel, (1, 1))
-            console.print(padded_panel)
-        except MarkupError as e:
-            print(f"Markup error in {selected_reminder.name}: {e}", file=sys.stderr)
-    else:
-        clean_title = strip_rich_tags(reminder_title)
-        clean_contents = strip_rich_tags(reminder_contents)
-        print(clean_title + "\n\n" + clean_contents)
+    # No file argument, we need to pick one to display.
+    for candidate in random.sample(reminder_files, len(reminder_files)):
+        with candidate.open("r") as f:
+            directives = consume_directives(f)
+        if check_directives(directives):
+            show_reminder(candidate)
+            sys.exit(0)
 
+    print("No reminder files can be shown.")
     sys.exit(0)
 
 
