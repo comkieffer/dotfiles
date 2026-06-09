@@ -1,4 +1,10 @@
 # Source this file; do not execute it directly.
+#
+# Provides build_with_rust: clones a repo, installs Rust via rustup if needed,
+# and compiles a release binary for the given target triple.
+#
+# If --target is omitted, defaults to <arch>-unknown-linux-musl when musl-gcc
+# is available, otherwise <arch>-unknown-linux-gnu.
 
 build_with_rust() {
     detect_arch
@@ -22,8 +28,16 @@ build_with_rust() {
         esac
     done
 
-    target="${target:-${ARCH}-unknown-linux-musl}"
+    if [[ -z "$target" ]]; then
+        if command -v musl-gcc &>/dev/null; then
+            target="${ARCH}-unknown-linux-musl"
+        else
+            target="${ARCH}-unknown-linux-gnu"
+        fi
+    fi
+
     src="${src:-$(src_dir "$(basename "$repo" .git)")}"
+
     local bin_name
     bin_name="$(basename "$out")"
 
@@ -33,12 +47,16 @@ build_with_rust() {
     # shellcheck disable=SC2155
     export CARGO_HOME="$cargo_home"
 
-    # cc-rs looks for <triple>-gcc for musl targets; point it to musl-gcc instead.
-    # Requires musl-gcc (package msul-tools)
+    # cc-rs (used by many crates with C dependencies) infers the C compiler from
+    # the target triple, looking for <triple>-gcc (e.g. x86_64-unknown-linux-musl-gcc).
+    # That binary doesn't exist; musl-gcc is the actual wrapper. We set both the
+    # Cargo linker and the CC env var so cc-rs and the linker agree on the compiler.
+    # Requires musl-gcc (package musl-tools).
     if [[ "$target" == *-linux-musl ]]; then
         local target_upper
-        target_upper="${target//-/_}"
-        target_upper="${target_upper^^}"
+        target_upper="${target//-/_}"    # Replace '-' with '_'
+        target_upper="${target_upper^^}" # To upper case
+
         export "CARGO_TARGET_${target_upper}_LINKER=musl-gcc"
         export "CC_${target//-/_}=musl-gcc"
     fi
