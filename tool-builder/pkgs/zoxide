@@ -1,0 +1,10 @@
+
+name="zoxide"
+version="v0.9.9"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/ajeetdsouza/zoxide" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}
