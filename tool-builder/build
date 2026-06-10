@@ -33,6 +33,7 @@ source "$pkg_file"
 
 # shellcheck disable=SC2154
 do_install() {
+    mkdir -p "$HOME/.local/bin"
     cp "$(bin_dir)/$name" "$HOME/.local/bin/$name"
     echo "==> Installed $name to $HOME/.local/bin/$name"
 }
