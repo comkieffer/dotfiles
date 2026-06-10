@@ -1,0 +1,10 @@
+
+name="starship"
+version="v1.25.1"
+
+build() {
+    build_with_rust \
+        --repo    "https://github.com/starship/starship.git" \
+        --version "$version" \
+        --out     "$(bin_dir)/$name"
+}
