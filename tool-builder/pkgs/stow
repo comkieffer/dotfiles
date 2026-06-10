@@ -1,11 +1,15 @@
-
 name="stow"
 version="v2.4.1"
 
+download() {
+    fetch_tarball \
+        "http://ftpmirror.gnu.org/stow/stow-${version#v}.tar.gz" \
+        "$(src_dir "$name")"
+}
+
 build() {
     build_with_make \
-        --repo        "https://github.com/aspiers/stow" \
-        --version     "$version" \
+        --src         "$(src_dir "$name")" \
         --out         "$(bin_dir)/$name" \
         --prefix      "$(dirname "$(bin_dir)")" \
         --make-target install-exec
