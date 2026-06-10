@@ -42,6 +42,9 @@ else
         --no-modify-path \
         --default-toolchain "$RUST_VERSION" \
         -y
+
+    # rustup-init may skip setting the default when a system rustup is present (e.g. Arch)
+    "$RUSTUP_BIN" default "$RUST_VERSION"
 fi
 
 echo "==> Done: $("$CARGO_BIN" --version)"

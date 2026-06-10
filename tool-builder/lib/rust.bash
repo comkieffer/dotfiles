@@ -66,6 +66,9 @@ build_with_rust() {
     if [[ ! -x "$cargo_bin" ]]; then
         echo "==> Cargo not found, running install-rust"
         "$TOOL_BUILDER_DIR/lib/install-rust"
+    elif ! grep -q "default_toolchain" "$rustup_home/settings.toml" 2>/dev/null; then
+        echo "==> No default toolchain configured, running install-rust"
+        "$TOOL_BUILDER_DIR/lib/install-rust"
     fi
 
     echo "==> Ensuring target $target"
