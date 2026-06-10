@@ -1,6 +1,7 @@
 # Source this file; do not execute it directly.
 
 build_with_go() {
+    # shellcheck disable=SC1007
     local repo= version= src= out= ldflags=
 
     while [[ $# -gt 0 ]]; do

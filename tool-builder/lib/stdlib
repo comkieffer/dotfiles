@@ -41,3 +41,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/go.bash"
 
 # shellcheck source=lib/rust.bash
 source "$(dirname "${BASH_SOURCE[0]}")/rust.bash"
+
+# shellcheck source=lib/make.bash
+source "$(dirname "${BASH_SOURCE[0]}")/make.bash"
