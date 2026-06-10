@@ -1,9 +1,15 @@
 name="lazygit"
 version="v0.62.1"
 
+download() {
+    fetch_or_clone \
+        --repo    "https://github.com/jesseduffield/lazygit" \
+        --tag     "$version" \
+        --src-dir "$(src_dir "$name")"
+}
+
 build() {
     build_with_go \
-        --repo    "https://github.com/jesseduffield/lazygit" \
-        --version "$version" \
-        --out     "$(bin_dir)/$name"
+        --src "$(src_dir "$name")" \
+        --out "$(bin_dir)/$name"
 }

@@ -1,9 +1,15 @@
 name="mergiraf"
 version="v0.17.0"
 
+download() {
+    fetch_or_clone \
+        --repo    "https://codeberg.org/mergiraf/mergiraf" \
+        --tag     "$version" \
+        --src-dir "$(src_dir "$name")"
+}
+
 build() {
     build_with_rust \
-        --repo    "https://codeberg.org/mergiraf/mergiraf" \
-        --version "$version" \
-        --out     "$(bin_dir)/$name"
+        --src "$(src_dir "$name")" \
+        --out "$(bin_dir)/$name"
 }

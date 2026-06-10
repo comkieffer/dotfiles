@@ -25,14 +25,26 @@ go_arch() {
 
 # Clone a repo at a specific tag, or fetch+checkout if already cloned.
 fetch_or_clone() {
-    local repo="$1" version="$2" dir="$3"
+    local repo= tag= dir=
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --repo)     repo="$2"; shift 2 ;;
+            --tag)      tag="$2";  shift 2 ;;
+            --src-dir)  dir="$2";  shift 2 ;;
+            *) echo "Unknown flag: $1" >&2; return 1 ;;
+        esac
+    done
+
+    [[ -z "$repo" ]] && return 0
+
     if [[ -d "$dir/.git" ]]; then
-        echo "==> Fetching $version into $dir"
-        git -C "$dir" fetch --depth=1 origin "refs/tags/$version"
+        echo "==> Fetching $tag into $dir"
+        git -C "$dir" fetch --depth=1 origin "refs/tags/$tag"
         git -C "$dir" checkout FETCH_HEAD
     else
-        echo "==> Cloning $repo ($version) into $dir"
-        git clone --depth=1 --branch "$version" "$repo" "$dir"
+        echo "==> Cloning $repo ($tag) into $dir"
+        git clone --depth=1 --branch "$tag" "$repo" "$dir"
     fi
 }
 

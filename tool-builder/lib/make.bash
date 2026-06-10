@@ -2,12 +2,10 @@
 
 build_with_make() {
     # shellcheck disable=SC1007
-    local repo= version= src= out= prefix= make_target=install
+    local src= out= prefix= make_target=install
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --repo)        repo="$2";        shift 2 ;;
-            --version)     version="$2";     shift 2 ;;
             --src)         src="$2";         shift 2 ;;
             --out)         out="$2";         shift 2 ;;
             --prefix)      prefix="$2";      shift 2 ;;
@@ -16,15 +14,10 @@ build_with_make() {
         esac
     done
 
-
     if ! command -v make &>/dev/null; then
         echo "==> make command not found, cannot continue."
         return 1
     fi
-
-    src="${src:-$(src_dir "$(basename "$repo" .git)")}"
-
-    fetch_or_clone "$repo" "$version" "$src"
 
     if [[ ! -f "$src/configure" && -f "$src/configure.ac" ]]; then
         echo "==> running autoreconf"

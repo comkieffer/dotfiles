@@ -1,7 +1,7 @@
 # Source this file; do not execute it directly.
 #
-# Provides build_with_rust: clones a repo, installs Rust via rustup if needed,
-# and compiles a release binary for the given target triple.
+# Provides build_with_rust: installs Rust via rustup if needed, and compiles a
+# release binary for the given target triple.
 #
 # If --target is omitted, defaults to <arch>-unknown-linux-musl when musl-gcc
 # is available, otherwise <arch>-unknown-linux-gnu.
@@ -15,15 +15,13 @@ build_with_rust() {
     cargo_bin="$cargo_home/bin/cargo"
 
     # shellcheck disable=SC1007
-    local repo= version= src= out= target=
+    local src= out= target=
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --repo)    repo="$2";    shift 2 ;;
-            --version) version="$2"; shift 2 ;;
-            --src)     src="$2";     shift 2 ;;
-            --out)     out="$2";     shift 2 ;;
-            --target)  target="$2";  shift 2 ;;
+            --src)    src="$2";    shift 2 ;;
+            --out)    out="$2";    shift 2 ;;
+            --target) target="$2"; shift 2 ;;
             *) echo "Unknown flag: $1" >&2; return 1 ;;
         esac
     done
@@ -35,8 +33,6 @@ build_with_rust() {
             target="${ARCH}-unknown-linux-gnu"
         fi
     fi
-
-    src="${src:-$(src_dir "$(basename "$repo" .git)")}"
 
     local bin_name
     bin_name="$(basename "$out")"
@@ -61,7 +57,7 @@ build_with_rust() {
         export "CC_${target//-/_}=musl-gcc"
     fi
 
-    echo "==> build-rust: $out (version $version, $target)"
+    echo "==> build-rust: $out ($target)"
 
     if [[ ! -x "$cargo_bin" ]]; then
         echo "==> Cargo not found, running install-rust"
@@ -70,8 +66,6 @@ build_with_rust() {
 
     echo "==> Ensuring target $target"
     "$cargo_home/bin/rustup" target add "$target"
-
-    fetch_or_clone "$repo" "$version" "$src"
 
     echo "==> Building"
     "$cargo_bin" build \

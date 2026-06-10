@@ -9,15 +9,16 @@ pkg_file=
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --version) action="version"; shift ;;
-        --install) action="install"; shift ;;
+        --version)  action="version";  shift ;;
+        --download) action="download"; shift ;;
+        --install)  action="install";  shift ;;
         --*) echo "Unknown flag: $1" >&2; exit 1 ;;
         *)   pkg_file="$1"; shift ;;
     esac
 done
 
 if [[ -z "$pkg_file" ]]; then
-    echo "Usage: $(basename "$0") [--version] <pkg-file>" >&2
+    echo "Usage: $(basename "$0") [--version|--download|--install] <pkg-file>" >&2
     exit 1
 fi
 
@@ -38,8 +39,10 @@ do_install() {
     echo "==> Installed $name to $HOME/.local/bin/$name"
 }
 
+# shellcheck disable=SC2154
 case "$action" in
-    version) echo "$version" ;;
-    build)   build ;;
-    install) build; do_install ;;
+    version)  echo "$version" ;;
+    download) download ;;
+    build)    download; build ;;
+    install)  download; build; do_install ;;
 esac
