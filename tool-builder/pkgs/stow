@@ -1,0 +1,12 @@
+
+name="stow"
+version="v2.4.1"
+
+build() {
+    build_with_make \
+        --repo        "https://github.com/aspiers/stow" \
+        --version     "$version" \
+        --out         "$(bin_dir)/$name" \
+        --prefix      "$(dirname "$(bin_dir)")" \
+        --make-target install-exec
+}
