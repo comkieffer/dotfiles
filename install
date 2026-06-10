@@ -41,6 +41,7 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
             Recommends("difftastic", binary="difft"),
             Recommends("diffr"),
             Recommends("delta"),
+            Recommends("git-absorb"),
             Recommends("lazygit"),
             Recommends("mergiraf"),
         ]
