@@ -3,7 +3,7 @@ set -euo pipefail
 
 GO_VERSION="1.24.3"
 
-# shellcheck source=lib/stdlib
+# shellcheck source=tool-builder/lib/stdlib
 source "$(dirname "${BASH_SOURCE[0]}")/stdlib"
 
 detect_arch
