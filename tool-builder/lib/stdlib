@@ -48,6 +48,27 @@ fetch_or_clone() {
     fi
 }
 
+# Download and extract a tarball; skips if the destination directory already exists.
+fetch_tarball() {
+    local url="$1" dir="$2"
+    if [[ -d "$dir" ]]; then
+        echo "==> Source already present at $dir, skipping download"
+        return 0
+    fi
+    echo "==> Downloading $url"
+    local tmp tar_flag
+    tmp="$(mktemp -d)"
+    case "$url" in
+        *.tar.gz|*.tgz)   tar_flag="-xz" ;;
+        *.tar.bz2|*.tbz2) tar_flag="-xj" ;;
+        *.tar.xz)          tar_flag="-xJ" ;;
+        *) echo "Unsupported archive format: $url" >&2; rm -rf "$tmp"; return 1 ;;
+    esac
+    echo "==> Extracting into $dir"
+    curl -fsSL "$url" | tar "$tar_flag" -C "$tmp" --strip-components=1
+    mv "$tmp" "$dir"
+}
+
 # shellcheck source=lib/go.bash
 source "$(dirname "${BASH_SOURCE[0]}")/go.bash"
 
