@@ -2,7 +2,7 @@ name="lazygit"
 version="v0.62.1"
 
 build() {
-    build_with_rust \
+    build_with_go \
         --repo    "https://github.com/jesseduffield/lazygit" \
         --version "$version" \
         --out     "$(bin_dir)/$name"
