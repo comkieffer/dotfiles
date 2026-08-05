@@ -1,0 +1,24 @@
+name="git-spice"
+version="v0.31.2"
+
+download() {
+    fetch_or_clone \
+        --repo    "https://github.com/abhinav/git-spice" \
+        --tag     "$version" \
+        --src-dir "$(src_dir "$name")"
+}
+
+build() {
+    build_with_go \
+        --src "$(src_dir "$name")" \
+        --out "$(bin_dir)/$name"
+}
+
+post_install() {
+    if ! command -v git-spice >/dev/null 2>&1; then
+        echo "Error: git-spice binary does not exist."
+        return 1
+    fi
+
+    ln -sf $(which git-spice) $(install_dir)/gs
+}
