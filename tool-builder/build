@@ -35,8 +35,14 @@ source "$pkg_file"
 # shellcheck disable=SC2154
 do_install() {
     mkdir -p "$HOME/.local/bin"
-    cp "$(bin_dir)/$name" "$HOME/.local/bin/$name"
-    echo "==> Installed $name to $HOME/.local/bin/$name"
+
+    cp "$(bin_dir)/$name" "$(install_dir)/$name"
+    echo "==> Installed $name to $(install_dir)/$name"
+
+    if declare -F post_install >/dev/null; then
+        post_install
+        echo "==> Ran post_install"
+    fi
 }
 
 # shellcheck disable=SC2154
