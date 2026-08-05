@@ -1,0 +1,24 @@
+# Gitlab Keyboard Shortcuts
+
+[bold]Global[/bold]
+
+[cyan]Shit[/cyan] + [cyan]i[/cyan]  Go to your [bold]Issues[/bold] page
+[cyan]Shit[/cyan] + [cyan]n[/cyan]  Go to your [bold]Merge Requests[/bold] page
+[cyan]Shit[/cyan] + [cyan]r[/cyan]  Go to your [bold]Review Requests[/bold] page
+
+[bold]Text Editors[/bold]
+
+[cyan]Ctrl[/cyan] + [cyan]b[/cyan]  Bold the selected text
+[cyan]Ctrl[/cyan] + [cyan]i[/cyan]  Italicize the selected text
+[cyan]Ctrl[/cyan] + [cyan]k[/cyan]  Insert link
+[cyan]Ctrl[/cyan] + [cyan]\[[/cyan] / [cyan]][/cyan]  Indent or dedent
+
+[bold]Project[/bold]
+
+[cyan]g[/cyan] + [cyan]f[/cyan] Go to [bold]files[/bold]
+[cyan]g[/cyan] + [cyan]c[/cyan] Go to [bold]commits[/bold]
+[cyan]g[/cyan] + [cyan]n[/cyan] Go to [bold]repository graph[/bold]
+[cyan]g[/cyan] + [cyan]i[/cyan] Go to [bold]work items[/bold]
+[cyan]g[/cyan] + [cyan]b[/cyan] Go to [bold]issue board[/bold]
+[cyan]g[/cyan] + [cyan]m[/cyan] Go to [bold]merge requests[/bold]
+[cyan]g[/cyan] + [cyan]p[/cyan] Go to [bold]pipelines[/bold]
