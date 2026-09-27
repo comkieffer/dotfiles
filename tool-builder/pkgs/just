@@ -1,5 +1,5 @@
 name="just"
-version="1.51.0"
+version="1.58.0"
 
 download() {
     fetch_or_clone \
