@@ -83,6 +83,22 @@ fetch_tarball() {
     printf '%s\n' "$url" > "$dir/.url"
 }
 
+# Echoes the newest version tag of a git repo.
+#
+# Sorting every tag picks the wrong one: repos that changed tag style keep the
+# old tags around (just has both v0.9.4 and 1.58.0, and a v-tag sorts above a
+# plain one), and some carry tags that are not versions at all (delta has
+# windows-strip-binary). Restricting to tags that match the style of the
+# version already in the pkg file rules out both, and leaves the result in the
+# format the caller writes back.
+latest_git_tag() {
+    local repo="$1" current="$2" prefix="" tags
+    [[ "$current" == v* ]] && prefix="v"
+
+    tags="$(git ls-remote --tags --refs "$repo" | sed 's|.*refs/tags/||')"
+    printf '%s\n' "$tags" | grep -E "^${prefix}[0-9]" | sort -V | tail -n1
+}
+
 # shellcheck source=lib/go.bash
 source "$(dirname "${BASH_SOURCE[0]}")/go.bash"
 

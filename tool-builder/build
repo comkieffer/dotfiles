@@ -5,6 +5,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/stdlib"
 
 action="build"
+use_latest=
 pkg_file=
 
 while [[ $# -gt 0 ]]; do
@@ -12,13 +13,15 @@ while [[ $# -gt 0 ]]; do
         --version)  action="version";  shift ;;
         --download) action="download"; shift ;;
         --install)  action="install";  shift ;;
+        --latest)   use_latest=1;      shift ;;
         --*) echo "Unknown flag: $1" >&2; exit 1 ;;
         *)   pkg_file="$1"; shift ;;
     esac
 done
 
 if [[ -z "$pkg_file" ]]; then
-    echo "Usage: $(basename "$0") [--version|--download|--install] <pkg-file>" >&2
+    echo "Usage: $(basename "$0") [--version|--download|--install] [--latest] <pkg-file>" >&2
+    echo "  --latest  update the pkg file to the latest release first (not with --version)" >&2
     exit 1
 fi
 
@@ -31,6 +34,67 @@ fi
 
 # shellcheck source=/dev/null
 source "$pkg_file"
+
+# Rewrites the version= line in the pkg file.
+# shellcheck disable=SC2154
+set_version() {
+    if [[ "$(grep -c '^version=' "$pkg_file")" -ne 1 ]]; then
+        echo "error: expected exactly one version= line in $pkg_file" >&2
+        return 1
+    fi
+
+    sed -i "s|^version=.*|version=\"$1\"|" "$pkg_file"
+}
+
+# Rewrites version= in the pkg file to the newest tag its repo publishes, then
+# re-sources it so the build that follows uses the new version.
+#
+# This is only possible for builds that use a git repository, and why one that
+# fetches a tarball has to be bumped by hand.
+# shellcheck disable=SC2154
+update_to_latest() {
+    local repo new
+    repo="$(declare -f download | sed -n 's/.*--repo[ \t=]*"\([^"]*\)".*/\1/p')"
+
+    if [[ -z "$repo" ]]; then
+        echo "error: --latest needs a pkg that clones a git repo;" >&2
+        echo "       $name does not, so its version must be bumped by hand" >&2
+        return 1
+    fi
+
+    if [[ "$repo" == '$'* ]]; then
+        echo "error: --repo in $name's download() is not a literal url" >&2
+        return 1
+    fi
+
+    new="$(latest_git_tag "$repo" "$version")"
+
+    if [[ -z "$new" ]]; then
+        echo "error: could not determine the latest version of $name" >&2
+        return 1
+    fi
+
+    if [[ "$new" == "$version" ]]; then
+        echo "==> $name is already at $version"
+        return 0
+    fi
+
+    echo "==> $name: $version -> $new"
+    set_version "$new"
+
+    # Re-source so download() and build() see the new version.
+    # shellcheck source=/dev/null
+    source "$pkg_file"
+}
+
+if [[ -n "$use_latest" ]]; then
+    case "$action" in
+        download|build|install) ;;
+        *) echo "error: --latest does not apply to --version" >&2; exit 1 ;;
+    esac
+
+    update_to_latest
+fi
 
 # shellcheck disable=SC2154
 do_install() {
