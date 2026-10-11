@@ -148,6 +148,8 @@ path = ~/.config/git/config-work
 [init]
 	# Use 'master' as the default branch name for new repositories
 	defaultBranch = master
+	# Global hook/template directory (e.g. pre-push guard for main/master)
+	templateDir = ~/.config/git/templates
 
 [commit]
 	# Show full diff in commit editor

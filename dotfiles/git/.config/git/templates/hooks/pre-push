@@ -1,0 +1,31 @@
+#!/bin/sh
+# Guard against accidental pushes to main/master.
+#
+# Installed as a global pre-push hook via `init.templateDir`
+# (~/.config/git/templates). Git copies it into every new `git init`/`git clone`.
+# Existing checkouts get it on next `git init` run inside the work tree.
+#
+# Prompts for confirmation [y/N] when any pushed ref targets
+# refs/heads/main or refs/heads/master; any other answer aborts the push.
+# Bypass once with `git push --no-verify` when you really mean it.
+# shellcheck disable=SC2034 # git always passes 4 fields; only remote_ref is needed
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main | refs/heads/master)
+      printf "You are pushing to '%s'. Continue? [y/N] " "${remote_ref#refs/heads/}" >&2
+      # stdin is the push info, so read the answer from the terminal.
+      # No terminal (GUI push, CI) -> fail safe and abort.
+      if ! read -r answer </dev/tty; then
+        echo "Push aborted (no terminal for confirmation)." >&2
+        exit 1
+      fi
+      case "$answer" in
+        [Yy]*) exit 0 ;;
+        *)
+          echo "Push aborted." >&2
+          exit 1
+          ;;
+      esac
+      ;;
+  esac
+done
