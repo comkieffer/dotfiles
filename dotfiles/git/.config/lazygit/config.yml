@@ -19,3 +19,25 @@ git:
 
     # Git default pager
     - {}
+
+
+customCommands:
+  # 'gl' commands live behind a single menu key: only <c-g> must be unique in
+  # lazygit's keymap, the entries' keys are scoped to the menu.
+  - key: '<c-g>'
+    description: 'GitLab'
+    commandMenu:
+      - key: 'm'
+        description: 'Open merge request for current branch'
+        command: 'gl open mr'
+        context: 'global'
+        # gl may prompt (to create the MR if none exists), so it needs a TTY.
+        output: 'terminal'
+
+      - key: 'o'
+        description: 'Open repository in GitLab'
+        command: 'gl open forge'
+        context: 'global'
+        # Show the 'Opening ...' message, and any error (e.g. VPN off).
+        # Use 'none' for silent execution.
+        output: 'popup'
