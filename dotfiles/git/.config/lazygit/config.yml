@@ -53,3 +53,12 @@ customCommands:
         # Show the 'Opening ...' message, and any error (e.g. VPN off).
         # Use 'none' for silent execution.
         output: 'popup'
+
+
+  # Absorb staged changes into the commits they belong to. Only staged
+  # changes are considered.
+  - key: '<c-a>'
+    description: 'Absorb staged changes (git absorb)'
+    command: 'git absorb'
+    context: 'files'
+    output: 'terminal'
