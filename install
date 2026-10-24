@@ -52,9 +52,9 @@ STOWED_PROGRAMS: dict[str, ProgramConfig] = {
     ),
     "matlab": ProgramConfig(),
     "vim": ProgramConfig(),
-    "sublime-text-3": ProgramConfig(
+    "sublime-text": ProgramConfig(
         executable="subl",
-        create_dirs=["~/.config/sublime-text-3/Packages/User"],
+        create_dirs=["~/.config/sublime-text/Packages/User"],
     ),
     "sublime-merge": ProgramConfig(
         executable="smerge",
