@@ -2,10 +2,6 @@
 	email = thibaud.chupin@gmail.com
 	name = Thibaud Chupin
 
-# Override settings for _work_ projects
-[includeIf "gitdir:~/dev/hyperion/"]
-path = ~/.config/git/config-work
-
 [core]
 	# Ignore file permission changes (useful when working across different filesystems)
 	fileMode = false

@@ -1,4 +1,26 @@
-
-[user]
-	name = Thibaud Chupin
-	email = thibaud.chupin@aac-clydespace.com
+# Work-specific Git configuration.
+#
+# This file is not loaded by default. Enable it from
+# ~/.config/git/config with one of the includeIf rules below.
+#
+# By path: matches every repository under the given directory. Works for
+# repositories without a remote yet, but not for linked worktrees (Git
+# matches $GIT_DIR, which lives in the main repository for a worktree).
+#
+#   [includeIf "gitdir:~/dev/$WORK/"]
+#   	path = ~/.config/git/config-work
+#
+# By remote: matches any repository with a matching remote URL, wherever it
+# is cloned, and works for linked worktrees. Requires Git 2.36 or newer.
+# Every remote is checked, not just `origin`.
+#
+#   [includeIf "hasconfig:remote.*.url:**/*git.$WORK*/**"]
+#   	path = ~/.config/git/config-work
+#
+# The remote pattern matches SSH (`git@host:group/repo.git`, `ssh://...`)
+# and HTTPS (`https://host/group/repo.git`) URLs.
+#
+# Add settings below, for example:
+#
+#   [user]
+#   	email = work@example.com
