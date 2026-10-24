@@ -62,3 +62,49 @@ customCommands:
     command: 'git absorb'
     context: 'files'
     output: 'terminal'
+
+  # 'gs' commands live behind a single menu key. <c-s> is lazygit's commit
+  # filter menu and modifiers like <alt+s> aren't allowed for custom commands,
+  # so use this otherwise-unbound key.
+  - key: '<c-n>'
+    description: 'git-spice'
+    commandMenu:
+      - key: 'b'
+        description: 'Track branch'
+        command: 'gs branch track {{.SelectedLocalBranch.Name}}'
+        context: 'localBranches'
+        # gs may prompt for a base branch, so it needs a TTY.
+        output: 'terminal'
+
+      - key: 'o'
+        description: 'Move current branch onto selected branch'
+        command: >-
+          gs branch onto --restack
+          {{.SelectedLocalBranch.Name | quote}}
+        context: 'localBranches'
+        output: 'terminal'
+
+      - key: 'u'
+        description: 'Move current branch and upstack onto selected branch'
+        command: 'gs upstack onto {{.SelectedLocalBranch.Name | quote}}'
+        context: 'localBranches'
+        output: 'terminal'
+
+      - key: 's'
+        description: 'Sync repository'
+        command: 'gs repo sync'
+        context: 'global'
+        # May prompt for a remote and reports progress, so it needs a TTY.
+        output: 'terminal'
+
+      - key: 'l'
+        description: 'Log long'
+        command: 'gs log long'
+        context: 'global'
+        output: 'terminal'
+
+      - key: 'a'
+        description: 'Log long (all branches)'
+        command: 'gs log long --all'
+        context: 'global'
+        output: 'terminal'
