@@ -22,6 +22,14 @@ wm.bar.font: Hack Nerd Font Propo 10
 ! Fix fontsize for Gnome-Terminal
 gnome.terminal.font: Hack Nerd Font 10
 
+! The ayu-dark look maps ANSI slots 8 and 15 to the wrong colours: slot 8
+! (bright black) gets the light foreground grey and slot 15 (bright white)
+! gets a near-black colour. Apps which use ANSI 15 for white text end up
+! with unreadable text. Use ayu's comment grey for dim text and its
+! foreground for bright white.
+gnome.terminal.color8: #565B66
+gnome.terminal.color15: #BFBDB6
+
 ! Tell regolith to not override the desktop set by gnome
 ! gnome.wallpaper:
 

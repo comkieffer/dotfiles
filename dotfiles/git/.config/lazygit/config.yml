@@ -1,4 +1,16 @@
 ---
+gui:
+  theme:
+    # The terminal's ANSI blue is ayu's light blue (#73B8FF), so lazygit's
+    # default blue selection background leaves the light default foreground
+    # unreadable. Use the theme's dark "active" colour instead.
+    selectedLineBgColor:
+      - '#1f3350'
+    # Don't bold the selected row: the Regolith look paints bold default text
+    # blue, which weakens the contrast with the selection background.
+    selectedLineFgColor:
+      - default
+
 git:
   pagers:
     # Multiple pagers are supported; cycle through them with the | key.
