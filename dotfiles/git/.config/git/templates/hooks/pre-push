@@ -7,12 +7,24 @@
 #
 # Prompts for confirmation [y/N] when any pushed ref targets
 # refs/heads/main or refs/heads/master; any other answer aborts the push.
+# Pushes to a protected branch are allowed without confirmation when it is the
+# repository's only local branch: in a single-branch repo there is no other
+# branch that an accidental push could bypass.
 # Bypass once with `git push --no-verify` when you really mean it.
 # shellcheck disable=SC2034 # git always passes 4 fields; only remote_ref is needed
 while read -r local_ref local_sha remote_ref remote_sha; do
   case "$remote_ref" in
     refs/heads/main | refs/heads/master)
-      printf "You are pushing to '%s'. Continue? [y/N] " "${remote_ref#refs/heads/}" >&2
+      target="${remote_ref#refs/heads/}"
+
+      branches=$(git for-each-ref --format='%(refname:short)' refs/heads)
+      # Only skip the prompt for a normal push of that same branch; a
+      # deletion (local_ref is "(delete)") or a cross-branch push still asks.
+      if [ "$local_ref" = "$remote_ref" ] && [ "$branches" = "$target" ]; then
+        exit 0
+      fi
+
+      printf "You are pushing to '%s'. Continue? [y/N] " "$target" >&2
       # stdin is the push info, so read the answer from the terminal.
       # No terminal (GUI push, CI) -> fail safe and abort.
       if ! read -r answer </dev/tty; then
